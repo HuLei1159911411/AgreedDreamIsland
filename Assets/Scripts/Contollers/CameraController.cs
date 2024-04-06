@@ -33,8 +33,10 @@ public class CameraController : MonoBehaviour
     // 鼠标移动速度
     public float MouseSpeed = 800f;
     
-    // 记录摄像机当前位置玩家边上的聚焦点的坐标
+    // 记录摄像机之前位置玩家边上的聚焦点的坐标
     private Vector3 _focusPosition;
+    // 计算当前帧玩家边上的聚焦点的坐标的临时变量
+    private Vector3 _curFocusPosition;
     // 旋转后聚焦点到的摄像机单位向量
     private Vector3 _dir;
     // 鼠标X坐标变化
@@ -91,17 +93,20 @@ public class CameraController : MonoBehaviour
             // 监听鼠标输入
             _mouseX = Input.GetAxis("Mouse X");
             _mouseY = Input.GetAxis("Mouse Y");
-
-            if (_mouseX != 0 || _mouseY != 0)
+            
+            if (_mouseX != 0 || _mouseY != 0 || UpdateFocusPosition())
             {
+                // 如果是移动鼠标
+                if (_mouseX != 0 || _mouseY != 0)
+                {
+                    // 更新聚焦点的位置
+                    UpdateFocusPosition();
+                }
                 switch (nowView)
                 {
                     // 第一人称摄像机逻辑的更新摄像机位置并根据鼠标X和Y变换旋转角度
                     case E_CameraView.FirstPerson:
                         // 第一人称摄像机位置更新
-                        // 更新聚焦点的位置
-                        UpdateFocusPosition();
-
                         // 更新摄像机位置
                         transform.position = _focusPosition;
                         // 第一人称摄像机视角旋转
@@ -118,9 +123,6 @@ public class CameraController : MonoBehaviour
                         break;
                     // 第三人称摄像机逻辑的更新摄像机位置并根据鼠标X和Y变换旋转角度
                     case E_CameraView.ThirdPerson:
-                        // 更新聚焦点的位置
-                        UpdateFocusPosition();
-
                         // 第三人称摄像机视角旋转(根据鼠标移动的变化产生的变化与第一人称一样)
                         // 上下角度变化
                         _rightAngle -= _mouseY * MouseSpeed * Time.deltaTime;
@@ -141,9 +143,6 @@ public class CameraController : MonoBehaviour
                         break;
                     // 更远的第三人称摄像机逻辑的更新摄像机位置并根据鼠标X和Y变换旋转角度
                     case E_CameraView.ThirdPersonFurther:
-                        // 更新聚焦点的位置
-                        UpdateFocusPosition();
-
                         // 第三人称摄像机视角旋转(根据鼠标移动的变化产生的变化与第一人称一样)
                         // 上下角度变化
                         _rightAngle -= _mouseY * MouseSpeed * Time.deltaTime;
@@ -175,24 +174,42 @@ public class CameraController : MonoBehaviour
         Cursor.visible = false;
     }
 
-    void UpdateFocusPosition()
+    bool UpdateFocusPosition()
     {
         switch (nowView)
         {
             case E_CameraView.FirstPerson:
-                _focusPosition = Player.position +
-                                 FirstPersonViewOffset.x * Player.right +
-                                 FirstPersonViewOffset.y * Player.up +
-                                 FirstPersonViewOffset.z * Player.forward;
-                break;
+                _curFocusPosition = Player.position +
+                                    FirstPersonViewOffset.x * Player.right +
+                                    FirstPersonViewOffset.y * Player.up +
+                                    FirstPersonViewOffset.z * Player.forward;
+                if (_focusPosition == _curFocusPosition)
+                {
+                    return false;
+                }
+                else
+                {
+                    _focusPosition = _curFocusPosition;
+                    return true;
+                }
             case E_CameraView.ThirdPerson:
             case E_CameraView.ThirdPersonFurther:
-                _focusPosition = Player.position +
-                                 ThridPersonFocusWithPlayerOffset.x * Player.right +
-                                 ThridPersonFocusWithPlayerOffset.y * Player.up +
-                                 ThridPersonFocusWithPlayerOffset.z * Player.forward;
-                break;
+                _curFocusPosition = Player.position +
+                                    ThridPersonFocusWithPlayerOffset.x * Player.right +
+                                    ThridPersonFocusWithPlayerOffset.y * Player.up +
+                                    ThridPersonFocusWithPlayerOffset.z * Player.forward;
+                if (_focusPosition == _curFocusPosition)
+                {
+                    return false;
+                }
+                else
+                {
+                    _focusPosition = _curFocusPosition;
+                    return true;
+                }
         }
+
+        throw new IndexOutOfRangeException("CameraController.nowView is not exist");
     }
     
     // 限制上下旋转的角度
