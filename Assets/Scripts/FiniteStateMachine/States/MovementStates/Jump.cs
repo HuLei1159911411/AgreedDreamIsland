@@ -1,0 +1,50 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Jump : BaseState
+{
+    private PlayerMovementStateMachine _movementStateMachine;
+    private Vector3 _velocity;
+    
+    public Jump(StateMachine stateMachine) : base("Jump", stateMachine)
+    {
+        if (stateMachine is PlayerMovementStateMachine)
+        {
+            _movementStateMachine = stateMachine as PlayerMovementStateMachine;
+        }
+    }
+
+    public override void Enter()
+    {
+        base.Enter();
+        _movementStateMachine.isOnGround = false;
+        DoJump();
+    }
+
+    public override void UpdateLogic()
+    {
+        base.UpdatePhysic();
+        // 当向上速度小于等于0时自动转换为Fall状态
+        // 更新检测是否玩家是否处于地面
+        _velocity = _movementStateMachine.playerRigidbody.velocity;
+        if (_velocity.y <= 0)
+        {
+            _movementStateMachine.ChangeState(_movementStateMachine.FallState);
+        }
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+    }
+
+    private void DoJump()
+    {
+        _velocity = _movementStateMachine.playerRigidbody.velocity;
+        // 清空角色垂直方向上的速度
+        _movementStateMachine.playerRigidbody.velocity = new Vector3(_velocity.x, 0f, _velocity.z);
+        // 为角色增加一个向上的力
+        _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.playerTransform.up * _movementStateMachine.jumpForce, ForceMode.Impulse);
+    }
+}
