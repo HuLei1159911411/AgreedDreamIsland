@@ -77,7 +77,7 @@ public class Run : BaseState
                 }
             }
             // 根据移动方向移动
-            _movementStateMachine.playerTransform.Translate(_movementStateMachine.nowMoveSpeed * Time.deltaTime * _direction);
+            _movementStateMachine.playerTransform.Translate(_movementStateMachine.nowMoveSpeed * Time.deltaTime * _direction, Space.World);
         }
     }
 }

@@ -354,7 +354,7 @@ MonoBehaviour:
   walkBackwardSpeed: 5
   runForwardSpeed: 20
   walkHorizontalSpeed: 5
-  jumpForce: 10
+  jumpForce: 5
   heightOffset: 0.2
   layerGround:
     serializedVersion: 2
@@ -450,7 +450,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 2, z: -15}
+  m_LocalPosition: {x: 1, y: 2, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -512,14 +512,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e67f797cf71b54e99b29436ea9bdec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Player: {fileID: 297973014}
-  nowView: 2
-  FirstPersonViewOffset: {x: 0, y: 0, z: 0}
-  ThridPersonFocusWithPlayerOffset: {x: 1, y: 1, z: 0}
-  Distance: 10
-  ThridPersonFurtherRatio: 1.5
-  ThridPersonViewCameraWithPlayerMaxAngle: 10
-  MouseSpeed: 400
+  player: {fileID: 297973014}
+  nowView: 1
+  firstPersonViewOffset: {x: 0, y: 0, z: 0}
+  thirdPersonFocusWithPlayerOffset: {x: 1, y: 1, z: 0}
+  distance: 10
+  thirdPersonFurtherRatio: 1.5
+  thirdPersonViewCameraWithPlayerMaxAngle: 30
+  mouseSpeed: 800
+  rotateTime: 0.1
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
