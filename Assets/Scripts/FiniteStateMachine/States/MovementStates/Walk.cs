@@ -6,6 +6,8 @@ public class Walk : BaseState
 {
     private PlayerMovementStateMachine _movementStateMachine;
     private Vector3 _direction;
+    // 玩家摁奔跑键的计时器
+    private float _timerPressKey;
     
     public Walk(StateMachine stateMachine) : base("Walk", stateMachine)
     {
@@ -13,6 +15,14 @@ public class Walk : BaseState
         {
             _movementStateMachine = stateMachine as PlayerMovementStateMachine;
         }
+    }
+
+    public override void Enter()
+    {
+        base.Enter();
+        
+        // 清空计时器
+        _timerPressKey = 0f;
     }
 
     public override void UpdateLogic()
@@ -57,6 +67,7 @@ public class Walk : BaseState
                 // 更新当前速度为水平速度
                 _movementStateMachine.nowMoveSpeed = _movementStateMachine.walkHorizontalSpeed;
             }
+            // 保持移动
             else
             {
                 if (_movementStateMachine.MoveInputInfo.MoveForwardInput)
@@ -70,8 +81,24 @@ public class Walk : BaseState
                     _movementStateMachine.nowMoveSpeed = _movementStateMachine.walkBackwardSpeed;
                 }
             }
+            
             // 根据移动方向移动
             _movementStateMachine.playerTransform.Translate(_movementStateMachine.nowMoveSpeed * Time.deltaTime * _direction);
+            
+            // 切换Run
+            if (_movementStateMachine.MoveInputInfo.RunInput)
+            {
+                _timerPressKey += Time.deltaTime;
+                if (_timerPressKey >= _movementStateMachine.toRunTime)
+                {
+                    _timerPressKey = 0;
+                    _movementStateMachine.ChangeState(_movementStateMachine.RunState);
+                }
+            }
+            else
+            {
+                _timerPressKey = 0f;
+            }
         }
     }
 }

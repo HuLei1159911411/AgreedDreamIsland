@@ -10,7 +10,7 @@ public enum E_InputBehavior
     MoveLeft,
     MoveRight,
     Jump,
-    ChangeMoveMode,
+    Run,
     ChangeView,
 }
 public class InputManager
@@ -33,7 +33,7 @@ public class InputManager
         DicBehavior.Add(E_InputBehavior.MoveLeft, KeyCode.A);
         DicBehavior.Add(E_InputBehavior.MoveRight, KeyCode.D);
         DicBehavior.Add(E_InputBehavior.Jump, KeyCode.Space);
-        DicBehavior.Add(E_InputBehavior.ChangeMoveMode, KeyCode.LeftShift);
+        DicBehavior.Add(E_InputBehavior.Run, KeyCode.LeftShift);
         DicBehavior.Add(E_InputBehavior.ChangeView, KeyCode.V);
     }
 }

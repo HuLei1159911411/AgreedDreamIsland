@@ -359,6 +359,7 @@ MonoBehaviour:
   layerGround:
     serializedVersion: 2
     m_Bits: 8
+  toRunTime: 0.5
   playerTransform: {fileID: 0}
   playerRigidbody: {fileID: 0}
 --- !u!1 &330585543
@@ -813,7 +814,7 @@ GameObject:
   - component: {fileID: 840510819}
   m_Layer: 0
   m_Name: Cube
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

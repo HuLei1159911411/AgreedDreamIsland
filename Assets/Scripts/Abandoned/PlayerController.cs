@@ -91,7 +91,7 @@ public class PlayerController : MonoBehaviour
                 Move();
 
                 // 不在跑步状态并且摁了切换移动模式
-                if (_nowState == E_PlayerStates.Walk && Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.ChangeMoveMode]))
+                if (_nowState == E_PlayerStates.Walk && Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.Run]))
                 {
                     _ieWalkToRun = StartCoroutine(CompleteBehavior(() =>
                     {
@@ -101,7 +101,7 @@ public class PlayerController : MonoBehaviour
 
                 // 在切换移动模式的键摁下时间不足时松开切换移动模式的键
                 if (_nowState == E_PlayerStates.Walk && _ieWalkToRun != null &&
-                    Input.GetKeyUp(InputManager.Instance.DicBehavior[E_InputBehavior.ChangeMoveMode]))
+                    Input.GetKeyUp(InputManager.Instance.DicBehavior[E_InputBehavior.Run]))
                 {
                     StopCoroutine(_ieWalkToRun);
                     _ieWalkToRun = null;

@@ -13,6 +13,7 @@ public struct MoveInputInformation
     public int VerticalInput;
     public int HorizontalInput;
     public bool JumpInput;
+    public bool RunInput;
 }
 
 public class PlayerMovementStateMachine : StateMachine
@@ -25,16 +26,16 @@ public class PlayerMovementStateMachine : StateMachine
     [HideInInspector] public Jump JumpState;
     // 下落状态
     [HideInInspector] public Fall FallState;
+    // 奔跑状态
+    [HideInInspector] public Run RunState;
     
     // 移动输入信息
     [HideInInspector] public MoveInputInformation MoveInputInfo;
     
     // 当前水平移动移动速度
     [HideInInspector] public float nowMoveSpeed;
-    
     // 当前玩家是否在地面上
     [HideInInspector] public bool isOnGround;
-
     
     // 当前状态
     [HideInInspector] public BaseState CurrentState => _currentState;
@@ -47,40 +48,43 @@ public class PlayerMovementStateMachine : StateMachine
     // 移动
     // 走路向前的速度
     public float walkForwardSpeed = 8f;
-
     // 走路向后的速度
     public float walkBackwardSpeed = 5f;
-
     // 跑步向前的速度
     public float runForwardSpeed = 20f;
-
     // 走路水平方向移动的速度
     public float walkHorizontalSpeed = 5f;
 
     // 跳跃
     // 跳跃瞬间给玩家的力的大小
     public float jumpForce = 10f;
-
     // 玩家是否在地面的高度检测时的偏移量
     public float heightOffset = 0.2f;
-
     // 地面所在层
     public LayerMask layerGround;
 
+    // 奔跑
+    // 玩家从WalkToRun所需摁键时间
+    public float toRunTime;
+    
     // 组件
     [HideInInspector] public Transform playerTransform;
     [HideInInspector] public Rigidbody playerRigidbody;
 
     private void Awake()
     {
+        // 初始化状态
         IdleState = new Idle(this);
         WalkState = new Walk(this);
         JumpState = new Jump(this);
         FallState = new Fall(this);
+        RunState = new Run(this);
 
+        // 获取组件
         playerTransform = transform;
         playerRigidbody = GetComponent<Rigidbody>();
 
+        // 初始化参数
         InitParameters();
     }
 
@@ -107,6 +111,7 @@ public class PlayerMovementStateMachine : StateMachine
         MoveInputInfo.HorizontalInput = (MoveInputInfo.MoveRightInput ? 1 : 0) + (MoveInputInfo.MoveLeftInput ? -1 : 0);
 
         MoveInputInfo.JumpInput = Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.Jump]);
+        MoveInputInfo.RunInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Run]);
     }
 
     // 更新当前
