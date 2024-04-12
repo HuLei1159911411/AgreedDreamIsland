@@ -26,7 +26,7 @@ public class Fall : BaseState
         _movementStateMachine.UpdateIsOnGround();
         if (_movementStateMachine.isOnGround)
         {
-            _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
+            _movementStateMachine.ChangeState(_movementStateMachine.PreState);
         }
     }
 

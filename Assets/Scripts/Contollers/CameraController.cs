@@ -377,5 +377,9 @@ public class CameraController : MonoBehaviour
             _rotateTimer += Time.deltaTime;
             player.rotation = Quaternion.Lerp(_startRotation, _targetRotation, _rotateTimer / rotateTime);
         }
+        else
+        {
+            player.rotation = _targetRotation;
+        }
     }
 }

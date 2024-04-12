@@ -262,7 +262,6 @@ GameObject:
   - component: {fileID: 297973012}
   - component: {fileID: 297973011}
   - component: {fileID: 297973016}
-  - component: {fileID: 297973015}
   - component: {fileID: 297973017}
   m_Layer: 0
   m_Name: Player
@@ -360,31 +359,6 @@ Transform:
   - {fileID: 840510818}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &297973015
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 297973010}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 53c698bccbfc63544a961f588564c6ec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  PlayerHeight: 1
-  HeightOffset: 0.2
-  LayerGround:
-    serializedVersion: 2
-    m_Bits: 0
-  WalkForwardSpeed: 10
-  WalkBackwardSpeed: 5
-  WalkHorizontal: 5
-  RunForwardSpeed: 20
-  BehaviorWalkToRunTime: 0.5
-  SpeedWalkToRunTime: 1
-  JumpForce: 0
-  IsOnGround: 0
 --- !u!54 &297973016
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -411,7 +385,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!114 &297973017
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -426,14 +400,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nowMoveSpeed: 0
   isOnGround: 0
+  playerXozSpeed: 0
   playerHeight: 2
   walkForwardSpeed: 8
   walkBackwardSpeed: 5
-  runForwardSpeed: 20
+  runForwardSpeed: 15
   walkHorizontalSpeed: 5
-  jumpForce: 5
+  walkMoveForce: 20
+  jumpForce: 10
   heightOffset: 0.2
   toRunTime: 0.5
+  runMoveForce: 20
   playerTransform: {fileID: 0}
   playerRigidbody: {fileID: 0}
 --- !u!1 &330585543
@@ -524,7 +501,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 2, z: -15}
+  m_LocalPosition: {x: 1, y: 2, z: -7.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -588,13 +565,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 297973014}
   nowView: 2
-  firstPersonViewOffset: {x: 0, y: 0, z: 0}
+  firstPersonViewOffset: {x: 0, y: 1, z: 0}
   thirdPersonFocusWithPlayerOffset: {x: 1, y: 1, z: 0}
-  distance: 10
+  distance: 5
   thirdPersonFurtherRatio: 1.5
   thirdPersonViewCameraWithPlayerMaxAngle: 60
   mouseSpeed: 400
-  rotateTime: 0.05
+  rotateTime: 0.1
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1293,6 +1270,85 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1588082978}
   m_CullTransparentMesh: 1
+--- !u!1 &1830059880
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1830059881}
+  - component: {fileID: 1830059883}
+  - component: {fileID: 1830059882}
+  m_Layer: 5
+  m_Name: NowSpeed
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1830059881
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1830059880}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2844457984470365340}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 10, y: 0}
+  m_SizeDelta: {x: 300, y: 100}
+  m_Pivot: {x: 0, y: 0}
+--- !u!114 &1830059882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1830059880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_FontSize: 50
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 5
+    m_MaxSize: 50
+    m_Alignment: 3
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 0
+    m_VerticalOverflow: 0
+    m_LineSpacing: 1
+  m_Text: "\u901F\u5EA6: 0"
+--- !u!222 &1830059883
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1830059880}
+  m_CullTransparentMesh: 1
 --- !u!1 &2046711349
 GameObject:
   m_ObjectHideFlags: 0
@@ -1340,6 +1396,8 @@ MonoBehaviour:
   layerGround:
     serializedVersion: 2
     m_Bits: 8
+  groundDrag: 10
+  airDrag: 0
 --- !u!224 &1116108403507361567
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1394,7 +1452,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 20, y: 0}
-  m_SizeDelta: {x: 350, y: 100}
+  m_SizeDelta: {x: 400, y: 100}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1916151643815924412
 GameObject:
@@ -1432,6 +1490,7 @@ MonoBehaviour:
   mainCamera: {fileID: 330585548}
   nowState: {fileID: 1588082980}
   nowIsOnGround: {fileID: 755062778}
+  nowSpeed: {fileID: 1830059882}
 --- !u!114 &2590833517465378738
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1508,6 +1567,7 @@ RectTransform:
   - {fileID: 1588082979}
   - {fileID: 755062777}
   - {fileID: 174175958}
+  - {fileID: 1830059881}
   m_Father: {fileID: 1116108403507361567}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

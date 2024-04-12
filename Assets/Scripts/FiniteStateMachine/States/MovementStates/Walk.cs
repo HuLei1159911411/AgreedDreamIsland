@@ -25,6 +25,13 @@ public class Walk : BaseState
         _timerPressKey = 0f;
     }
 
+    public override void Exit()
+    {
+        base.Enter();
+
+        _movementStateMachine.PreState = this;
+    }
+
     public override void UpdateLogic()
     {
         base.UpdateLogic();

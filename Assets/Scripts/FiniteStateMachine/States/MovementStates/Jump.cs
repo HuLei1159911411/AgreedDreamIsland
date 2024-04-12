@@ -22,6 +22,13 @@ public class Jump : BaseState
         DoJump();
     }
 
+    public override void Exit()
+    {
+        base.Exit();
+        
+        // Jump没有将前一状态设置为自己为了让Fall状态知道前一状态是什么
+    }
+
     public override void UpdateLogic()
     {
         base.UpdatePhysic();
@@ -32,11 +39,6 @@ public class Jump : BaseState
         {
             _movementStateMachine.ChangeState(_movementStateMachine.FallState);
         }
-    }
-
-    public override void Exit()
-    {
-        base.Exit();
     }
 
     private void DoJump()

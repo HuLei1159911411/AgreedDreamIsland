@@ -41,6 +41,8 @@ public class PlayerMovementStateMachine : StateMachine
     
     // 当前状态
     [HideInInspector] public BaseState CurrentState => _currentState;
+    // 前一状态
+    [HideInInspector] public BaseState PreState;
 
     [Header("玩家参数")] // 以后考虑是不是要换到别的脚本里面去
     // 玩家高度
