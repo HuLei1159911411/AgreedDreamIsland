@@ -60,8 +60,6 @@ public class PlayerMovementStateMachine : StateMachine
     public float jumpForce = 10f;
     // 玩家是否在地面的高度检测时的偏移量
     public float heightOffset = 0.2f;
-    // 地面所在层
-    public LayerMask layerGround;
 
     // 奔跑
     // 玩家从WalkToRun所需摁键时间
@@ -117,7 +115,16 @@ public class PlayerMovementStateMachine : StateMachine
     // 更新当前
     public void UpdateIsOnGround()
     {
-        isOnGround = Physics.Raycast(playerTransform.position, Vector3.down, playerHeight * 0.5f + heightOffset, layerGround);
-        Debug.DrawLine(playerTransform.position, playerTransform.position + Vector3.down * (playerHeight * 0.5f + heightOffset), Color.red);
+        if (!(InfoManager.Instance is null))
+        {
+            isOnGround = Physics.Raycast(playerTransform.position, Vector3.down, playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerGround);
+            Debug.DrawLine(playerTransform.position, playerTransform.position + Vector3.down * (playerHeight * 0.5f + heightOffset), Color.red);
+        }
+    }
+    
+    // 获取当前状态的状态名(状态名为状态类内部成员参数string name)
+    public string GetNowState()
+    {
+        return _currentState.name;
     }
 }

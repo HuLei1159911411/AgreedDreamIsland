@@ -13,14 +13,24 @@ public enum E_InputBehavior
     Run,
     ChangeView,
 }
-public class InputManager
+public class InputManager : MonoBehaviour
 {
-    private static InputManager _instance = new InputManager();
+    private static InputManager _instance;
 
     public static InputManager Instance => _instance;
 
-    public Dictionary<E_InputBehavior, KeyCode> DicBehavior = new Dictionary<E_InputBehavior, KeyCode>();
+    public Dictionary<E_InputBehavior, KeyCode> DicBehavior;
 
+    private void Awake()
+    {
+        if (_instance is null)
+        {
+            _instance = this;
+        }
+        
+        InitDicBehavior();
+    }
+    
     private InputManager()
     {
         InitDicBehavior();
@@ -28,12 +38,15 @@ public class InputManager
     
     void InitDicBehavior()
     {
-        DicBehavior.Add(E_InputBehavior.MoveForward, KeyCode.W);
-        DicBehavior.Add(E_InputBehavior.MoveBackward, KeyCode.S);
-        DicBehavior.Add(E_InputBehavior.MoveLeft, KeyCode.A);
-        DicBehavior.Add(E_InputBehavior.MoveRight, KeyCode.D);
-        DicBehavior.Add(E_InputBehavior.Jump, KeyCode.Space);
-        DicBehavior.Add(E_InputBehavior.Run, KeyCode.LeftShift);
-        DicBehavior.Add(E_InputBehavior.ChangeView, KeyCode.V);
+        DicBehavior = new Dictionary<E_InputBehavior, KeyCode>()
+        {
+            { E_InputBehavior.MoveForward, KeyCode.W },
+            { E_InputBehavior.MoveBackward, KeyCode.S },
+            { E_InputBehavior.MoveLeft, KeyCode.A },
+            { E_InputBehavior.MoveRight, KeyCode.D },
+            { E_InputBehavior.Jump, KeyCode.Space },
+            { E_InputBehavior.Run, KeyCode.LeftShift },
+            { E_InputBehavior.ChangeView, KeyCode.V },
+        };
     }
 }
