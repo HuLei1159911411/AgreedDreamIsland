@@ -76,8 +76,18 @@ public class Run : BaseState
                     _movementStateMachine.nowMoveSpeed = _movementStateMachine.walkBackwardSpeed;
                 }
             }
+            
             // 根据移动方向移动
-            _movementStateMachine.playerTransform.Translate(_movementStateMachine.nowMoveSpeed * Time.deltaTime * _direction, Space.World);
+            // _movementStateMachine.playerTransform.Translate(_movementStateMachine.nowMoveSpeed * Time.deltaTime * _direction, Space.World);
         }
+    }
+    
+    public override void UpdatePhysic()
+    {
+        base.UpdatePhysic();
+        // 通过给力移动
+        _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.nowMoveSpeed * _movementStateMachine.runMoveForce * _direction, ForceMode.Force);
+        // 限制玩家最大速度
+        _movementStateMachine.ClampXozVelocity();
     }
 }

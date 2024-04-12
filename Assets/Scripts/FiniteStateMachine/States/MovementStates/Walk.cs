@@ -83,7 +83,8 @@ public class Walk : BaseState
             }
             
             // 根据移动方向移动
-            _movementStateMachine.playerTransform.Translate(_movementStateMachine.nowMoveSpeed * Time.deltaTime * _direction,Space.World);
+            // Translate移动
+            // _movementStateMachine.playerTransform.Translate(_movementStateMachine.nowMoveSpeed * Time.deltaTime * _direction,Space.World);
             
             // 切换Run
             if (_movementStateMachine.MoveInputInfo.RunInput)
@@ -100,5 +101,14 @@ public class Walk : BaseState
                 _timerPressKey = 0f;
             }
         }
+    }
+
+    public override void UpdatePhysic()
+    {
+        base.UpdatePhysic();
+        // 通过给力移动
+        _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.nowMoveSpeed * _movementStateMachine.walkMoveForce * _direction, ForceMode.Force);
+        // 限制玩家最大速度
+        _movementStateMachine.ClampXozVelocity();
     }
 }

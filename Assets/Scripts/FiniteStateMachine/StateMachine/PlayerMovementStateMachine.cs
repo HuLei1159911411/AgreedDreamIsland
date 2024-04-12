@@ -32,10 +32,12 @@ public class PlayerMovementStateMachine : StateMachine
     // 移动输入信息
     [HideInInspector] public MoveInputInformation MoveInputInfo;
     
-    // 当前水平移动移动速度
+    // 当前水平移动移动速度的最大值
     [HideInInspector] public float nowMoveSpeed;
     // 当前玩家是否在地面上
     [HideInInspector] public bool isOnGround;
+    // 当前玩家刚体在XOZ平面上移动速度大小
+    [HideInInspector] public float playerXozSpeed;
     
     // 当前状态
     [HideInInspector] public BaseState CurrentState => _currentState;
@@ -46,14 +48,16 @@ public class PlayerMovementStateMachine : StateMachine
 
     [Header("玩家运动相关参数")]
     // 移动
-    // 走路向前的速度
+    // 走路向前的速度的最大值
     public float walkForwardSpeed = 8f;
-    // 走路向后的速度
+    // 走路向后的速度的最大值
     public float walkBackwardSpeed = 5f;
-    // 跑步向前的速度
+    // 跑步向前的速度的最大值
     public float runForwardSpeed = 20f;
-    // 走路水平方向移动的速度
+    // 走路水平方向移动的速度的最大值
     public float walkHorizontalSpeed = 5f;
+    // 走路时给予玩家力的相对大小(与上面的限制玩家最大速度成正比?目前是这样实现，为玩家加力时力的大小 = walkMoveForce * nowMoveSpeed)
+    public float walkMoveForce = 2.5f;
 
     // 跳跃
     // 跳跃瞬间给玩家的力的大小
@@ -64,11 +68,15 @@ public class PlayerMovementStateMachine : StateMachine
     // 奔跑
     // 玩家从WalkToRun所需摁键时间
     public float toRunTime;
+    // 奔跑时给予玩家力的相对大小(与上面的限制玩家最大速度成正比?目前是这样实现，为玩家加力时力的大小 = runMoveForce * nowMoveSpeed)
+    public float runMoveForce = 2.5f;
     
     // 组件
     [HideInInspector] public Transform playerTransform;
     [HideInInspector] public Rigidbody playerRigidbody;
 
+    // 计算Xoz平面玩家刚体速度用的临时变量
+    private Vector3 _calXozVelocity;
     private void Awake()
     {
         // 初始化状态
@@ -84,6 +92,13 @@ public class PlayerMovementStateMachine : StateMachine
 
         // 初始化参数
         InitParameters();
+    }
+    
+    // 重写父类Update函数统一进行一些数据更新
+    protected override void Update()
+    {
+        base.Update();
+        UpdateXozVelocity();
     }
 
     protected override BaseState GetInitialState()
@@ -112,13 +127,23 @@ public class PlayerMovementStateMachine : StateMachine
         MoveInputInfo.RunInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Run]);
     }
 
-    // 更新当前
+    // 更新当前是否处于地面
     public void UpdateIsOnGround()
     {
         if (!(InfoManager.Instance is null))
         {
             isOnGround = Physics.Raycast(playerTransform.position, Vector3.down, playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerGround);
             Debug.DrawLine(playerTransform.position, playerTransform.position + Vector3.down * (playerHeight * 0.5f + heightOffset), Color.red);
+            
+            // 更新玩家刚体的阻力大小
+            if (isOnGround)
+            {
+                playerRigidbody.drag = InfoManager.Instance.groundDrag + InfoManager.Instance.airDrag;
+            }
+            else
+            {
+                playerRigidbody.drag = InfoManager.Instance.airDrag;
+            }
         }
     }
     
@@ -126,5 +151,23 @@ public class PlayerMovementStateMachine : StateMachine
     public string GetNowState()
     {
         return _currentState.name;
+    }
+    
+    // 限制玩家水平速度值在当前最大速度内
+    public void ClampXozVelocity()
+    {
+        UpdateXozVelocity();
+        if (playerXozSpeed > nowMoveSpeed)
+        {
+            _calXozVelocity = playerRigidbody.velocity.normalized * nowMoveSpeed;
+            playerXozSpeed = nowMoveSpeed;
+            playerRigidbody.velocity = new Vector3(_calXozVelocity.x, playerRigidbody.velocity.y, _calXozVelocity.z);
+        }
+    }
+    
+    // 获取玩家刚体当前在XOZ水平面的速度大小标量
+    public void UpdateXozVelocity()
+    {
+        playerXozSpeed = Vector2.Distance(Vector2.zero, new Vector2(playerRigidbody.velocity.x, playerRigidbody.velocity.z));
     }
 }

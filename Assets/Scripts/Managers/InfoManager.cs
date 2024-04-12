@@ -8,9 +8,10 @@ public class InfoManager : MonoBehaviour
 {
     private static InfoManager _instance;
     public static InfoManager Instance => _instance;
-    
-    // 地面所在层
-    public LayerMask layerGround;
+
+    [Header("地面图层")] public LayerMask layerGround;
+    [Header("地面阻力")] public float groundDrag;
+    [Header("空气阻力")] public float airDrag;
 
     private void Awake()
     {

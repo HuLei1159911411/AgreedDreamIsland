@@ -12,10 +12,13 @@ public class TestPanel : MonoBehaviour
     public CameraController mainCamera;
     public Text nowState;
     public Text nowIsOnGround;
+    public Text nowSpeed;
     
     private E_CameraView _cameraView;
     private BaseState _playerState;
-    private bool _playerisOnGround;
+    private bool _playerIsOnGround;
+    // 玩家XOZ平面移动速度大小
+    private float _playerSpeed;
     private void Start()
     {
         _cameraView = mainCamera.nowView;
@@ -24,8 +27,11 @@ public class TestPanel : MonoBehaviour
         _playerState = playerMovementStateMachine.CurrentState;
         UpdatePlayerStateText();
 
-        _playerisOnGround = playerMovementStateMachine.isOnGround;
-        UpdatePlayerStateText();
+        _playerIsOnGround = playerMovementStateMachine.isOnGround;
+        UpdatePlayerIsOnGroundText();
+
+        _playerSpeed = playerMovementStateMachine.playerXozSpeed;
+        UpdatePlayerSpeedText();
     }
 
     void Update()
@@ -42,10 +48,16 @@ public class TestPanel : MonoBehaviour
             UpdatePlayerStateText();
         }
 
-        if (_playerisOnGround != playerMovementStateMachine.isOnGround)
+        if (_playerIsOnGround != playerMovementStateMachine.isOnGround)
         {
-            _playerisOnGround = playerMovementStateMachine.isOnGround;
-            UpdatePlayerIsOnGround();
+            _playerIsOnGround = playerMovementStateMachine.isOnGround;
+            UpdatePlayerIsOnGroundText();
+        }
+
+        if (_playerSpeed != playerMovementStateMachine.playerXozSpeed)
+        {
+            _playerSpeed = playerMovementStateMachine.playerXozSpeed;
+            UpdatePlayerSpeedText();
         }
     }
 
@@ -91,9 +103,9 @@ public class TestPanel : MonoBehaviour
         }
     }
 
-    void UpdatePlayerIsOnGround()
+    void UpdatePlayerIsOnGroundText()
     {
-        if (_playerisOnGround)
+        if (_playerIsOnGround)
         {
             nowIsOnGround.text = "地面";
         }
@@ -101,5 +113,10 @@ public class TestPanel : MonoBehaviour
         {
             nowIsOnGround.text = "空中";
         }
+    }
+
+    void UpdatePlayerSpeedText()
+    {
+        nowSpeed.text = "速度: " + (int)_playerSpeed;
     }
 }
