@@ -22,7 +22,7 @@ public class StateMachine : MonoBehaviour
         }
     }
 
-    void FixedUpdate()
+    protected virtual void FixedUpdate()
     {
         if (_currentState != null)
         {

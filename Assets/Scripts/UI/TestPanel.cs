@@ -17,6 +17,8 @@ public class TestPanel : MonoBehaviour
     private E_CameraView _cameraView;
     private BaseState _playerState;
     private bool _playerIsOnGround;
+
+    private bool _playerIsOnSlope;
     // 玩家XOZ平面移动速度大小
     private float _playerSpeed;
     private void Start()
@@ -28,7 +30,8 @@ public class TestPanel : MonoBehaviour
         UpdatePlayerStateText();
 
         _playerIsOnGround = playerMovementStateMachine.isOnGround;
-        UpdatePlayerIsOnGroundText();
+        _playerIsOnSlope = playerMovementStateMachine.isOnSlope;
+        UpdatePlayerIsWhereText();
 
         _playerSpeed = playerMovementStateMachine.playerXozSpeed;
         UpdatePlayerSpeedText();
@@ -48,10 +51,11 @@ public class TestPanel : MonoBehaviour
             UpdatePlayerStateText();
         }
 
-        if (_playerIsOnGround != playerMovementStateMachine.isOnGround)
+        if (_playerIsOnGround != playerMovementStateMachine.isOnGround || _playerIsOnSlope != playerMovementStateMachine.isOnSlope)
         {
             _playerIsOnGround = playerMovementStateMachine.isOnGround;
-            UpdatePlayerIsOnGroundText();
+            _playerIsOnSlope = playerMovementStateMachine.isOnSlope;
+            UpdatePlayerIsWhereText();
         }
 
         if (_playerSpeed != playerMovementStateMachine.playerXozSpeed)
@@ -98,14 +102,21 @@ public class TestPanel : MonoBehaviour
             case "Fall":
                 nowState.text = "下落";
                 break;
+            case "Squat":
+                nowState.text = "下蹲";
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
     }
 
-    void UpdatePlayerIsOnGroundText()
+    void UpdatePlayerIsWhereText()
     {
-        if (_playerIsOnGround)
+        if (_playerIsOnGround && _playerIsOnSlope)
+        {
+            nowIsOnGround.text = "斜面";
+        }
+        else if (_playerIsOnGround)
         {
             nowIsOnGround.text = "地面";
         }

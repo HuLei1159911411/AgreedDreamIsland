@@ -23,7 +23,7 @@ public class Fall : BaseState
     public override void UpdateLogic()
     {
         base.UpdateLogic();
-        _movementStateMachine.UpdateIsOnGround();
+        _movementStateMachine.UpdateIsOnGroundWithIsOnSlope();
         if (_movementStateMachine.isOnGround)
         {
             _movementStateMachine.ChangeState(_movementStateMachine.PreState);

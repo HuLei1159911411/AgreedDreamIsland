@@ -19,6 +19,7 @@ public class Jump : BaseState
     {
         base.Enter();
         _movementStateMachine.isOnGround = false;
+        _movementStateMachine.isOnSlope = false;
         DoJump();
     }
 
@@ -45,8 +46,11 @@ public class Jump : BaseState
     {
         _velocity = _movementStateMachine.playerRigidbody.velocity;
         // 清空角色垂直方向上的速度
-        _movementStateMachine.playerRigidbody.velocity = new Vector3(_velocity.x, 0f, _velocity.z);
+        // _movementStateMachine.playerRigidbody.velocity = new Vector3(_velocity.x, 0f, _velocity.z);
         // 为角色增加一个向上的力
-        _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.playerTransform.up * _movementStateMachine.jumpForce, ForceMode.Impulse);
+        // _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.playerTransform.up * _movementStateMachine.jumpForce, ForceMode.Impulse);
+        
+        // 为角色增加一个向上的速度
+        _movementStateMachine.playerRigidbody.velocity += new Vector3(0, 10, 0);
     }
 }
