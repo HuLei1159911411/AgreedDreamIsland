@@ -17,7 +17,6 @@ public class Fall : BaseState
     public override void Enter()
     {
         base.Enter();
-        
     }
 
     public override void UpdateLogic()
@@ -34,13 +33,18 @@ public class Fall : BaseState
             {
                 _movementStateMachine.ChangeState(_movementStateMachine.PreState);
             }
-            
         }
+    }
+
+    public override void UpdatePhysic()
+    {
+        _movementStateMachine.playerRigidbody.AddForce((_movementStateMachine.fallGravityScale - 1f) *
+                                                       _movementStateMachine.playerRigidbody.mass * 9.18f *
+                                                       Vector3.down);
     }
 
     public override void Exit()
     {
         base.Exit();
-        
     }
 }

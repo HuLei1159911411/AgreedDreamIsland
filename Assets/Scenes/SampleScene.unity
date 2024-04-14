@@ -593,7 +593,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 112
   m_CollisionDetection: 2
 --- !u!114 &297973017
@@ -622,8 +622,10 @@ MonoBehaviour:
   walkMoveForce: 6
   jumpByForce: 0
   jumpForce: 8
-  jumpVelocity: 10
+  jumpVelocity: 6
   heightOffset: 0.3
+  jumpTime: 0.5
+  jumpHigh: 2
   toRunTime: 0.5
   runMoveForce: 6
   squatSpeed: 5
@@ -635,6 +637,7 @@ MonoBehaviour:
   slidingMoveForce: 10
   slidingAccelerateTime: 0.5
   slidingYScale: 0.2
+  fallGravityScale: 2
   playerTransform: {fileID: 0}
   playerRigidbody: {fileID: 0}
 --- !u!1 &330585543

@@ -20,25 +20,29 @@ public class Squat : BaseState
 
         // 将玩家模型压缩一半达到蹲下效果，之后导入模型和动作后改成播放对应动作，这里要改掉
         _movementStateMachine.transform.localScale = new Vector3(_movementStateMachine.transform.localScale.x,
-            _movementStateMachine.transform.localScale.y * _movementStateMachine.squatYScale,
+            _movementStateMachine.squatYScale,
             _movementStateMachine.transform.localScale.z);
         
         // 让玩家贴地
-        _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.squatMoveForce * 30f * Vector3.down);
+        // _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.squatMoveForce * 30f * Vector3.down);
+        _movementStateMachine.playerTransform.position -= new Vector3(0,
+            _movementStateMachine.playerHeight * (1f - _movementStateMachine.slidingYScale) * 0.5f, 0);
     }
 
     public override void Exit()
     {
         base.Exit();
 
+        // 让玩家远离地面
+        // _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.squatMoveForce * Vector3.up);
+        _movementStateMachine.playerTransform.position += new Vector3(0,
+            _movementStateMachine.playerHeight * (1f - _movementStateMachine.slidingYScale) * 0.5f, 0);
+        
         _movementStateMachine.PreState = this;
         // 将玩家模型还原，之后导入模型和动作后改成播放对应动作，这里要改掉
         _movementStateMachine.transform.localScale = new Vector3(_movementStateMachine.transform.localScale.x,
-            _movementStateMachine.transform.localScale.y / _movementStateMachine.squatYScale,
+            1f,
             _movementStateMachine.transform.localScale.z);
-        
-        // 让玩家远离地面
-        _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.squatMoveForce * Vector3.up);
     }
 
     public override void UpdateLogic()

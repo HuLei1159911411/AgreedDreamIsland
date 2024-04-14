@@ -80,6 +80,10 @@ public class PlayerMovementStateMachine : StateMachine
     public float jumpVelocity = 10f;
     // 玩家是否在地面的高度检测时的偏移量
     public float heightOffset = 0.2f;
+    // 跳跃持续时间
+    public float jumpTime = 0.5f;
+    // 跳跃高度
+    public float jumpHigh;
 
     // 奔跑
     // 玩家从WalkToRun所需摁键时间
@@ -109,6 +113,10 @@ public class PlayerMovementStateMachine : StateMachine
     public float slidingAccelerateTime = 0.5f;
     // 滑铲时玩家缩放系数
     public float slidingYScale = 0.2f;
+    
+    // 下落
+    // 下落时所受重力倍数
+    public float fallGravityScale = 2f;
     
     // 组件
     [HideInInspector] public Transform playerTransform;
@@ -159,6 +167,17 @@ public class PlayerMovementStateMachine : StateMachine
         {
             // 关闭玩家刚体自带的重力
             playerRigidbody.useGravity = false;
+            switch (_currentState.name)
+            {
+                case "Walk":
+                case "Run":
+                case "Squat":
+                case "Sliding":
+                    playerRigidbody.AddForce(playerRigidbody.mass * 9.18f * Vector3
+                        .ProjectOnPlane(Vector3.down, _downRaycastHit.normal)
+                        .normalized);
+                    break;
+            }
         }
         else
         {
@@ -271,4 +290,9 @@ public class PlayerMovementStateMachine : StateMachine
         return Vector3.Angle(GetDirectionOnSlope(), Vector3.up) <= 90f;
     }
     
+    // 获取抵消自己加上的斜面重力
+    public Vector3 GetOffsetGravityOnSlope()
+    {
+        return -10f * playerRigidbody.mass * Vector3.ProjectOnPlane(Vector3.down, _downRaycastHit.normal).normalized;
+    }
 }
