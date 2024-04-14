@@ -13,14 +13,16 @@ public class TestPanel : MonoBehaviour
     public Text nowState;
     public Text nowIsOnGround;
     public Text nowSpeed;
+    public Text nowMaxSpeed;
     
     private E_CameraView _cameraView;
     private BaseState _playerState;
     private bool _playerIsOnGround;
-
     private bool _playerIsOnSlope;
     // 玩家XOZ平面移动速度大小
     private float _playerSpeed;
+    // 玩家当前最大速度
+    private float _nowMaxSpeed;
     private void Start()
     {
         _cameraView = mainCamera.nowView;
@@ -35,6 +37,9 @@ public class TestPanel : MonoBehaviour
 
         _playerSpeed = playerMovementStateMachine.playerXozSpeed;
         UpdatePlayerSpeedText();
+
+        _nowMaxSpeed = playerMovementStateMachine.nowMoveSpeed;
+        UpdateNowMaxSpeed();
     }
 
     void Update()
@@ -58,10 +63,16 @@ public class TestPanel : MonoBehaviour
             UpdatePlayerIsWhereText();
         }
 
-        if (_playerSpeed != playerMovementStateMachine.playerXozSpeed)
+        if (Math.Abs(_playerSpeed - playerMovementStateMachine.playerXozSpeed) > Single.Epsilon)
         {
             _playerSpeed = playerMovementStateMachine.playerXozSpeed;
             UpdatePlayerSpeedText();
+        }
+
+        if (Math.Abs(_nowMaxSpeed - playerMovementStateMachine.nowMoveSpeed) > Single.Epsilon)
+        {
+            _nowMaxSpeed = playerMovementStateMachine.nowMoveSpeed;
+            UpdateNowMaxSpeed();
         }
     }
 
@@ -105,6 +116,9 @@ public class TestPanel : MonoBehaviour
             case "Squat":
                 nowState.text = "下蹲";
                 break;
+            case "Sliding":
+                nowState.text = "滑铲";
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -112,7 +126,7 @@ public class TestPanel : MonoBehaviour
 
     void UpdatePlayerIsWhereText()
     {
-        if (_playerIsOnGround && _playerIsOnSlope)
+        if (_playerIsOnSlope)
         {
             nowIsOnGround.text = "斜面";
         }
@@ -128,6 +142,11 @@ public class TestPanel : MonoBehaviour
 
     void UpdatePlayerSpeedText()
     {
-        nowSpeed.text = "速度: " + (int)_playerSpeed;
+        nowSpeed.text = "速度: " + _playerSpeed.ToString("F1");
+    }
+
+    void UpdateNowMaxSpeed()
+    {
+        nowMaxSpeed.text = "当前最大速度: " + _nowMaxSpeed;
     }
 }

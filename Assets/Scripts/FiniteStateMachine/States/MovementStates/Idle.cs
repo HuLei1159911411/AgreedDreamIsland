@@ -28,11 +28,7 @@ public class Idle : BaseState
     public override void UpdateLogic()
     {
         base.UpdateLogic();
-        // 在移动状态机中更新输入信息
-        _movementStateMachine.UpdateMoveInputInformation();
 
-        // 更新检查是否在地面
-        _movementStateMachine.UpdateIsOnGroundWithIsOnSlope();
         // 不在地面
         if (!_movementStateMachine.isOnGround)
         {

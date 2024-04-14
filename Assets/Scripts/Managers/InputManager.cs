@@ -13,6 +13,7 @@ public enum E_InputBehavior
     Run,
     ChangeView,
     Squat,
+    Sliding,
 }
 public class InputManager : MonoBehaviour
 {
@@ -49,6 +50,7 @@ public class InputManager : MonoBehaviour
             { E_InputBehavior.Run, KeyCode.LeftShift },
             { E_InputBehavior.ChangeView, KeyCode.V },
             { E_InputBehavior.Squat, KeyCode.LeftControl},
+            { E_InputBehavior.Sliding , KeyCode.LeftControl},
         };
     }
 }
