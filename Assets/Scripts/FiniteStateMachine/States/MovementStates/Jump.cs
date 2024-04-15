@@ -33,12 +33,23 @@ public class Jump : BaseState
     public override void UpdateLogic()
     {
         base.UpdatePhysic();
+        
+        // 当前一个状态不是滑墙模式满足滑墙条件进行滑墙
+        if (preState.name != "Jump" &&
+            ((_movementStateMachine.hasWallOnForward && _movementStateMachine.MoveInputInfo.MoveForwardInput ||
+              _movementStateMachine.hasWallOnLeft && _movementStateMachine.MoveInputInfo.MoveLeftInput ||
+              _movementStateMachine.hasWallOnRight && _movementStateMachine.MoveInputInfo.MoveRightInput)))
+        {
+            _movementStateMachine.ChangeState(_movementStateMachine.WallRunningState);
+            return;
+        }
+        
         // 当向上速度小于等于0时自动转换为Fall状态
-
         _velocity = _movementStateMachine.playerRigidbody.velocity;
         if (_velocity.y <= 0)
         {
             _movementStateMachine.ChangeState(_movementStateMachine.FallState);
+            return;
         }
     }
     
@@ -55,9 +66,20 @@ public class Jump : BaseState
                 _movementStateMachine.playerRigidbody.mass * Vector3.up, ForceMode.Impulse);
         }
         // 利用公式h = 1 /2 * g * t^2 和 F * t = m * v得
-        _movementStateMachine.playerRigidbody.AddForce(
-            Mathf.Sqrt(_movementStateMachine.jumpHigh * (Physics.gravity.y) * (-2)) *
-            _movementStateMachine.playerRigidbody.mass * Vector3.up, ForceMode.Impulse);
+        // 在墙上跳跃时特殊处理
+        if (preState.name == "WallRunning")
+        {
+            _movementStateMachine.playerRigidbody.AddForce(
+                Mathf.Sqrt(_movementStateMachine.jumpHigh * (Physics.gravity.y) * (-2)) *
+                _movementStateMachine.playerRigidbody.mass * (Vector3.up * 0.5f + _movementStateMachine.GetWallNormal().normalized),
+                ForceMode.Impulse);
+        }
+        else
+        {
+            _movementStateMachine.playerRigidbody.AddForce(
+                Mathf.Sqrt(_movementStateMachine.jumpHigh * (Physics.gravity.y) * (-2)) *
+                _movementStateMachine.playerRigidbody.mass * Vector3.up, ForceMode.Impulse);
+        }
 
         // if (_movementStateMachine.jumpByForce)
         // {

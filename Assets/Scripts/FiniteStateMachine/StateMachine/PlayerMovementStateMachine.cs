@@ -34,11 +34,13 @@ public class PlayerMovementStateMachine : StateMachine
     [HideInInspector] public Squat SquatState;
     // 滑铲状态
     [HideInInspector] public Sliding SlidingState;
+    // 滑墙状态
+    [HideInInspector] public WallRunning WallRunningState;
 
     // 移动输入信息
     [HideInInspector] public MoveInputInformation MoveInputInfo;
     // 当前水平移动移动速度的最大值
-    public float nowMoveSpeed;
+    [HideInInspector] public float nowMoveSpeed;
     // 当前玩家是否在地面上
     [HideInInspector] public bool isOnGround;
     // 当前玩家刚体在XOZ平面上移动速度大小
@@ -47,10 +49,16 @@ public class PlayerMovementStateMachine : StateMachine
     [HideInInspector] public bool isOnSlope;
     // 玩家水平移动的方向
     [HideInInspector] public Vector3 direction;
+    // 左边是否有墙壁
+    [HideInInspector] public bool hasWallOnLeft;
+    // 右边是否有墙壁
+    [HideInInspector] public bool hasWallOnRight;
+    // 前面是否有墙壁
+    [HideInInspector] public bool hasWallOnForward;
     // 当前状态
     [HideInInspector] public BaseState CurrentState => _currentState;
     // 当前斜面角度
-    public  float slopeAngle;
+    [HideInInspector] public  float slopeAngle;
 
     [Header("玩家参数")] // 以后考虑是不是要换到别的脚本里面去
     // 玩家高度
@@ -120,14 +128,34 @@ public class PlayerMovementStateMachine : StateMachine
     // 下落时水平移动的最大速度
     public float fallSpeed = 1f;
     
+    // 滑墙
+    // 可以进行滑墙的最低高度
+    public float wallRunningMinHigh = 0.5f;
+    // 在墙壁上向前滑行的最大速度
+    public float wallRunningForwardSpeed = 8f;
+    // 在墙壁上下滑行的最大速度
+    public float wallRunningVertical = 3f;
+    // 在墙上滑行时驱动玩家移动力的大小
+    public float wallRunningForce = 6f;
+    // 在墙上滑行的最大时间
+    public float wallRunningTime = 3f;
+    // 检查左右两边是否有可以进行滑墙的墙的距离
+    public float wallCheckDistance = 1f;
+    
     // 组件
     [HideInInspector] public Transform playerTransform;
     [HideInInspector] public Rigidbody playerRigidbody;
 
     // 计算Xoz平面玩家刚体速度用的临时变量
     private Vector3 _calXozVelocity;
-    // 由玩家向下发射的检测地面与斜面用的射线的击中信息
+    // 由玩家向下发射的用于检测地面与斜面用的射线的击中信息
     private RaycastHit _downRaycastHit;
+    // 由玩家向左发射的用于检测玩家左侧是否有墙壁的射线的击中信息
+    private RaycastHit _leftRaycastHit;
+    // 由玩家向右发射的用于检测玩家左侧是否有墙壁的射线的击中信息
+    private RaycastHit _rightRaycastHit;
+    // 由玩家向右发射的用于检测玩家前方是否有墙壁的射线的击中信息
+    private RaycastHit _forwardRaycastHit;
     
     private void Awake()
     {
@@ -139,6 +167,7 @@ public class PlayerMovementStateMachine : StateMachine
         RunState = new Run(this);
         SquatState = new Squat(this);
         SlidingState = new Sliding(this);
+        WallRunningState = new WallRunning(this);
 
         // 获取组件
         playerTransform = transform;
@@ -151,20 +180,55 @@ public class PlayerMovementStateMachine : StateMachine
     // 重写父类Update函数统一进行一些数据更新
     protected override void Update()
     {
-        base.Update();
-        
         // 更新移动输入信息
-        UpdateMoveInputInformation();
+        if (!(InputManager.Instance is null))
+        {
+            UpdateMoveInputInformation();
+        }
 
         // 更新检查是否在地面
         UpdateIsOnGroundWithIsOnSlope();
         
+        // 检测到当前不在地面,或者距离地面高度高于滑墙的最小高度时检测左右前是否存在墙壁
+        // 检测斜面和地面的射线距离比最小滑墙高度搞
+        if (playerHeight * 0.5f + heightOffset >= wallRunningMinHigh)
+        {
+            if (!isOnGround || Vector3.Distance(_downRaycastHit.point, playerTransform.position) >= wallRunningMinHigh)
+            {
+                UpdateHasWall();
+            }
+            else
+            {
+                hasWallOnLeft = false;
+                hasWallOnRight = false;
+                hasWallOnForward = false;
+            }
+        }
+        else 
+        {
+            if (!Physics.Raycast(playerTransform.position, Vector3.down, wallRunningMinHigh))
+            {
+                UpdateHasWall();
+            }
+            else
+            {
+                hasWallOnLeft = false;
+                hasWallOnRight = false;
+                hasWallOnForward = false;
+            }
+        }   
+        
         UpdateXozVelocity();
+        
+        base.Update();
+        
+        Debug.DrawLine(playerTransform.position, playerTransform.position + direction * 10, Color.white);
     }
 
     // 重写父类FixUpdate函数在玩家处于斜面上时给予玩家手动重力
     protected override void FixedUpdate()
     {
+        // 除了滑墙重力全部在这里管理
         if (isOnSlope)
         {
             // 关闭玩家刚体自带的重力
@@ -181,7 +245,7 @@ public class PlayerMovementStateMachine : StateMachine
                     break;
             }
         }
-        else
+        else if(_currentState.name != "WallRunning")
         {
             playerRigidbody.useGravity = true;
         }
@@ -202,8 +266,8 @@ public class PlayerMovementStateMachine : StateMachine
         nowMoveSpeed = 0;
     }
 
-    // 更新移动的输入信息
-    public void UpdateMoveInputInformation()
+    // 更新移动的输入信息(前1后-1，左-1,右1);
+    private void UpdateMoveInputInformation()
     {
         MoveInputInfo.MoveForwardInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.MoveForward]);
         MoveInputInfo.MoveBackwardInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.MoveBackward]);
@@ -220,7 +284,7 @@ public class PlayerMovementStateMachine : StateMachine
     }
 
     // 更新当前是否处于地面与玩家当前是否在可运动角度范围内的斜面上
-    public void UpdateIsOnGroundWithIsOnSlope()
+    private void UpdateIsOnGroundWithIsOnSlope()
     {
         if (!(InfoManager.Instance is null))
         {
@@ -261,6 +325,30 @@ public class PlayerMovementStateMachine : StateMachine
                 playerRigidbody.drag = InfoManager.Instance.airDrag;
             }
         }
+    }
+    
+    // 向左右前发射射线检测并且更新当前左边右边和前面的最大检测距离内是否存在可供滑行的墙壁
+    private void UpdateHasWall()
+    {
+        // 向左发射射线检测是否存在墙壁
+        hasWallOnLeft = Physics.Raycast(playerTransform.position, -playerTransform.right, out _leftRaycastHit,
+            wallCheckDistance,
+            InfoManager.Instance.layerWall);
+        Debug.DrawLine(playerTransform.position,
+            playerTransform.position - playerTransform.right * wallCheckDistance, Color.yellow);
+        
+        // 向右发射射线检测是否存在墙壁
+        hasWallOnRight = Physics.Raycast(playerTransform.position, playerTransform.right, out _rightRaycastHit,
+            wallCheckDistance,
+            InfoManager.Instance.layerWall);
+        Debug.DrawLine(playerTransform.position,
+            playerTransform.position + playerTransform.right * wallCheckDistance, Color.yellow);
+        
+        //  向前发射射线检测是否存在墙壁
+        hasWallOnForward = Physics.Raycast(playerTransform.position, playerTransform.forward, out _forwardRaycastHit,
+            wallCheckDistance, InfoManager.Instance.layerWall);
+        Debug.DrawLine(playerTransform.position,
+            playerTransform.position + playerTransform.forward * wallCheckDistance, Color.yellow);
     }
 
     // 获取当前状态的状态名(状态名为状态类内部成员参数string name)
@@ -305,5 +393,43 @@ public class PlayerMovementStateMachine : StateMachine
     public Vector3 GetOffsetGravityOnSlope()
     {
         return -10f * playerRigidbody.mass * Vector3.ProjectOnPlane(Vector3.down, _downRaycastHit.normal).normalized;
+    }
+    
+    // 获取与左或右墙壁或前相切的方向向量，即墙壁的方向向量，利用墙壁的法向量与向上的单位向量，以上两个向量的叉乘为同时垂直两向量的向量，为与墙壁这一侧面相切的向量
+    public Vector3 GetWallForward()
+    {
+        if (hasWallOnLeft)
+        {
+            return Vector3.Cross(Vector3.up,_leftRaycastHit.normal);
+        }
+        if (hasWallOnRight)
+        {
+            return Vector3.Cross(Vector3.up,_rightRaycastHit.normal);
+        }
+        if (hasWallOnForward)
+        {
+            return Vector3.Cross(Vector3.up, _forwardRaycastHit.normal);
+        }
+
+        return Vector3.zero;
+    }
+    
+    // 获取墙壁的法向量
+    public Vector3 GetWallNormal()
+    {
+        if (hasWallOnLeft)
+        {
+            return _leftRaycastHit.normal;
+        }
+
+        if (hasWallOnRight)
+        {
+            return _rightRaycastHit.normal;
+        }
+        if (hasWallOnForward)
+        {
+            return _forwardRaycastHit.normal;
+        }
+        return Vector3.zero;
     }
 }

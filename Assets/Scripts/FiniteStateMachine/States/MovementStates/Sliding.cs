@@ -103,6 +103,7 @@ public class Sliding : BaseState
             stateMachine.ChangeState(_movementStateMachine.JumpState);
             return true;
         }
+        
         // 滑铲加速未结束(及加速时间未到)
         if (_timer < _movementStateMachine.slidingAccelerateTime)
         {

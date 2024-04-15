@@ -40,7 +40,7 @@ public class Fall : BaseState
         {
             return;
         }
-        UpdateDirectionWithSpeed();
+        UpdateDirection();
     }
 
     public override void UpdatePhysic()
@@ -64,14 +64,30 @@ public class Fall : BaseState
     }
     private bool ListenInputToChangeState()
     {
+        // 判断是不是松开了蹲下或滑铲键(当蹲着或滑铲进入下落状态则可能存在该种情况)
         if (!_movementStateMachine.MoveInputInfo.SquatInput)
         {
             _isReleaseSquatInput = true;
         }
+        // 快速下落
         if (_isReleaseSquatInput && _movementStateMachine.MoveInputInfo.SquatInput)
         {
             _isFastFall = true;
         }
+        // 当前一个状态不是滑墙并且满足滑墙条件进行滑墙
+        if (preState.name != "WallRunning")
+        {
+            // 当满足滑墙条件进行滑墙
+            if (_movementStateMachine.hasWallOnForward && _movementStateMachine.MoveInputInfo.MoveForwardInput ||
+                _movementStateMachine.hasWallOnLeft && _movementStateMachine.MoveInputInfo.MoveLeftInput ||
+                _movementStateMachine.hasWallOnRight && _movementStateMachine.MoveInputInfo.MoveRightInput)
+            {
+                _movementStateMachine.ChangeState(_movementStateMachine.WallRunningState);
+                return true;
+            }
+        }
+        
+        // 落地
         if (_movementStateMachine.isOnGround)
         {
             if (_isFastFall)
@@ -89,6 +105,17 @@ public class Fall : BaseState
                     _movementStateMachine.ChangeState(preState.preState);
                 }
             }
+            else if (preState.name == "WallRunning")
+            {
+                if (_movementStateMachine.JumpState.preState.name == "Sliding")
+                {
+                    _movementStateMachine.ChangeState(_movementStateMachine.RunState);
+                }
+                else
+                {
+                    _movementStateMachine.ChangeState(_movementStateMachine.JumpState.preState);
+                }
+            }
             else
             {
                 _movementStateMachine.ChangeState(preState);
@@ -100,7 +127,7 @@ public class Fall : BaseState
         return false;
     }
 
-    private void UpdateDirectionWithSpeed()
+    private void UpdateDirection()
     {
         // 更新移动方向
         _movementStateMachine.direction = _movementStateMachine.playerTransform.forward *
@@ -128,6 +155,9 @@ public class Fall : BaseState
                 break;
             case "Jump":
                 SetFallSpeedByState(state.preState);
+                break;
+            case "WallRunning" :
+                _movementStateMachine.fallSpeed = _movementStateMachine.wallRunningForwardSpeed;
                 break;
         }
     }

@@ -10,6 +10,7 @@ public class InfoManager : MonoBehaviour
     public static InfoManager Instance => _instance;
 
     [Header("地面图层")] public LayerMask layerGround;
+    [Header("可以滑行的墙图层")] public LayerMask layerWall;
     [Header("地面阻力")] public float groundDrag;
     [Header("空气阻力")] public float airDrag;
 

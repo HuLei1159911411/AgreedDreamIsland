@@ -14,11 +14,16 @@ public class TestPanel : MonoBehaviour
     public Text nowIsOnGround;
     public Text nowSpeed;
     public Text nowMaxSpeed;
+    public Text nowLeftWall;
+    public Text nowRightWall;
     
     private E_CameraView _cameraView;
     private BaseState _playerState;
     private bool _playerIsOnGround;
     private bool _playerIsOnSlope;
+    private bool _hasWallOnLeft;
+    private bool _hasWallOnRight;
+    private bool _hasWallOnForward;
     // 玩家XOZ平面移动速度大小
     private float _playerSpeed;
     // 玩家当前最大速度
@@ -40,6 +45,11 @@ public class TestPanel : MonoBehaviour
 
         _nowMaxSpeed = playerMovementStateMachine.nowMoveSpeed;
         UpdateNowMaxSpeed();
+
+        _hasWallOnLeft = playerMovementStateMachine.hasWallOnLeft;
+        _hasWallOnRight = playerMovementStateMachine.hasWallOnRight;
+        _hasWallOnForward = playerMovementStateMachine.hasWallOnForward;
+        UpdateNowWallState();
     }
 
     void Update()
@@ -73,6 +83,16 @@ public class TestPanel : MonoBehaviour
         {
             _nowMaxSpeed = playerMovementStateMachine.nowMoveSpeed;
             UpdateNowMaxSpeed();
+        }
+
+        if (_hasWallOnLeft != playerMovementStateMachine.hasWallOnLeft ||
+            _hasWallOnRight != playerMovementStateMachine.hasWallOnRight ||
+            _hasWallOnForward != playerMovementStateMachine.hasWallOnForward)
+        {
+            _hasWallOnLeft = playerMovementStateMachine.hasWallOnLeft;
+            _hasWallOnRight = playerMovementStateMachine.hasWallOnRight;
+            _hasWallOnForward = playerMovementStateMachine.hasWallOnForward;
+            UpdateNowWallState();
         }
     }
 
@@ -119,6 +139,9 @@ public class TestPanel : MonoBehaviour
             case "Sliding":
                 nowState.text = "滑铲";
                 break;
+            case "WallRunning":
+                nowState.text = "滑墙";
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -148,5 +171,10 @@ public class TestPanel : MonoBehaviour
     void UpdateNowMaxSpeed()
     {
         nowMaxSpeed.text = "当前最大速度: " + _nowMaxSpeed;
+    }
+    
+    void UpdateNowWallState()
+    {
+        nowLeftWall.text = $"附近墙壁:{((_hasWallOnLeft ? " 左" : "") + (_hasWallOnRight ? " 右" : "") + (_hasWallOnForward ? " 前" : ""))}";
     }
 }
