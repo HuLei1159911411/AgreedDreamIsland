@@ -49,8 +49,6 @@ public class PlayerMovementStateMachine : StateMachine
     [HideInInspector] public Vector3 direction;
     // 当前状态
     [HideInInspector] public BaseState CurrentState => _currentState;
-    // 前一状态
-    [HideInInspector] public BaseState PreState;
     // 当前斜面角度
     public  float slopeAngle;
 
@@ -73,15 +71,15 @@ public class PlayerMovementStateMachine : StateMachine
 
     // 跳跃
     // 是否通过给力让玩家跳跃
-    public bool jumpByForce;
+    // public bool jumpByForce;
     // 跳跃瞬间给玩家的力的大小
-    public float jumpForce = 10f;
+    // public float jumpForce = 10f;
     // 跳跃瞬间给玩家的速度的大小
-    public float jumpVelocity = 10f;
+    // public float jumpVelocity = 10f;
     // 玩家是否在地面的高度检测时的偏移量
     public float heightOffset = 0.2f;
     // 跳跃持续时间
-    public float jumpTime = 0.5f;
+    // public float jumpTime = 0.5f;
     // 跳跃高度
     public float jumpHigh;
 
@@ -113,10 +111,14 @@ public class PlayerMovementStateMachine : StateMachine
     public float slidingAccelerateTime = 0.5f;
     // 滑铲时玩家缩放系数
     public float slidingYScale = 0.2f;
+    // 滑铲冷却时间(进入Run状态后需要过一段时间后才能进行滑铲)
+    public float slidingCoolTime = 0.2f;
     
     // 下落
-    // 下落时所受重力倍数
-    public float fallGravityScale = 2f;
+    // 快速下落时所受重力倍数
+    public float fallGravityScale = 3f;
+    // 下落时水平移动的最大速度
+    public float fallSpeed = 1f;
     
     // 组件
     [HideInInspector] public Transform playerTransform;
@@ -234,13 +236,22 @@ public class PlayerMovementStateMachine : StateMachine
                 // 更新玩家当前是否在可运动角度范围内的斜面上
                 // 计算当前斜面的角度,_downRaycastHit.normal是击中点的面法线向量,自己想一下,通过角度转换就会得到这个角度就是斜面的斜率
                 slopeAngle = Vector3.Angle(Vector3.up, _downRaycastHit.normal);
-                if (slopeAngle != 0 && slopeAngle <= maxSlopeAngle)
+                if (slopeAngle != 0 && slopeAngle < maxSlopeAngle)
                 {
                     isOnSlope = true;
                 }
                 else
                 {
+                    // 在大于最大允许移动角度的斜面上或平面上
                     isOnSlope = false;
+
+                    // 在大于最大允许移动角度的斜面上,驱使玩家离开该斜面
+                    if (slopeAngle >= maxSlopeAngle)
+                    {
+                        isOnGround = false;
+                        // 给予玩家一个力将玩家弹离斜面(类似与APEX中那种不可以踩的斜面)
+                        playerRigidbody.AddForce(_downRaycastHit.normal * 10f);
+                    }
                 }
             }
             else

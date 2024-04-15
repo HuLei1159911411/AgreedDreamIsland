@@ -28,7 +28,6 @@ public class Jump : BaseState
     {
         base.Exit();
         
-        // Jump没有将前一状态设置为自己为了让Fall状态知道前一状态是什么
     }
 
     public override void UpdateLogic()
@@ -47,10 +46,13 @@ public class Jump : BaseState
     {
         // 确保重力开启
         _movementStateMachine.playerRigidbody.useGravity = true;
-        // 如果是在斜面上跳则抵消自己加的斜面重力
+        // 如果是在斜面上跳则抵消自己加的斜面重力并且额外跳的高一点(加两倍遍向上的力)
         if (_movementStateMachine.isOnSlope)
         {
             _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.GetOffsetGravityOnSlope());
+            _movementStateMachine.playerRigidbody.AddForce(
+                Mathf.Sqrt(_movementStateMachine.jumpHigh * (Physics.gravity.y) * (-2)) *
+                _movementStateMachine.playerRigidbody.mass * Vector3.up, ForceMode.Impulse);
         }
         // 利用公式h = 1 /2 * g * t^2 和 F * t = m * v得
         _movementStateMachine.playerRigidbody.AddForce(

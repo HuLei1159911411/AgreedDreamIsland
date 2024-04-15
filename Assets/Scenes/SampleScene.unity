@@ -637,7 +637,9 @@ MonoBehaviour:
   slidingMoveForce: 10
   slidingAccelerateTime: 0.5
   slidingYScale: 0.2
+  slidingCoolTime: 0.5
   fallGravityScale: 2
+  fallSpeed: 1
   playerTransform: {fileID: 0}
   playerRigidbody: {fileID: 0}
 --- !u!1 &330585543

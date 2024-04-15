@@ -5,6 +5,8 @@ using UnityEngine;
 public class Run : BaseState
 {
     private PlayerMovementStateMachine _movementStateMachine;
+    // 滑铲CD计时器
+    private float _timer;
 
     public Run(StateMachine stateMachine) : base("Run", stateMachine)
     {
@@ -17,12 +19,12 @@ public class Run : BaseState
     public override void Enter()
     {
         base.Enter();
+        _timer = 0;
     }
 
     public override void Exit()
     {
         base.Exit();
-        _movementStateMachine.PreState = this;
     }
 
     public override void UpdateLogic()
@@ -84,8 +86,9 @@ public class Run : BaseState
             return true;
         }
 
+        _timer += Time.deltaTime;
         // 摁下蹲键/滑铲键
-        if (_movementStateMachine.MoveInputInfo.SquatInput)
+        if (_timer >= _movementStateMachine.slidingCoolTime && _movementStateMachine.MoveInputInfo.SquatInput)
         {
             stateMachine.ChangeState(_movementStateMachine.SlidingState);
             return true;

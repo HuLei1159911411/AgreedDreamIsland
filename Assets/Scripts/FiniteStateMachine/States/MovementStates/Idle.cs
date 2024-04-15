@@ -21,8 +21,6 @@ public class Idle : BaseState
     public override void Exit()
     {
         base.Exit();
-
-        _movementStateMachine.PreState = this;
     }
 
     public override void UpdateLogic()

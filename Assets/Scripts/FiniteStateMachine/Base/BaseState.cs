@@ -6,6 +6,7 @@ using UnityEngine;
 public class BaseState
 {
     public string name;
+    public BaseState preState;
     protected StateMachine stateMachine;
 
     public BaseState(string name, StateMachine stateMachine)

@@ -103,14 +103,30 @@ public class Sliding : BaseState
             stateMachine.ChangeState(_movementStateMachine.JumpState);
             return true;
         }
+        // 滑铲加速未结束(及加速时间未到)
+        if (_timer < _movementStateMachine.slidingAccelerateTime)
+        {
+            return false;
+        }
         
-        // 松开WASD或摁住WS或摁住AD或摁住WASD或松开滑铲键或时间到了
-        if ((_timer >= _movementStateMachine.slidingAccelerateTime ||
-             _movementStateMachine.MoveInputInfo.HorizontalInput == 0 &&
-             _movementStateMachine.MoveInputInfo.VerticalInput == 0 ) || 
-            (!_movementStateMachine.MoveInputInfo.SlidingInput))
+        // 未松开滑铲键并且水平速度未到0则不会改变滑铲状态(若松开滑铲键了速度变为0则变为Idle状态，若速度不为0则不改变状态)
+        if (_movementStateMachine.playerXozSpeed > 0 && _movementStateMachine.MoveInputInfo.SlidingInput)
+        {
+            return false;
+        }
+        
+        // 松开WASD或摁住WS或摁住AD或摁住WASD且水平速度已经快接近0
+        if (_movementStateMachine.MoveInputInfo.HorizontalInput == 0 &&
+            _movementStateMachine.MoveInputInfo.VerticalInput == 0 && 
+            _movementStateMachine.playerXozSpeed <= 0.1f)
         {
             stateMachine.ChangeState(_movementStateMachine.IdleState);
+            return true;
+        }
+        else if(_movementStateMachine.MoveInputInfo.HorizontalInput != 0 ||
+                _movementStateMachine.MoveInputInfo.VerticalInput != 0)
+        {
+            stateMachine.ChangeState(_movementStateMachine.RunState);
             return true;
         }
 

@@ -37,8 +37,7 @@ public class Squat : BaseState
         // _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.squatMoveForce * Vector3.up);
         _movementStateMachine.playerTransform.position += new Vector3(0,
             _movementStateMachine.playerHeight * (1f - _movementStateMachine.slidingYScale) * 0.5f, 0);
-        
-        _movementStateMachine.PreState = this;
+
         // 将玩家模型还原，之后导入模型和动作后改成播放对应动作，这里要改掉
         _movementStateMachine.transform.localScale = new Vector3(_movementStateMachine.transform.localScale.x,
             1f,
