@@ -69,6 +69,9 @@ public class Jump : BaseState
         // 在墙上跳跃时特殊处理
         if (preState.name == "WallRunning")
         {
+            // 清空水平方向速度
+            _movementStateMachine.playerRigidbody.velocity =
+                new Vector3(0, _movementStateMachine.playerRigidbody.velocity.y, 0);
             _movementStateMachine.playerRigidbody.AddForce(
                 Mathf.Sqrt(_movementStateMachine.jumpHigh * (Physics.gravity.y) * (-2)) *
                 _movementStateMachine.playerRigidbody.mass * (Vector3.up * 0.5f + _movementStateMachine.GetWallNormal().normalized),

@@ -60,6 +60,9 @@ public class WallRunning : BaseState
         }
         
         _movementStateMachine.ClampXozVelocity();
+        
+        // 加力将使玩家贴近墙壁
+        _movementStateMachine.playerRigidbody.AddForce(-_movementStateMachine.GetWallNormal() * 10f);
     }
 
     private bool ListenInputToChangeState()
@@ -77,6 +80,7 @@ public class WallRunning : BaseState
         if (_timer < _movementStateMachine.wallRunningTime && _movementStateMachine.MoveInputInfo.JumpInput)
         {
             _movementStateMachine.ChangeState(_movementStateMachine.JumpState);
+            return true;
         }
         
         if (_timer >= _movementStateMachine.wallRunningTime || 
