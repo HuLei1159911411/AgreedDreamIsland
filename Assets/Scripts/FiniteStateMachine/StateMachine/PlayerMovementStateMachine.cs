@@ -69,6 +69,8 @@ public class PlayerMovementStateMachine : StateMachine
     [HideInInspector] public bool isFastToRun;
     // 当前玩家距离地面高度
     [HideInInspector] public float nowHigh;
+    // 是否向下使用球形检测
+    [HideInInspector] public bool isUseSphereCast;
 
     [Header("玩家及场景参数")] // 以后考虑是不是要换到别的脚本里面去
     // 玩家高度
@@ -102,6 +104,8 @@ public class PlayerMovementStateMachine : StateMachine
     // public float jumpTime = 0.5f;
     // 跳跃高度
     public float jumpHigh;
+    // 向下进行球形射线检测时球形的半径
+    public float downSphereCastRadius = 0.25f;
 
     [Header("奔跑")]
     // 奔跑
@@ -155,7 +159,7 @@ public class PlayerMovementStateMachine : StateMachine
     public float wallRunningForce = 6f;
     // 在墙上滑行的最大时间
     public float wallRunningTime = 3f;
-    // 检查左右两边是否有可以进行滑墙的墙的距离
+    // 检查左右前是否有可以进行滑墙的墙的距离
     public float wallCheckDistance = 1f;
     
     [Header("攀爬")]
@@ -170,6 +174,8 @@ public class PlayerMovementStateMachine : StateMachine
     public float climbTime = 3f;
     // 最大攀爬角度
     public float climbMaxAngle = 30f;
+    // 向前进行球形射线检测时球形的半径
+    public float forwardSphereCastRadius = 0.25f;
     
     // 组件
     [HideInInspector] public Transform playerTransform;
@@ -327,9 +333,50 @@ public class PlayerMovementStateMachine : StateMachine
     {
         if (!(InfoManager.Instance is null))
         {
-            // 向下发射射线
-            isOnGround = Physics.Raycast(playerTransform.position, Vector3.down, out _downRaycastHit,
-                playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerGround);
+            // 向下使用球形射线检测
+            if (isUseSphereCast)
+            {
+                // 当可以用射线检测检测到地面时放弃使用球形检测
+                isOnGround = Physics.Raycast(playerTransform.position, Vector3.down,
+                    out _downRaycastHit,
+                    playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerGround);
+                // 如果下面没有图层为Ground的地面，则再检测一次有没有为Wall的地面
+                if (!isOnGround)
+                {
+                    isOnGround = Physics.Raycast(playerTransform.position, Vector3.down,
+                        out _downRaycastHit,
+                        playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerWall);
+                }
+                if (isOnGround)
+                {
+                    isUseSphereCast = false;
+                }
+                
+                // 球形检测部分
+                isOnGround = Physics.SphereCast(playerTransform.position, downSphereCastRadius, Vector3.down,
+                    out _downRaycastHit,
+                    playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerGround);
+                // 如果下面没有图层为Ground的地面，则再检测一次有没有为Wall的地面
+                if (!isOnGround)
+                {
+                    isOnGround = Physics.SphereCast(playerTransform.position, downSphereCastRadius, Vector3.down,
+                        out _downRaycastHit,
+                        playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerWall);
+                }
+            }
+            else
+            {
+                isOnGround = Physics.Raycast(playerTransform.position, Vector3.down,
+                    out _downRaycastHit,
+                    playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerGround);
+                // 如果下面没有图层为Ground的地面，则再检测一次有没有为Wall的地面
+                if (!isOnGround)
+                {
+                    isOnGround = Physics.Raycast(playerTransform.position, Vector3.down,
+                        out _downRaycastHit,
+                        playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerWall);
+                }
+            }
             
             // 在地面上
             if (isOnGround)
@@ -339,23 +386,28 @@ public class PlayerMovementStateMachine : StateMachine
                 // 更新玩家刚体阻力
                 playerRigidbody.drag = InfoManager.Instance.groundDrag + InfoManager.Instance.airDrag;
                 // 更新玩家当前是否在可运动角度范围内的斜面上
-                // 计算当前斜面的角度,_downRaycastHit.normal是击中点的面法线向量,自己想一下,通过角度转换就会得到这个角度就是斜面的斜率
-                slopeAngle = Vector3.Angle(Vector3.up, _downRaycastHit.normal);
-                if (slopeAngle != 0 && slopeAngle < maxSlopeAngle)
+                
+                // 排除玩家在攀爬的过程中可能会得到是斜面的可能
+                if (_downRaycastHit.transform.gameObject.layer != InfoManager.Instance.layerWall)
                 {
-                    isOnSlope = true;
-                }
-                else
-                {
-                    // 在大于最大允许移动角度的斜面上或平面上
-                    isOnSlope = false;
-
-                    // 在大于最大允许移动角度的斜面上,驱使玩家离开该斜面
-                    if (slopeAngle >= maxSlopeAngle)
+                    // 计算当前斜面的角度,_downRaycastHit.normal是击中点的面法线向量,自己想一下,通过角度转换就会得到这个角度就是斜面的斜率
+                    slopeAngle = Vector3.Angle(Vector3.up, _downRaycastHit.normal);
+                    if (slopeAngle != 0 && slopeAngle < maxSlopeAngle)
                     {
-                        isOnGround = false;
-                        // 给予玩家一个力将玩家弹离斜面(类似与APEX中那种不可以踩的斜面)
-                        playerRigidbody.AddForce(_downRaycastHit.normal * 10f);
+                        isOnSlope = true;
+                    }
+                    else
+                    {
+                        // 在大于最大允许移动角度的斜面上或平面上
+                        isOnSlope = false;
+
+                        // 在大于最大允许移动角度的斜面上,驱使玩家离开该斜面
+                        if (slopeAngle >= maxSlopeAngle)
+                        {
+                            isOnGround = false;
+                            // 给予玩家一个力将玩家弹离斜面(类似与APEX中那种不可以踩的斜面)
+                            playerRigidbody.AddForce(_downRaycastHit.normal * 10f);
+                        }
                     }
                 }
             }
@@ -390,7 +442,10 @@ public class PlayerMovementStateMachine : StateMachine
     private void UpdateHasWallOnForward()
     {
         // 向前发射射线检测是否存在墙壁
-        hasWallOnForward = Physics.Raycast(playerTransform.position, playerTransform.forward, out _forwardRaycastHit,
+        // hasWallOnForward = Physics.Raycast(playerTransform.position, playerTransform.forward, out _forwardRaycastHit,
+        //     wallCheckDistance, InfoManager.Instance.layerWall);
+        hasWallOnForward = Physics.SphereCast(playerTransform.position, forwardSphereCastRadius, playerTransform.forward,
+            out _forwardRaycastHit,
             wallCheckDistance, InfoManager.Instance.layerWall);
         
         // 当前前方存在墙壁时更新计算cameraForwardWithWallAbnormalAngle

@@ -74,6 +74,13 @@ public class Climb : BaseState
         // 前方已经没有墙壁已经爬上来了
         if (!_movementStateMachine.hasWallOnForward)
         {
+            _movementStateMachine.isUseSphereCast = true;
+            _movementStateMachine.isFastToRun = false;
+            // 如果向上爬使其向上的速度到达最大的速度放置爬不上墙
+            if (_movementStateMachine.MoveInputInfo.MoveForwardInput)
+            {
+                SetMaxUpVelocity();
+            }
             _movementStateMachine.ChangeState(_movementStateMachine.FallState);
             return true;
         }
@@ -98,6 +105,13 @@ public class Climb : BaseState
         else if (!_hasLeftGround)
         {
             _hasLeftGround = true;
+        }
+        
+        // 没在地面且在攀爬状态进行跳跃
+        if (!_movementStateMachine.isOnGround && _movementStateMachine.MoveInputInfo.JumpInput)
+        {
+            _movementStateMachine.ChangeState(_movementStateMachine.JumpState);
+            return true;
         }
         
         // 摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度切换为滑墙模式并且高度满足要求
@@ -170,5 +184,12 @@ public class Climb : BaseState
                 _listenPlayerIsLeftGround = true;
                 break;
         }
+    }
+
+    // 设置最大向上速度
+    private void SetMaxUpVelocity()
+    {
+        _movementStateMachine.playerRigidbody.velocity = new Vector3(_movementStateMachine.playerRigidbody.velocity.x,
+            _movementStateMachine.climbUpSpeed, _movementStateMachine.playerRigidbody.velocity.z);
     }
 }

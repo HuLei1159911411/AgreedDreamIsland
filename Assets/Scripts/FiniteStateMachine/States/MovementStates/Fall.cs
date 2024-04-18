@@ -162,6 +162,9 @@ public class Fall : BaseState
             case "WallRunning":
                 _movementStateMachine.fallSpeed = _movementStateMachine.wallRunningForwardSpeed;
                 break;
+            case "Climb":
+                _movementStateMachine.fallSpeed = _movementStateMachine.climbHorizontalSpeed;
+                break;
         }
     }
 }

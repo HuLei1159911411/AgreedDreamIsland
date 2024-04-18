@@ -110,8 +110,8 @@ public class Sliding : BaseState
             return false;
         }
         
-        // 未松开滑铲键并且水平速度未到0则不会改变滑铲状态(若松开滑铲键了速度变为0则变为Idle状态，若速度不为0则不改变状态)
-        if (_movementStateMachine.playerXozSpeed > 0 && _movementStateMachine.MoveInputInfo.SlidingInput)
+        // 未松开滑铲键并且水平速度未接近0则不会改变滑铲状态(若松开滑铲键了速度变接近0则变为Idle状态，若速度不接近0则不改变状态)
+        if (_movementStateMachine.playerXozSpeed > 0.1f && _movementStateMachine.MoveInputInfo.SlidingInput)
         {
             return false;
         }

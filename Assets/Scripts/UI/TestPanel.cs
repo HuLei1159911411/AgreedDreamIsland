@@ -193,6 +193,6 @@ public class TestPanel : MonoBehaviour
 
     void UpdateNowHigh()
     {
-        nowHigh.text = "当前高度: " + _nowHigh.ToString("F2");
+        nowHigh.text = "当前高度: " + (int)_nowHigh;
     }
 }

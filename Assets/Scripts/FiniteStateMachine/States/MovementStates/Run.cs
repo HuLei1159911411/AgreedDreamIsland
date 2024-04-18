@@ -121,7 +121,9 @@ public class Run : BaseState
         if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0)
         {
             // 更新当前速度为水平速度
-            _movementStateMachine.nowMoveSpeed = _movementStateMachine.walkHorizontalSpeed;
+            _movementStateMachine.nowMoveSpeed = _movementStateMachine.walkHorizontalSpeed *
+                                                 (_movementStateMachine.runForwardSpeed /
+                                                  _movementStateMachine.walkForwardSpeed);
         }
         else
         {
