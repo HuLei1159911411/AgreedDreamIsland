@@ -56,7 +56,57 @@ public class TestPanel : MonoBehaviour
         UpdateNowHigh();
     }
 
-    void Update()
+    // void Update()
+    // {
+    //     if (_cameraView != mainCamera.nowView)
+    //     {
+    //         _cameraView = mainCamera.nowView;
+    //         UpdateCameraViewText();
+    //     }
+    //
+    //     if (_playerState != playerMovementStateMachine.CurrentState)
+    //     {
+    //         _playerState = playerMovementStateMachine.CurrentState;
+    //         UpdatePlayerStateText();
+    //     }
+    //
+    //     if (_playerIsOnGround != playerMovementStateMachine.isOnGround || _playerIsOnSlope != playerMovementStateMachine.isOnSlope)
+    //     {
+    //         _playerIsOnGround = playerMovementStateMachine.isOnGround;
+    //         _playerIsOnSlope = playerMovementStateMachine.isOnSlope;
+    //         UpdatePlayerIsWhereText();
+    //     }
+    //
+    //     if (Math.Abs(_playerSpeed - playerMovementStateMachine.playerXozSpeed) > Single.Epsilon)
+    //     {
+    //         _playerSpeed = playerMovementStateMachine.playerXozSpeed;
+    //         UpdatePlayerSpeedText();
+    //     }
+    //
+    //     if (Math.Abs(_nowMaxSpeed - playerMovementStateMachine.nowMoveSpeed) > Single.Epsilon)
+    //     {
+    //         _nowMaxSpeed = playerMovementStateMachine.nowMoveSpeed;
+    //         UpdateNowMaxSpeed();
+    //     }
+    //
+    //     if (_hasWallOnLeft != playerMovementStateMachine.hasWallOnLeft ||
+    //         _hasWallOnRight != playerMovementStateMachine.hasWallOnRight ||
+    //         _hasWallOnForward != playerMovementStateMachine.hasWallOnForward)
+    //     {
+    //         _hasWallOnLeft = playerMovementStateMachine.hasWallOnLeft;
+    //         _hasWallOnRight = playerMovementStateMachine.hasWallOnRight;
+    //         _hasWallOnForward = playerMovementStateMachine.hasWallOnForward;
+    //         UpdateNowWallState();
+    //     }
+    //
+    //     if (_nowHigh != playerMovementStateMachine.nowHigh)
+    //     {
+    //         _nowHigh = playerMovementStateMachine.nowHigh;
+    //         UpdateNowHigh();
+    //     }
+    // }
+
+    private void FixedUpdate()
     {
         if (_cameraView != mainCamera.nowView)
         {
@@ -178,7 +228,7 @@ public class TestPanel : MonoBehaviour
 
     void UpdatePlayerSpeedText()
     {
-        nowSpeed.text = "速度: " + _playerSpeed.ToString("F1");
+        nowSpeed.text = "速度: " + _playerSpeed;
     }
 
     void UpdateNowMaxSpeed()
@@ -193,6 +243,6 @@ public class TestPanel : MonoBehaviour
 
     void UpdateNowHigh()
     {
-        nowHigh.text = "当前高度: " + (int)_nowHigh;
+        nowHigh.text = "当前高度: " + _nowHigh;
     }
 }
