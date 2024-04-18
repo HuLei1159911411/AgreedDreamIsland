@@ -20,6 +20,7 @@ public class Run : BaseState
     {
         base.Enter();
         _timer = 0;
+        _movementStateMachine.isFastToRun = true;
     }
 
     public override void Exit()
@@ -68,6 +69,16 @@ public class Run : BaseState
         if (!_movementStateMachine.isOnGround)
         {
             _movementStateMachine.ChangeState(_movementStateMachine.FallState);
+            return true;
+        }
+        
+        // 摁前进键加空格并且前方有墙壁并且角度满足条件
+        if (_movementStateMachine.MoveInputInfo.MoveForwardInput && 
+            _movementStateMachine.MoveInputInfo.JumpInput &&
+            _movementStateMachine.hasWallOnForward &&
+            _movementStateMachine.cameraForwardWithWallAbnormalAngle < _movementStateMachine.climbMaxAngle)
+        {
+            stateMachine.ChangeState(_movementStateMachine.ClimbState);
             return true;
         }
 

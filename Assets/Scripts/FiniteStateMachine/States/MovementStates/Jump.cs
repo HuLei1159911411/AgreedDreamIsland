@@ -34,11 +34,31 @@ public class Jump : BaseState
     {
         base.UpdatePhysic();
         
-        // 当前一个状态不是滑墙模式满足滑墙条件进行滑墙
-        if (preState.name != "Jump" &&
-            ((_movementStateMachine.hasWallOnForward && _movementStateMachine.MoveInputInfo.MoveForwardInput ||
-              _movementStateMachine.hasWallOnLeft && _movementStateMachine.MoveInputInfo.MoveLeftInput ||
-              _movementStateMachine.hasWallOnRight && _movementStateMachine.MoveInputInfo.MoveRightInput)))
+        // 前方有墙壁
+        if (_movementStateMachine.hasWallOnForward)
+        {
+            // 前一状态不是WallRunning并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度并且高度满足最低高度要求，切换为滑墙状态
+            if (preState.name != "WallRunning" &&
+                _movementStateMachine.cameraForwardWithWallAbnormalAngle >= _movementStateMachine.climbMaxAngle
+                && _movementStateMachine.nowHigh >= _movementStateMachine.wallRunningMinHigh)
+            {
+                _movementStateMachine.ChangeState(_movementStateMachine.WallRunningState);
+                return;
+            }
+
+            // 前一状态不是Climb并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度切换为滑墙状态
+            if (preState.name != "Climb" && _movementStateMachine.MoveInputInfo.JumpInput &&
+                _movementStateMachine.cameraForwardWithWallAbnormalAngle < _movementStateMachine.climbMaxAngle)
+            {
+                // 摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度小于最大角度切换为攀爬状态
+                _movementStateMachine.ChangeState(_movementStateMachine.ClimbState);
+                return;
+            }
+        }
+        
+        // 左右两边有墙壁
+        if (_movementStateMachine.hasWallOnLeft && _movementStateMachine.MoveInputInfo.MoveLeftInput ||
+              _movementStateMachine.hasWallOnRight && _movementStateMachine.MoveInputInfo.MoveRightInput)
         {
             _movementStateMachine.ChangeState(_movementStateMachine.WallRunningState);
             return;

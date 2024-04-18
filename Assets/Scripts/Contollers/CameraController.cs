@@ -10,6 +10,9 @@ public enum E_CameraView
 
 public class CameraController : MonoBehaviour
 {
+    private static CameraController _instance;
+    public static CameraController Instance => _instance;
+        
     // 玩家Transform组件
     public Transform player;
     // 当前的摄像机视角
@@ -63,6 +66,10 @@ public class CameraController : MonoBehaviour
 
     private void Awake()
     {
+        if (_instance is null)
+        {
+            _instance = this;
+        }
         _playerMovementStateMachine = player.GetComponent<PlayerMovementStateMachine>();
     }
 

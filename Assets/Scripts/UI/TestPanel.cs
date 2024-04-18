@@ -14,8 +14,8 @@ public class TestPanel : MonoBehaviour
     public Text nowIsOnGround;
     public Text nowSpeed;
     public Text nowMaxSpeed;
-    public Text nowLeftWall;
-    public Text nowRightWall;
+    public Text nowWallState;
+    public Text nowHigh;
     
     private E_CameraView _cameraView;
     private BaseState _playerState;
@@ -24,6 +24,7 @@ public class TestPanel : MonoBehaviour
     private bool _hasWallOnLeft;
     private bool _hasWallOnRight;
     private bool _hasWallOnForward;
+    private float _nowHigh;
     // 玩家XOZ平面移动速度大小
     private float _playerSpeed;
     // 玩家当前最大速度
@@ -50,6 +51,9 @@ public class TestPanel : MonoBehaviour
         _hasWallOnRight = playerMovementStateMachine.hasWallOnRight;
         _hasWallOnForward = playerMovementStateMachine.hasWallOnForward;
         UpdateNowWallState();
+
+        _nowHigh = playerMovementStateMachine.nowHigh;
+        UpdateNowHigh();
     }
 
     void Update()
@@ -93,6 +97,12 @@ public class TestPanel : MonoBehaviour
             _hasWallOnRight = playerMovementStateMachine.hasWallOnRight;
             _hasWallOnForward = playerMovementStateMachine.hasWallOnForward;
             UpdateNowWallState();
+        }
+
+        if (_nowHigh != playerMovementStateMachine.nowHigh)
+        {
+            _nowHigh = playerMovementStateMachine.nowHigh;
+            UpdateNowHigh();
         }
     }
 
@@ -142,6 +152,9 @@ public class TestPanel : MonoBehaviour
             case "WallRunning":
                 nowState.text = "滑墙";
                 break;
+            case "Climb":
+                nowState.text = "攀爬";
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -175,6 +188,11 @@ public class TestPanel : MonoBehaviour
     
     void UpdateNowWallState()
     {
-        nowLeftWall.text = $"附近墙壁:{((_hasWallOnLeft ? " 左" : "") + (_hasWallOnRight ? " 右" : "") + (_hasWallOnForward ? " 前" : ""))}";
+        nowWallState.text = $"附近墙壁:{((_hasWallOnLeft ? " 左" : "") + (_hasWallOnRight ? " 右" : "") + (_hasWallOnForward ? " 前" : ""))}";
+    }
+
+    void UpdateNowHigh()
+    {
+        nowHigh.text = "当前高度: " + _nowHigh.ToString("F2");
     }
 }

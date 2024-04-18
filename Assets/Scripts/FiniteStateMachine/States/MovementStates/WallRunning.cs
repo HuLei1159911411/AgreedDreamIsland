@@ -24,7 +24,16 @@ public class WallRunning : BaseState
     public override void Enter()
     {
         base.Enter();
-        _timer = 0;
+        // 前一状态时Climb状态则继承其攀爬的时间
+        if (preState.name == "Climb")
+        {
+            _timer = (preState as Climb)._climbTimer;
+        }
+        else
+        {
+            _timer = 0;
+        }
+        
         CloseGravity();
     }
 
@@ -60,20 +69,24 @@ public class WallRunning : BaseState
         }
         
         _movementStateMachine.ClampXozVelocity();
-        
-        // 加力将使玩家贴近墙壁
-        _movementStateMachine.playerRigidbody.AddForce(-_movementStateMachine.GetWallNormal() * 10f);
+
+        if (_timer < _movementStateMachine.wallRunningTime && _movementStateMachine.MoveInputInfo.MoveForwardInput)
+        {
+            // 加力将使玩家贴近墙壁
+            _movementStateMachine.playerRigidbody.AddForce(-_movementStateMachine.GetWallNormal() * 10f);
+        }
     }
 
     private bool ListenInputToChangeState()
     {
         _timer += Time.deltaTime;
         
-        if (!_movementStateMachine.hasWallOnLeft && 
+        if (_movementStateMachine.nowHigh < _movementStateMachine.wallRunningMinHigh || 
+            (!_movementStateMachine.hasWallOnLeft && 
             !_movementStateMachine.hasWallOnRight &&
-            !_movementStateMachine.hasWallOnForward)
+            !_movementStateMachine.hasWallOnForward))
         {
-            _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
+            _movementStateMachine.ChangeState(_movementStateMachine.FallState);
             return true;
         }
 
@@ -84,8 +97,7 @@ public class WallRunning : BaseState
         }
         
         if (_timer >= _movementStateMachine.wallRunningTime || 
-            !_movementStateMachine.MoveInputInfo.MoveForwardInput
-            )
+            !_movementStateMachine.MoveInputInfo.MoveForwardInput)
         {
             _movementStateMachine.playerRigidbody.useGravity = true;
         }
@@ -100,18 +112,18 @@ public class WallRunning : BaseState
     {
         // 更新当前墙壁的方向向量
         _wallForward = _movementStateMachine.GetWallForward();
-        // 更新移动方向(若当前人物的面朝向与墙壁的前进向量方向更接近则两向量相加的向量的模长的值大于两向量相减的向量的模长的值，
-        // 可以想象人物面朝向与墙壁前进方向完全相同的情况，这样两个向量相加等于人物面朝向向量的值乘2，模长同时也乘2，而相减则为0)
-        _movementStateMachine.direction = (_movementStateMachine.playerTransform.forward + _wallForward).magnitude >
-                                          (_movementStateMachine.playerTransform.forward - _wallForward).magnitude
+        // 更新移动方向(若当前人物的面朝向(摄像机面朝向)与墙壁的前进向量方向更接近则两向量相加的向量的模长的值大于两向量相减的向量的模长的值，
+        // 可以想象人物面朝向(摄像机面朝向)与墙壁前进方向完全相同的情况，这样两个向量相加等于人物面朝向(摄像机面朝向)向量的值乘2，模长同时也乘2，而相减则为0)
+        _movementStateMachine.direction = (CameraController.Instance.transform.forward + _wallForward).magnitude >
+                                          (CameraController.Instance.transform.forward - _wallForward).magnitude
             ? _wallForward
             : -_wallForward;
         // 更新移动速度
         _movementStateMachine.nowMoveSpeed = _movementStateMachine.wallRunningForwardSpeed;
         // 修改滑墙力的大小
-        // 将这个方向与玩家面朝向的方向进行夹角计算，使其滑墙力的大小与前计算夹角成反相关关系，当夹角越小说明越贴近移动方向，所以大小越大
+        // 将这个方向与玩家面朝向的方向(摄像机面朝向)进行夹角计算，使其滑墙力的大小与前计算夹角成反相关关系，当夹角越小说明越贴近移动方向，所以大小越大
         _calWallRunningForce = _movementStateMachine.wallRunningForce * ((90f - Vector3.Angle(
-            _movementStateMachine.playerTransform.forward,
+            CameraController.Instance.transform.forward,
             _movementStateMachine.direction)) / 90f);
     }
 

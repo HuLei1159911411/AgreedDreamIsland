@@ -1,4 +1,4 @@
-using System.Collections;
+    using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,6 +16,8 @@ public class Idle : BaseState
     public override void Enter()
     {
         base.Enter();
+
+        _movementStateMachine.isFastToRun = false;
     }
 
     public override void Exit()
@@ -33,16 +35,25 @@ public class Idle : BaseState
             _movementStateMachine.ChangeState(_movementStateMachine.FallState);
             return;
         }
+        // 摁移动键
+        if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0 || _movementStateMachine.MoveInputInfo.VerticalInput != 0)
+        {
+            // 摁前进键加空格并且前方有墙壁并且角度满足条件
+            if (_movementStateMachine.MoveInputInfo.MoveForwardInput && 
+                _movementStateMachine.MoveInputInfo.JumpInput &&
+                _movementStateMachine.hasWallOnForward &&
+                _movementStateMachine.cameraForwardWithWallAbnormalAngle < _movementStateMachine.climbMaxAngle)
+            {
+                stateMachine.ChangeState(_movementStateMachine.ClimbState);
+                return;
+            }
+            stateMachine.ChangeState(_movementStateMachine.WalkState);
+            return;
+        }
         // 摁跳跃键
         if (_movementStateMachine.MoveInputInfo.JumpInput)
         {
             stateMachine.ChangeState(_movementStateMachine.JumpState);
-            return;
-        }
-        // 摁移动键
-        if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0 || _movementStateMachine.MoveInputInfo.VerticalInput != 0)
-        {
-            stateMachine.ChangeState(_movementStateMachine.WalkState);
             return;
         }
         // 摁下蹲键

@@ -6,12 +6,16 @@ using UnityEngine;
 public class Fall : BaseState
 {
     private PlayerMovementStateMachine _movementStateMachine;
+
     // 是否是快速降落
     private bool _isFastFall;
+
     // 设置的Fall状态下水平方向的最大移动速度
     private float _fallSpeed;
+
     // 是否松开过下蹲或滑铲键
     private bool _isReleaseSquatInput;
+
     public Fall(StateMachine stateMachine) : base("Fall", stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
@@ -26,9 +30,9 @@ public class Fall : BaseState
         _isFastFall = false;
         _isReleaseSquatInput = false;
         _fallSpeed = _movementStateMachine.fallSpeed;
-        
+
         SetFallSpeedByState(preState);
-        
+
         _movementStateMachine.nowMoveSpeed = _movementStateMachine.fallSpeed;
     }
 
@@ -40,6 +44,7 @@ public class Fall : BaseState
         {
             return;
         }
+
         UpdateDirection();
     }
 
@@ -62,6 +67,7 @@ public class Fall : BaseState
         base.Exit();
         _movementStateMachine.fallSpeed = _fallSpeed;
     }
+
     private bool ListenInputToChangeState()
     {
         // 判断是不是松开了蹲下或滑铲键(当蹲着或滑铲进入下落状态则可能存在该种情况)
@@ -69,58 +75,55 @@ public class Fall : BaseState
         {
             _isReleaseSquatInput = true;
         }
+
         // 快速下落
         if (_isReleaseSquatInput && _movementStateMachine.MoveInputInfo.SquatInput)
         {
             _isFastFall = true;
         }
-        // 当前一个状态不是滑墙并且满足滑墙条件进行滑墙
-        if (preState.name != "WallRunning")
+
+        // 前方有墙壁
+        if (_movementStateMachine.hasWallOnForward)
         {
-            // 当满足滑墙条件进行滑墙
-            if (_movementStateMachine.hasWallOnForward && _movementStateMachine.MoveInputInfo.MoveForwardInput ||
-                _movementStateMachine.hasWallOnLeft && _movementStateMachine.MoveInputInfo.MoveLeftInput ||
-                _movementStateMachine.hasWallOnRight && _movementStateMachine.MoveInputInfo.MoveRightInput)
+            // 前一状态不是WallRunning并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度切换为滑墙状态
+            if (preState.name != "WallRunning" && _movementStateMachine.cameraForwardWithWallAbnormalAngle >=
+                _movementStateMachine.climbMaxAngle &&
+                _movementStateMachine.nowHigh >= _movementStateMachine.wallRunningMinHigh)
             {
                 _movementStateMachine.ChangeState(_movementStateMachine.WallRunningState);
                 return true;
             }
+
+            // 前一状态不是Climb并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度切换为滑墙状态
+            if (preState.name != "Climb" && _movementStateMachine.MoveInputInfo.JumpInput &&
+                _movementStateMachine.cameraForwardWithWallAbnormalAngle < _movementStateMachine.climbMaxAngle)
+            {
+                // 摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度小于最大角度切换为攀爬状态
+                _movementStateMachine.ChangeState(_movementStateMachine.ClimbState);
+                return true;
+            }
         }
         
+        // 左右两边有墙壁
+        if (preState.name != "WallRunning" &&
+            (_movementStateMachine.hasWallOnLeft && _movementStateMachine.MoveInputInfo.MoveLeftInput ||
+             _movementStateMachine.hasWallOnRight && _movementStateMachine.MoveInputInfo.MoveRightInput))
+        {
+            _movementStateMachine.ChangeState(_movementStateMachine.WallRunningState);
+            return true;
+        }
+
         // 落地
         if (_movementStateMachine.isOnGround)
         {
-            if (_isFastFall)
+            if (_isFastFall || !_movementStateMachine.isFastToRun)
             {
                 _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
             }
-            else if(preState.name == "Jump" || preState.name == "Sliding")
-            {
-                if (preState.name == "Jump" && preState.preState.name == "Sliding")
-                {
-                    _movementStateMachine.ChangeState(preState.preState.preState);
-                }
-                else
-                {
-                    _movementStateMachine.ChangeState(preState.preState);
-                }
-            }
-            else if (preState.name == "WallRunning")
-            {
-                if (_movementStateMachine.JumpState.preState.name == "Sliding")
-                {
-                    _movementStateMachine.ChangeState(_movementStateMachine.RunState);
-                }
-                else
-                {
-                    _movementStateMachine.ChangeState(_movementStateMachine.JumpState.preState);
-                }
-            }
             else
             {
-                _movementStateMachine.ChangeState(preState);
-            }
-            
+                _movementStateMachine.ChangeState(_movementStateMachine.RunState);
+            } 
             return true;
         }
 
@@ -156,7 +159,7 @@ public class Fall : BaseState
             case "Jump":
                 SetFallSpeedByState(state.preState);
                 break;
-            case "WallRunning" :
+            case "WallRunning":
                 _movementStateMachine.fallSpeed = _movementStateMachine.wallRunningForwardSpeed;
                 break;
         }

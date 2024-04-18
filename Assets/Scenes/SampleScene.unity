@@ -370,6 +370,85 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MainCamera: {fileID: 330585548}
+--- !u!1 &182736033
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 182736034}
+  - component: {fileID: 182736036}
+  - component: {fileID: 182736035}
+  m_Layer: 5
+  m_Name: NowHigh
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &182736034
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 182736033}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2844457984470365340}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 10, y: 240}
+  m_SizeDelta: {x: 300, y: 100}
+  m_Pivot: {x: 0, y: 0}
+--- !u!114 &182736035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 182736033}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_FontSize: 50
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 5
+    m_MaxSize: 50
+    m_Alignment: 3
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 0
+    m_VerticalOverflow: 0
+    m_LineSpacing: 1
+  m_Text: "\u5F53\u524D\u9AD8\u5EA6: 1.1"
+--- !u!222 &182736036
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 182736033}
+  m_CullTransparentMesh: 1
 --- !u!1 &187310192
 GameObject:
   m_ObjectHideFlags: 0
@@ -881,26 +960,30 @@ MonoBehaviour:
   nowMoveSpeed: 0
   isOnGround: 0
   playerXozSpeed: 0
+  playerXoySpeed: 0
   isOnSlope: 0
   direction: {x: 0, y: 0, z: 0}
   hasWallOnLeft: 0
   hasWallOnRight: 0
   hasWallOnForward: 0
   slopeAngle: 0
+  cameraForwardWithWallAbnormalAngle: 0
+  isFastToRun: 0
+  nowHigh: 0
   playerHeight: 2
+  maxSlopeAngle: 45
   walkForwardSpeed: 7
   walkBackwardSpeed: 5
-  runForwardSpeed: 9
   walkHorizontalSpeed: 5
   walkMoveForce: 6
   heightOffset: 0.3
   jumpHigh: 4
+  runForwardSpeed: 9
   toRunTime: 0.5
   runMoveForce: 6
   squatSpeed: 5
   squatYScale: 0.5
   squatMoveForce: 5
-  maxSlopeAngle: 45
   slidingSpeed: 10
   slidingOnSlopeSpeed: 12
   slidingMoveForce: 10
@@ -915,6 +998,11 @@ MonoBehaviour:
   wallRunningForce: 6
   wallRunningTime: 3
   wallCheckDistance: 1
+  climbUpSpeed: 6
+  climbHorizontalSpeed: 3
+  climbForce: 5
+  climbTime: 3
+  climbMaxAngle: 30
   playerTransform: {fileID: 0}
   playerRigidbody: {fileID: 0}
 --- !u!1 &330585543
@@ -14655,6 +14743,7 @@ MonoBehaviour:
     m_Bits: 64
   groundDrag: 4
   airDrag: 0
+  maxHigh: 100
 --- !u!224 &1116108403507361567
 RectTransform:
   m_ObjectHideFlags: 0
@@ -14749,8 +14838,8 @@ MonoBehaviour:
   nowIsOnGround: {fileID: 755062778}
   nowSpeed: {fileID: 1830059882}
   nowMaxSpeed: {fileID: 1066486613}
-  nowLeftWall: {fileID: 1705658997}
-  nowRightWall: {fileID: 0}
+  nowWallState: {fileID: 1705658997}
+  nowHigh: {fileID: 182736035}
 --- !u!114 &2590833517465378738
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14830,6 +14919,7 @@ RectTransform:
   - {fileID: 1830059881}
   - {fileID: 1066486612}
   - {fileID: 1705658996}
+  - {fileID: 182736034}
   m_Father: {fileID: 1116108403507361567}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

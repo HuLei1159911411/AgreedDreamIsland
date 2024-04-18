@@ -13,6 +13,7 @@ public class InfoManager : MonoBehaviour
     [Header("可以滑行的墙图层")] public LayerMask layerWall;
     [Header("地面阻力")] public float groundDrag;
     [Header("空气阻力")] public float airDrag;
+    [Header("玩家最高高度")] public float maxHigh = 100f;
 
     private void Awake()
     {
