@@ -175,7 +175,7 @@ public class CameraController : MonoBehaviour
                 }
             }
             // 一直都要更新，因为有可能在Idle状态下玩家的角度和摄像机角度差距过大，但是玩家的角度还没同步到目标角度 但是玩家并没进行任何操作
-            else if (!(_playerMovementStateMachine is null) && _playerMovementStateMachine.GetNowState() == "Idle")
+            else if (!(_playerMovementStateMachine is null) && _playerMovementStateMachine.GetNowStateString() == "Idle")
             {
                 if (player.rotation != _targetRotation)
                 {
@@ -317,7 +317,7 @@ public class CameraController : MonoBehaviour
                 break;
             case E_CameraView.ThirdPerson:
                 // 让玩家移动状态机为不为空时(及非编辑器模式下)||Idle状态下当前摄像机朝向和人物朝向的两向量夹角大于某一角度时人物旋转至摄像机朝向
-                if (!(_playerMovementStateMachine is null) && _playerMovementStateMachine.GetNowState() == "Idle")
+                if (!(_playerMovementStateMachine is null) && _playerMovementStateMachine.GetNowStateString() == "Idle")
                 {
                     if (CheckPlayerWithCameraAngleInXoz())
                     {
@@ -340,7 +340,7 @@ public class CameraController : MonoBehaviour
                 break;
             case E_CameraView.ThirdPersonFurther:
                 // 让玩家移动状态机为不为空时(及非编辑器模式下)||Idle状态下当前摄像机朝向和人物朝向的两向量夹角大于某一角度时人物旋转至摄像机朝向
-                if (!(_playerMovementStateMachine is null) && _playerMovementStateMachine.GetNowState() == "Idle")
+                if (!(_playerMovementStateMachine is null) && _playerMovementStateMachine.GetNowStateString() == "Idle")
                 {
                     if (CheckPlayerWithCameraAngleInXoz())
                     {

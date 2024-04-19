@@ -4,6 +4,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
+public enum E_State
+{
+    Idle = 0,
+    Walk = 1,
+    Run = 2,
+    Squat = 3,
+    Jump = 4,
+    Fall = 5,
+    Sliding = 6,
+    WallRunning = 7,
+    Climb = 8,
+}
+
 public struct MoveInputInformation
 {
     public bool MoveForwardInput;
@@ -20,6 +33,18 @@ public struct MoveInputInformation
 
 public class PlayerMovementStateMachine : StateMachine
 {
+    // 组件
+    // 动画状态机
+    public Animator playerAnimator;
+    [HideInInspector] public Transform playerTransform;
+    [HideInInspector] public Rigidbody playerRigidbody;
+    // 正常状态下的碰撞盒
+    public Collider baseCollider;
+    // 下蹲状态下的碰撞盒
+    public Collider squatCollider;
+    // 滑铲状态下的碰撞盒
+    public Collider slidingCollider;
+    
     // 当前状态
     [HideInInspector] public BaseState CurrentState => _currentState;
     // 空闲状态
@@ -40,7 +65,15 @@ public class PlayerMovementStateMachine : StateMachine
     [HideInInspector] public WallRunning WallRunningState;
     // 攀爬状态
     [HideInInspector] public Climb ClimbState;
-    
+
+    [Header("输入参数")]
+    [Range(0.01f, 1f)]
+    // 每帧垂直和水平方向输入影响数值大小
+    public float inputValueRate = 0.01f;
+    // 当同时摁住互斥的摁键和同时松开互斥的摁键时是否需要以更快的速度使值归零
+    public bool isQuickZeroing;
+    // 快速归零时速率倍数
+    public float quickZeroingRate = 2f;
     // 移动输入信息
     [HideInInspector] public MoveInputInformation MoveInputInfo;
     // 当前水平移动移动速度的最大值
@@ -71,6 +104,8 @@ public class PlayerMovementStateMachine : StateMachine
     [HideInInspector] public float nowHigh;
     // 是否向下使用球形检测
     [HideInInspector] public bool isUseSphereCast;
+    // PlayerMovementStateMachine中参数在Animator中参数的索引字典
+    [HideInInspector] public Dictionary<string, int> DicAnimatorIndexes;
 
     [Header("玩家及场景参数")] // 以后考虑是不是要换到别的脚本里面去
     // 玩家高度
@@ -111,6 +146,10 @@ public class PlayerMovementStateMachine : StateMachine
     // 奔跑
     // 跑步向前的速度的最大值
     public float runForwardSpeed = 20f;
+    // 跑步向后的速度的最大值
+    public float runBackwardSpeed = 2f;
+    // 水平方向跑步速度
+    public float runHorizontalSpeed = 2f;
     // 玩家从WalkToRun所需摁键时间
     public float toRunTime = 0.5f;
     // 奔跑时给予玩家力的相对大小(与上面的限制玩家最大速度成正比?目前是这样实现，为玩家加力时力的大小 = runMoveForce * nowMoveSpeed)
@@ -120,8 +159,6 @@ public class PlayerMovementStateMachine : StateMachine
     // 下蹲
     // 下蹲时移动的速度的最大值
     public float squatSpeed = 5f;
-    // 下蹲时玩家缩放系数
-    public float squatYScale = 0.5f;
     // 下蹲时给予玩家力的大小
     public float squatMoveForce = 8f;
 
@@ -176,10 +213,6 @@ public class PlayerMovementStateMachine : StateMachine
     public float climbMaxAngle = 30f;
     // 向前进行球形射线检测时球形的半径
     public float forwardSphereCastRadius = 0.25f;
-    
-    // 组件
-    [HideInInspector] public Transform playerTransform;
-    [HideInInspector] public Rigidbody playerRigidbody;
 
     // 计算Xoz或Xoy平面玩家刚体速度用的临时变量
     private Vector3 _calVelocity;
@@ -193,7 +226,20 @@ public class PlayerMovementStateMachine : StateMachine
     private RaycastHit _forwardRaycastHit;
     // 由玩家向下发射的用于检测玩家距离地面高度的距离为玩家最高高度的射线的击中信息
     private RaycastHit _downMaxRaycastHit;
-    
+    // 人物Animator的参数集
+    private AnimatorControllerParameter[] _animatorControllerParameters;
+    // 限制玩家速度时用来计算x方向速度大小的临时变量
+    private float _calVelocityX;
+    // 限制玩家速度时用来计算y方向速度大小的临时变量
+    private float _calVelocityY;
+    // 限制玩家速度时用来计算z方向速度大小的临时变量
+    private float _calVelocityZ;
+    // 限制玩家速度时用来计算当前某平面速度与最大速度的比值
+    private float _velocityWithSpeedRatio;
+    // 为Animator组件提供的垂直和水平方向的值(在-1到1之间有细小连续变化的Float值)
+    private float _verticalInputForAnimator;
+    private float _horizontalInputForAnimator;
+
     private void Awake()
     {
         // 初始化状态
@@ -242,9 +288,9 @@ public class PlayerMovementStateMachine : StateMachine
         
         UpdateXozVelocity();
         
+        DrawLine();
+        
         base.Update();
-        
-        
     }
 
     // 重写父类FixUpdate函数在玩家处于斜面上时给予玩家手动重力
@@ -255,24 +301,33 @@ public class PlayerMovementStateMachine : StateMachine
         {
             // 关闭玩家刚体自带的重力
             playerRigidbody.useGravity = false;
-            switch (_currentState.name)
+            switch (_currentState.state)
             {
-                case "Walk":
-                case "Run":
-                case "Squat":
-                case "Sliding":
+                case E_State.Walk:
+                case E_State.Run:
+                case E_State.Squat:
+                case E_State.Sliding:
                     playerRigidbody.AddForce(playerRigidbody.mass * 9.18f * Vector3
                         .ProjectOnPlane(Vector3.down, _downRaycastHit.normal)
                         .normalized);
                     break;
             }
         }
-        else if(_currentState.name != "WallRunning" && _currentState.name != "Climb")
+        else if(_currentState.state != E_State.WallRunning && _currentState.state != E_State.Climb)
         {
             playerRigidbody.useGravity = true;
         }
 
         base.FixedUpdate();
+    }
+
+    public override void ChangeState(BaseState newState)
+    {
+        playerAnimator.SetInteger(DicAnimatorIndexes["PreState"], (int)_currentState.state);
+        base.ChangeState(newState);
+        
+        SetColliderByCurrentState();
+        playerAnimator.SetInteger(DicAnimatorIndexes["ToState"], (int)newState.state);
     }
 
     private void DrawLine()
@@ -309,23 +364,166 @@ public class PlayerMovementStateMachine : StateMachine
         UpdateIsOnGroundAndIsOnSlopeAndNowHigh();
 
         nowMoveSpeed = 0;
+
+        _animatorControllerParameters = playerAnimator.parameters;
+        DicAnimatorIndexes = new Dictionary<string, int>();
+        for (int i = 0; i < _animatorControllerParameters.Length; i++)
+        {
+            DicAnimatorIndexes.Add(_animatorControllerParameters[i].name, _animatorControllerParameters[i].nameHash);
+        }
     }
 
-    // 更新移动的输入信息(前1后-1，左-1,右1);
+    // 更新移动的输入信息(前到后1到-1，左到右-1到1);
     private void UpdateMoveInputInformation()
     {
         MoveInputInfo.MoveForwardInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.MoveForward]);
         MoveInputInfo.MoveBackwardInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.MoveBackward]);
         MoveInputInfo.MoveLeftInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.MoveLeft]);
         MoveInputInfo.MoveRightInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.MoveRight]);
+
+        // 更新用于在Animator组件里面给变量HorizontalInput和VerticalInput赋值的类型为float的Input值
+        UpdateVerticalInputWithHorizontalInputForAnimator();
+        
+        // 更新用于在状态机的不同状态中判断键盘输入的类型为int的Input值
         MoveInputInfo.VerticalInput =
             (MoveInputInfo.MoveForwardInput ? 1 : 0) + (MoveInputInfo.MoveBackwardInput ? -1 : 0);
-        MoveInputInfo.HorizontalInput = (MoveInputInfo.MoveRightInput ? 1 : 0) + (MoveInputInfo.MoveLeftInput ? -1 : 0);
+        MoveInputInfo.HorizontalInput = 
+            (MoveInputInfo.MoveRightInput ? 1 : 0) + (MoveInputInfo.MoveLeftInput ? -1 : 0);
 
         MoveInputInfo.JumpInput = Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.Jump]);
         MoveInputInfo.RunInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Run]);
         MoveInputInfo.SquatInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Squat]);
         MoveInputInfo.SlidingInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Sliding]);
+        
+        playerAnimator.SetBool(DicAnimatorIndexes["MoveForwardInput"], MoveInputInfo.MoveForwardInput);
+        playerAnimator.SetBool(DicAnimatorIndexes["MoveBackwardInput"], MoveInputInfo.MoveBackwardInput);
+        playerAnimator.SetBool(DicAnimatorIndexes["MoveLeftInput"], MoveInputInfo.MoveLeftInput);
+        playerAnimator.SetBool(DicAnimatorIndexes["MoveRightInput"], MoveInputInfo.MoveRightInput);
+        playerAnimator.SetFloat(DicAnimatorIndexes["VerticalInput"], _verticalInputForAnimator);
+        playerAnimator.SetFloat(DicAnimatorIndexes["HorizontalInput"], _horizontalInputForAnimator);
+        playerAnimator.SetBool(DicAnimatorIndexes["JumpInput"], MoveInputInfo.JumpInput);
+        playerAnimator.SetBool(DicAnimatorIndexes["RunInput"], MoveInputInfo.RunInput);
+        playerAnimator.SetBool(DicAnimatorIndexes["SquatInput"], MoveInputInfo.SquatInput);
+        playerAnimator.SetBool(DicAnimatorIndexes["SlidingInput"], MoveInputInfo.SlidingInput);
+    }
+    
+    // 更新MoveInputInfo中VerticalInput与HorizontalInput的值
+    private void UpdateVerticalInputWithHorizontalInputForAnimator()
+    {
+        // 垂直方向
+        if (((MoveInputInfo.MoveForwardInput && MoveInputInfo.MoveBackwardInput) ||
+             (!MoveInputInfo.MoveForwardInput && !MoveInputInfo.MoveBackwardInput)))
+        {
+            if (_verticalInputForAnimator > 0f)
+            {
+                _verticalInputForAnimator -= inputValueRate * (isFastToRun ? quickZeroingRate : 1f);
+                if (_verticalInputForAnimator < 0f)
+                {
+                    _verticalInputForAnimator = 0f;
+                }
+            }
+            else if(_verticalInputForAnimator < 0f)
+            {
+                _verticalInputForAnimator += inputValueRate * (isFastToRun ? quickZeroingRate : 1f);
+                if (_verticalInputForAnimator > 0f)
+                {
+                    _verticalInputForAnimator = 0f;
+                }
+            }
+        }
+        else
+        {
+            // 当水平方向有摁键输入且水平方向摁键的值不同，判断是否要快速改变摁键值至0
+            if (MoveInputInfo.MoveForwardInput)
+            {
+                if (_verticalInputForAnimator < 0f && isFastToRun)
+                {
+                    _verticalInputForAnimator += inputValueRate * quickZeroingRate;
+                }
+                else
+                {
+                    _verticalInputForAnimator += inputValueRate;
+                }
+            }
+            else
+            {
+                if (_verticalInputForAnimator > 0f && isFastToRun)
+                {
+                    _verticalInputForAnimator -= inputValueRate * quickZeroingRate;
+                }
+                else
+                {
+                    _verticalInputForAnimator -= inputValueRate;
+                }
+            }
+            if (_verticalInputForAnimator > 1f)
+            {
+                _verticalInputForAnimator = 1f;
+            }
+
+            if (_verticalInputForAnimator < -1f)
+            {
+                _verticalInputForAnimator = -1f;
+            }
+        }
+        
+        // 水平方向
+        if (((MoveInputInfo.MoveLeftInput && MoveInputInfo.MoveRightInput) ||
+             (!MoveInputInfo.MoveLeftInput && !MoveInputInfo.MoveRightInput)))
+        {
+            if (_horizontalInputForAnimator > 0f)
+            {
+                _horizontalInputForAnimator -= inputValueRate * (isFastToRun ? quickZeroingRate : 1f);
+                if (_horizontalInputForAnimator < 0f)
+                {
+                    _horizontalInputForAnimator = 0f;
+                }
+            }
+            else if(_horizontalInputForAnimator < 0f)
+            {
+                _horizontalInputForAnimator += inputValueRate * (isFastToRun ? quickZeroingRate : 1f);
+                if (_horizontalInputForAnimator > 0f)
+                {
+                    _horizontalInputForAnimator = 0f;
+                }
+            }
+        }
+        else
+        {
+            // 当垂直方向有摁键输入且垂直方向摁键的值不同，判断是否要快速改变摁键值至0
+            if (MoveInputInfo.MoveRightInput)
+            {
+                if (_horizontalInputForAnimator < 0f && isFastToRun)
+                {
+                    _horizontalInputForAnimator += inputValueRate * quickZeroingRate;
+                }
+                else
+                {
+                    _horizontalInputForAnimator += inputValueRate;
+                }
+            }
+            else
+            {
+                if (_horizontalInputForAnimator > 0f && isFastToRun)
+                {
+                    _horizontalInputForAnimator -= inputValueRate * quickZeroingRate;
+                }
+                else
+                {
+                    _horizontalInputForAnimator -= inputValueRate;
+                }
+            }
+            
+            if (_horizontalInputForAnimator > 1f)
+            {
+                _horizontalInputForAnimator = 1f;
+            }
+
+            if (_horizontalInputForAnimator < -1f)
+            {
+                _horizontalInputForAnimator = -1f;
+            }
+        }
     }
 
     // 更新当前是否处于地面与玩家当前是否在可运动角度范围内的斜面上
@@ -456,9 +654,31 @@ public class PlayerMovementStateMachine : StateMachine
     }
 
     // 获取当前状态的状态名(状态名为状态类内部成员参数string name)
-    public string GetNowState()
+    public string GetNowStateString()
     {
-        return _currentState.name;
+        switch (_currentState.state)
+        {
+            case E_State.Idle:
+                return "Idle";
+            case E_State.Walk:
+                return "Walk";
+            case E_State.Run:
+                return "Run";
+            case E_State.Squat:
+                return "Squat";
+            case E_State.Jump:
+                return "Jump";
+            case E_State.Fall:
+                return "Fall";
+            case E_State.Sliding:
+                return "Sliding";
+            case E_State.WallRunning:
+                return "WallRunning";
+            case E_State.Climb:
+                return "Climb";
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
     // 限制玩家水平速度值在当前最大速度内
@@ -467,9 +687,14 @@ public class PlayerMovementStateMachine : StateMachine
         UpdateXozVelocity();
         if (playerXozSpeed > nowMoveSpeed)
         {
-            _calVelocity = playerRigidbody.velocity.normalized * nowMoveSpeed;
+            _velocityWithSpeedRatio = nowMoveSpeed / playerXozSpeed;
+            _calVelocity.x = playerRigidbody.velocity.x * _velocityWithSpeedRatio;
+            _calVelocity.y = playerRigidbody.velocity.y;
+            _calVelocity.z = playerRigidbody.velocity.z * _velocityWithSpeedRatio;
+            
+            playerRigidbody.velocity = _calVelocity;
+            
             playerXozSpeed = nowMoveSpeed;
-            playerRigidbody.velocity = new Vector3(_calVelocity.x, playerRigidbody.velocity.y, _calVelocity.z);
         }
     }
     // 更新玩家刚体当前在XOZ水平面的速度大小标量
@@ -485,9 +710,14 @@ public class PlayerMovementStateMachine : StateMachine
         UpdateXoyVelocity();
         if (playerXoySpeed > nowMoveSpeed)
         {
-            _calVelocity = playerRigidbody.velocity.normalized * nowMoveSpeed;
-            playerXoySpeed = nowMoveSpeed;
-            playerRigidbody.velocity = new Vector3(_calVelocity.x, _calVelocity.y, playerRigidbody.velocity.z);
+            _velocityWithSpeedRatio = nowMoveSpeed / playerXozSpeed;
+            _calVelocity.x = playerRigidbody.velocity.x * _velocityWithSpeedRatio;
+            _calVelocity.y = playerRigidbody.velocity.y * _velocityWithSpeedRatio;
+            _calVelocity.z = playerRigidbody.velocity.z;
+            
+            playerRigidbody.velocity = _calVelocity;
+            
+            playerXozSpeed = nowMoveSpeed;
         }
     }
     // 更新玩家刚体当前在XOY水平面的速度大小标量
@@ -562,9 +792,30 @@ public class PlayerMovementStateMachine : StateMachine
         return Vector3.zero;
     }
     
-    // 获取下方射线与地面击中点与玩家坐标位置的距离
-    public float GetDownHitWithPlayerDistance()
+    // 根据状态设置碰撞盒
+    private void SetColliderByCurrentState()
     {
-        return Vector3.Distance(_downRaycastHit.point, playerTransform.position);
+        if (_currentState.preState.state == E_State.Squat || _currentState.preState.state == E_State.Sliding ||
+            _currentState.state == E_State.Squat || _currentState.state == E_State.Sliding)
+        {
+            switch (_currentState.state)
+            {
+                case E_State.Squat:
+                    squatCollider.gameObject.SetActive(true);
+                    baseCollider.gameObject.SetActive(false);
+                    slidingCollider.gameObject.SetActive(false);
+                    break;
+                case E_State.Sliding:
+                    slidingCollider.gameObject.SetActive(true);
+                    baseCollider.gameObject.SetActive(false);
+                    squatCollider.gameObject.SetActive(false);
+                    break;
+                default:
+                    baseCollider.gameObject.SetActive(true);
+                    squatCollider.gameObject.SetActive(false);
+                    slidingCollider.gameObject.SetActive(false);
+                    break;
+            }
+        }
     }
 }

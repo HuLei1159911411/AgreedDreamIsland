@@ -9,7 +9,7 @@ public class Sliding : BaseState
 
     // 滑铲加速时间计时器
     private float _timer;
-    public Sliding(StateMachine stateMachine) : base("Sliding", stateMachine)
+    public Sliding(StateMachine stateMachine) : base(E_State.Sliding, stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
         {
@@ -27,10 +27,6 @@ public class Sliding : BaseState
              _movementStateMachine.slidingYScale,
             _movementStateMachine.transform.localScale.z);
         
-        // 让玩家贴地
-        // _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.slidingMoveForce * 30f * Vector3.down);
-        _movementStateMachine.playerTransform.position -= new Vector3(0,
-            _movementStateMachine.playerHeight * (1f - _movementStateMachine.slidingYScale) * 0.5f, 0);
         
         // 通过给力移动
         _movementStateMachine.playerRigidbody.AddForce(

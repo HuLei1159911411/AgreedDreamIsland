@@ -13,7 +13,7 @@ public class Climb : BaseState
     // 是否监听玩家何时离开地面
     private bool _listenPlayerIsLeftGround;
     
-    public Climb(StateMachine stateMachine) : base("Climb", stateMachine)
+    public Climb(StateMachine stateMachine) : base(E_State.Climb, stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
         {
@@ -169,15 +169,15 @@ public class Climb : BaseState
     private void InitHasLeftGround()
     {
         _hasLeftGround = false;
-        switch (preState.name)
+        switch (preState.state)
         {
-            case "Jump":
+            case E_State.Jump:
                 _hasLeftGround = true;
                 break;
-            case "Fall":
+            case E_State.Fall:
                 _hasLeftGround = true;
                 break;
-            case "WallRunning":
+            case E_State.WallRunning:
                 _hasLeftGround = true;
                 break;
             default:

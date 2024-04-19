@@ -8,7 +8,7 @@ public class Jump : BaseState
     private PlayerMovementStateMachine _movementStateMachine;
     private Vector3 _velocity;
     
-    public Jump(StateMachine stateMachine) : base("Jump", stateMachine)
+    public Jump(StateMachine stateMachine) : base(E_State.Jump, stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
         {
@@ -38,7 +38,7 @@ public class Jump : BaseState
         if (_movementStateMachine.hasWallOnForward)
         {
             // 前一状态不是WallRunning并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度并且高度满足最低高度要求，切换为滑墙状态
-            if (preState.name != "WallRunning" &&
+            if (preState.state != E_State.WallRunning &&
                 _movementStateMachine.cameraForwardWithWallAbnormalAngle >= _movementStateMachine.climbMaxAngle
                 && _movementStateMachine.nowHigh >= _movementStateMachine.wallRunningMinHigh)
             {
@@ -47,7 +47,7 @@ public class Jump : BaseState
             }
 
             // 前一状态不是Climb并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度切换为滑墙状态
-            if (preState.name != "Climb" && _movementStateMachine.MoveInputInfo.JumpInput &&
+            if (preState.state != E_State.Climb && _movementStateMachine.MoveInputInfo.JumpInput &&
                 _movementStateMachine.cameraForwardWithWallAbnormalAngle < _movementStateMachine.climbMaxAngle)
             {
                 // 摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度小于最大角度切换为攀爬状态
@@ -87,7 +87,7 @@ public class Jump : BaseState
         }
         // 利用公式h = 1 /2 * g * t^2 和 F * t = m * v得
         // 在墙上跳跃时特殊处理
-        if (preState.name == "WallRunning" || preState.name == "Climb")
+        if (preState.state == E_State.WallRunning || preState.state == E_State.Climb)
         {
             // 清空水平方向速度
             _movementStateMachine.playerRigidbody.velocity =

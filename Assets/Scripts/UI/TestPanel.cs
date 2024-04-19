@@ -18,7 +18,7 @@ public class TestPanel : MonoBehaviour
     public Text nowHigh;
     
     private E_CameraView _cameraView;
-    private BaseState _playerState;
+    private string _playerState;
     private bool _playerIsOnGround;
     private bool _playerIsOnSlope;
     private bool _hasWallOnLeft;
@@ -34,7 +34,7 @@ public class TestPanel : MonoBehaviour
         _cameraView = mainCamera.nowView;
         UpdateCameraViewText();
         
-        _playerState = playerMovementStateMachine.CurrentState;
+        _playerState = playerMovementStateMachine.GetNowStateString();
         UpdatePlayerStateText();
 
         _playerIsOnGround = playerMovementStateMachine.isOnGround;
@@ -114,9 +114,9 @@ public class TestPanel : MonoBehaviour
             UpdateCameraViewText();
         }
 
-        if (_playerState != playerMovementStateMachine.CurrentState)
+        if (_playerState != playerMovementStateMachine.GetNowStateString())
         {
-            _playerState = playerMovementStateMachine.CurrentState;
+            _playerState = playerMovementStateMachine.GetNowStateString();
             UpdatePlayerStateText();
         }
 
@@ -176,7 +176,7 @@ public class TestPanel : MonoBehaviour
 
     void UpdatePlayerStateText()
     {
-        switch (_playerState.name)
+        switch (_playerState)
         {
             case "Idle":
                 nowState.text = "空闲";

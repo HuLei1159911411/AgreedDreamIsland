@@ -30,12 +30,13 @@ public class StateMachine : MonoBehaviour
         }
     }
 
-    public void ChangeState(BaseState newState)
+    public virtual void ChangeState(BaseState newState)
     {
         _currentState.Exit();
         
         newState.preState = _currentState;
         _currentState = newState;
+        
         _currentState.Enter();
     }
 

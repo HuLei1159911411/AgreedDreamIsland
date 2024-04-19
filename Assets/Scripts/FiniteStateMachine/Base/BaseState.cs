@@ -5,13 +5,14 @@ using UnityEngine;
 
 public class BaseState
 {
-    public string name;
+    public E_State state;
     public BaseState preState;
+    public float minSpeed;
     protected StateMachine stateMachine;
 
-    public BaseState(string name, StateMachine stateMachine)
+    public BaseState(E_State state, StateMachine stateMachine)
     {
-        this.name = name;
+        this.state = state;
         this.stateMachine = stateMachine;
     }
 

@@ -8,7 +8,7 @@ public class Run : BaseState
     // 滑铲CD计时器
     private float _timer;
 
-    public Run(StateMachine stateMachine) : base("Run", stateMachine)
+    public Run(StateMachine stateMachine) : base(E_State.Run, stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
         {
@@ -20,12 +20,14 @@ public class Run : BaseState
     {
         base.Enter();
         _timer = 0;
-        _movementStateMachine.isFastToRun = true;
+        SetMinSpeed();
+        _movementStateMachine.isFastToRun = false;
     }
 
     public override void Exit()
     {
         base.Exit();
+        _movementStateMachine.isFastToRun = true;
     }
 
     public override void UpdateLogic()
@@ -90,8 +92,7 @@ public class Run : BaseState
         }
 
         // 松开WASD或摁住WS或摁住AD或摁住WASD
-        if (_movementStateMachine.MoveInputInfo.HorizontalInput == 0 &&
-            _movementStateMachine.MoveInputInfo.VerticalInput == 0)
+        if (_movementStateMachine.MoveInputInfo.VerticalInput == 0 && _movementStateMachine.MoveInputInfo.HorizontalInput == 0)
         {
             stateMachine.ChangeState(_movementStateMachine.IdleState);
             return true;
@@ -110,33 +111,62 @@ public class Run : BaseState
 
     private void UpdateDirectionWithSpeed()
     {
-        // 保持移动
         // 更新移动方向
         _movementStateMachine.direction = _movementStateMachine.playerTransform.forward *
                                           _movementStateMachine.MoveInputInfo.VerticalInput;
         _movementStateMachine.direction += _movementStateMachine.playerTransform.right *
                                            _movementStateMachine.MoveInputInfo.HorizontalInput;
         _movementStateMachine.direction = _movementStateMachine.direction.normalized;
-        // 更新当前方向移动速度(有水平方向移动的输入则以水平速度为主)
-        if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0)
+        // 更新当前方向移动速度(水平和垂直方向均有输入则速度为水平速度和垂直速度的较小值)
+        if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0 && _movementStateMachine.MoveInputInfo.VerticalInput != 0)
         {
-            // 更新当前速度为水平速度
-            _movementStateMachine.nowMoveSpeed = _movementStateMachine.walkHorizontalSpeed *
-                                                 (_movementStateMachine.runForwardSpeed /
-                                                  _movementStateMachine.walkForwardSpeed);
+            // 更新当前速度为当前水平方向和垂直方向速度较小值
+            // 向前与水平混合
+            if (_movementStateMachine.MoveInputInfo.MoveForwardInput)
+            {
+                _movementStateMachine.nowMoveSpeed =
+                    _movementStateMachine.runForwardSpeed < _movementStateMachine.runHorizontalSpeed
+                        ? _movementStateMachine.runForwardSpeed
+                        : _movementStateMachine.runHorizontalSpeed;
+            }
+            // 向后与水平混合
+            else
+            {
+                _movementStateMachine.nowMoveSpeed =
+                    _movementStateMachine.runBackwardSpeed < _movementStateMachine.runHorizontalSpeed
+                        ? _movementStateMachine.runBackwardSpeed
+                        : _movementStateMachine.runHorizontalSpeed;
+            }
         }
         else
         {
-            if (_movementStateMachine.MoveInputInfo.MoveForwardInput)
+            if (_movementStateMachine.MoveInputInfo.VerticalInput == 1)
             {
                 // 更新当前速度为前进速度
                 _movementStateMachine.nowMoveSpeed = _movementStateMachine.runForwardSpeed;
             }
-            else
+            if (_movementStateMachine.MoveInputInfo.VerticalInput == -1)
             {
                 // 更新当前速度为后退速度
-                _movementStateMachine.nowMoveSpeed = _movementStateMachine.walkBackwardSpeed;
+                _movementStateMachine.nowMoveSpeed = _movementStateMachine.runBackwardSpeed;
+            }
+
+            if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0)
+            {
+                // 更新当前速度为水平移动速度
+                _movementStateMachine.nowMoveSpeed = _movementStateMachine.runHorizontalSpeed;
             }
         }
+    }
+    
+    // 设置当前状态的最小最大速度
+    private void SetMinSpeed()
+    {
+        minSpeed = _movementStateMachine.runForwardSpeed < _movementStateMachine.runBackwardSpeed
+            ? _movementStateMachine.runForwardSpeed
+            : _movementStateMachine.runBackwardSpeed;
+        minSpeed = minSpeed < _movementStateMachine.runHorizontalSpeed
+            ? minSpeed
+            : _movementStateMachine.runHorizontalSpeed;
     }
 }

@@ -13,7 +13,7 @@ public class WallRunning : BaseState
     // 经过计算后更符合玩家面朝向与在墙壁上移动方向情况的驱动玩家在墙上运动的力的大小
     private float _calWallRunningForce;
     
-    public WallRunning(StateMachine stateMachine) : base("WallRunning", stateMachine)
+    public WallRunning(StateMachine stateMachine) : base(E_State.WallRunning, stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
         {
@@ -25,7 +25,7 @@ public class WallRunning : BaseState
     {
         base.Enter();
         // 前一状态时Climb状态则继承其攀爬的时间
-        if (preState.name == "Climb")
+        if (preState.state == E_State.Climb)
         {
             _timer = (preState as Climb)._climbTimer;
         }

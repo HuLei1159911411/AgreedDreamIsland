@@ -6,7 +6,7 @@ public class Squat : BaseState
 {
     private PlayerMovementStateMachine _movementStateMachine;
 
-    public Squat(StateMachine stateMachine) : base("Squat", stateMachine)
+    public Squat(StateMachine stateMachine) : base(E_State.Squat, stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
         {
@@ -17,31 +17,14 @@ public class Squat : BaseState
     public override void Enter()
     {
         base.Enter();
-
-        // 将玩家模型压缩一半达到蹲下效果，之后导入模型和动作后改成播放对应动作，这里要改掉
-        _movementStateMachine.transform.localScale = new Vector3(_movementStateMachine.transform.localScale.x,
-            _movementStateMachine.squatYScale,
-            _movementStateMachine.transform.localScale.z);
         
-        // 让玩家贴地
-        // _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.squatMoveForce * 30f * Vector3.down);
-        _movementStateMachine.playerTransform.position -= new Vector3(0,
-            _movementStateMachine.playerHeight * (1f - _movementStateMachine.slidingYScale) * 0.5f, 0);
+        SetMinSpeed();
     }
 
     public override void Exit()
     {
         base.Exit();
-
-        // 让玩家远离地面
-        // _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.squatMoveForce * Vector3.up);
-        _movementStateMachine.playerTransform.position += new Vector3(0,
-            _movementStateMachine.playerHeight * (1f - _movementStateMachine.slidingYScale) * 0.5f, 0);
-
-        // 将玩家模型还原，之后导入模型和动作后改成播放对应动作，这里要改掉
-        _movementStateMachine.transform.localScale = new Vector3(_movementStateMachine.transform.localScale.x,
-            1f,
-            _movementStateMachine.transform.localScale.z);
+        
     }
 
     public override void UpdateLogic()
@@ -119,5 +102,11 @@ public class Squat : BaseState
             
         // 更新速度
         _movementStateMachine.nowMoveSpeed = _movementStateMachine.squatSpeed;
+    }
+    
+    // 设置当前状态的最小最大速度
+    private void SetMinSpeed()
+    {
+        minSpeed = _movementStateMachine.squatSpeed;
     }
 }

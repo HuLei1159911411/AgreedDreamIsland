@@ -1,11 +1,11 @@
-    using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Idle : BaseState
 {
     private PlayerMovementStateMachine _movementStateMachine;
-    public Idle(StateMachine stateMachine) : base("Idle", stateMachine)
+    public Idle(StateMachine stateMachine) : base(E_State.Idle, stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
         {

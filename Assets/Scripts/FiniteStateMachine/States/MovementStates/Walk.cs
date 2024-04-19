@@ -9,7 +9,7 @@ public class Walk : BaseState
     // 玩家摁奔跑键的计时器
     private float _timerPressKey;
 
-    public Walk(StateMachine stateMachine) : base("Walk", stateMachine)
+    public Walk(StateMachine stateMachine) : base(E_State.Walk, stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
         {
@@ -21,6 +21,8 @@ public class Walk : BaseState
     {
         base.Enter();
 
+        SetMinSpeed();
+        
         // 清空计时器
         _timerPressKey = 0f;
         _movementStateMachine.isFastToRun = false;
@@ -108,8 +110,15 @@ public class Walk : BaseState
             return true;
         }
         
+        // 是由向后或向左和向右跑步变为的走路摁前进后恢复跑步
+        if (preState.state == E_State.Run && _movementStateMachine.MoveInputInfo.VerticalInput == 1)
+        {
+            stateMachine.ChangeState(_movementStateMachine.RunState);
+            return true;
+        }
+        
         // 切换Run
-        if (_movementStateMachine.MoveInputInfo.RunInput)
+        if (_movementStateMachine.MoveInputInfo.RunInput && _movementStateMachine.MoveInputInfo.VerticalInput == 1)
         {
             _timerPressKey += Time.deltaTime;
             if (_timerPressKey >= _movementStateMachine.toRunTime)
@@ -134,25 +143,56 @@ public class Walk : BaseState
         _movementStateMachine.direction += _movementStateMachine.playerTransform.right *
                                            _movementStateMachine.MoveInputInfo.HorizontalInput;
         _movementStateMachine.direction = _movementStateMachine.direction.normalized;
-        // 更新当前方向移动速度(有水平方向移动的输入则以水平速度为主)
-        if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0)
+        // 更新当前方向移动速度(水平和垂直方向均有输入则速度为水平速度和垂直速度的较小值)
+        if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0 && _movementStateMachine.MoveInputInfo.VerticalInput != 0)
         {
-            // 更新当前速度为水平速度
-            _movementStateMachine.nowMoveSpeed = _movementStateMachine.walkHorizontalSpeed;
+            // 更新当前速度为当前水平方向和垂直方向速度较小值
+            // 向前与水平混合
+            if (_movementStateMachine.MoveInputInfo.MoveForwardInput)
+            {
+                _movementStateMachine.nowMoveSpeed =
+                    _movementStateMachine.walkForwardSpeed < _movementStateMachine.walkHorizontalSpeed
+                        ? _movementStateMachine.walkForwardSpeed
+                        : _movementStateMachine.walkHorizontalSpeed;
+            }
+            // 向后与水平混合
+            else
+            {
+                _movementStateMachine.nowMoveSpeed =
+                    _movementStateMachine.walkBackwardSpeed < _movementStateMachine.walkHorizontalSpeed
+                        ? _movementStateMachine.walkBackwardSpeed
+                        : _movementStateMachine.walkHorizontalSpeed;
+            }
         }
-        // 保持移动
         else
         {
-            if (_movementStateMachine.MoveInputInfo.MoveForwardInput)
+            if (_movementStateMachine.MoveInputInfo.VerticalInput == 1)
             {
                 // 更新当前速度为前进速度
                 _movementStateMachine.nowMoveSpeed = _movementStateMachine.walkForwardSpeed;
             }
-            else
+            if (_movementStateMachine.MoveInputInfo.VerticalInput == -1)
             {
                 // 更新当前速度为后退速度
                 _movementStateMachine.nowMoveSpeed = _movementStateMachine.walkBackwardSpeed;
             }
+
+            if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0)
+            {
+                // 更新当前速度为水平移动速度
+                _movementStateMachine.nowMoveSpeed = _movementStateMachine.walkHorizontalSpeed;
+            }
         }
+    }
+
+    // 设置当前状态的最小最大速度
+    private void SetMinSpeed()
+    {
+        minSpeed = _movementStateMachine.walkForwardSpeed < _movementStateMachine.walkBackwardSpeed
+            ? _movementStateMachine.walkForwardSpeed
+            : _movementStateMachine.walkBackwardSpeed;
+        minSpeed = minSpeed < _movementStateMachine.walkHorizontalSpeed
+            ? minSpeed
+            : _movementStateMachine.walkHorizontalSpeed;
     }
 }

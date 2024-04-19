@@ -16,7 +16,7 @@ public class Fall : BaseState
     // 是否松开过下蹲或滑铲键
     private bool _isReleaseSquatInput;
 
-    public Fall(StateMachine stateMachine) : base("Fall", stateMachine)
+    public Fall(StateMachine stateMachine) : base(E_State.Fall, stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
         {
@@ -86,7 +86,7 @@ public class Fall : BaseState
         if (_movementStateMachine.hasWallOnForward)
         {
             // 前一状态不是WallRunning并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度切换为滑墙状态
-            if (preState.name != "WallRunning" && _movementStateMachine.cameraForwardWithWallAbnormalAngle >=
+            if (preState.state != E_State.WallRunning && _movementStateMachine.cameraForwardWithWallAbnormalAngle >=
                 _movementStateMachine.climbMaxAngle &&
                 _movementStateMachine.nowHigh >= _movementStateMachine.wallRunningMinHigh)
             {
@@ -95,7 +95,7 @@ public class Fall : BaseState
             }
 
             // 前一状态不是Climb并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度切换为滑墙状态
-            if (preState.name != "Climb" && _movementStateMachine.MoveInputInfo.JumpInput &&
+            if (preState.state != E_State.Climb && _movementStateMachine.MoveInputInfo.JumpInput &&
                 _movementStateMachine.cameraForwardWithWallAbnormalAngle < _movementStateMachine.climbMaxAngle)
             {
                 // 摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度小于最大角度切换为攀爬状态
@@ -105,7 +105,7 @@ public class Fall : BaseState
         }
         
         // 左右两边有墙壁
-        if (preState.name != "WallRunning" &&
+        if (preState.state != E_State.WallRunning &&
             (_movementStateMachine.hasWallOnLeft && _movementStateMachine.MoveInputInfo.MoveLeftInput ||
              _movementStateMachine.hasWallOnRight && _movementStateMachine.MoveInputInfo.MoveRightInput))
         {
@@ -140,29 +140,29 @@ public class Fall : BaseState
         _movementStateMachine.direction = _movementStateMachine.direction.normalized;
     }
 
-    private void SetFallSpeedByState(BaseState state)
+    private void SetFallSpeedByState(BaseState State)
     {
-        switch (state.name)
+        switch (State.state)
         {
-            case "Walk":
+            case E_State.Walk:
                 _movementStateMachine.fallSpeed = _movementStateMachine.walkHorizontalSpeed;
                 break;
-            case "Run":
+            case E_State.Run:
                 _movementStateMachine.fallSpeed = _movementStateMachine.walkHorizontalSpeed;
                 break;
-            case "Squat":
+            case E_State.Squat:
                 _movementStateMachine.fallSpeed = _movementStateMachine.squatSpeed;
                 break;
-            case "Sliding":
+            case E_State.Sliding:
                 _movementStateMachine.fallSpeed = _movementStateMachine.slidingSpeed;
                 break;
-            case "Jump":
-                SetFallSpeedByState(state.preState);
+            case E_State.Jump:
+                SetFallSpeedByState(State.preState);
                 break;
-            case "WallRunning":
+            case E_State.WallRunning:
                 _movementStateMachine.fallSpeed = _movementStateMachine.wallRunningForwardSpeed;
                 break;
-            case "Climb":
+            case E_State.Climb:
                 _movementStateMachine.fallSpeed = _movementStateMachine.climbHorizontalSpeed;
                 break;
         }
