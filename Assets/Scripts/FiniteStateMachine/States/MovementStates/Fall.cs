@@ -31,8 +31,7 @@ public class Fall : BaseState
         _isReleaseSquatInput = false;
         _fallSpeed = _movementStateMachine.fallSpeed;
 
-        SetFallSpeedByState(preState);
-
+        SetFallSpeedByState();
         _movementStateMachine.nowMoveSpeed = _movementStateMachine.fallSpeed;
     }
 
@@ -116,14 +115,21 @@ public class Fall : BaseState
         // 落地
         if (_movementStateMachine.isOnGround)
         {
-            if (_isFastFall || !_movementStateMachine.isFastToRun)
+            if (_isFastFall)
             {
                 _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
             }
-            else
+            else if(_movementStateMachine.isFastToRun)
             {
                 _movementStateMachine.ChangeState(_movementStateMachine.RunState);
-            } 
+            } else if (_movementStateMachine.MoveInputInfo.VerticalInput != 0)
+            {
+                _movementStateMachine.ChangeState(_movementStateMachine.WalkState);
+            }
+            else
+            {
+                _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
+            }
             return true;
         }
 
@@ -140,30 +146,14 @@ public class Fall : BaseState
         _movementStateMachine.direction = _movementStateMachine.direction.normalized;
     }
 
-    private void SetFallSpeedByState(BaseState State)
+    private void SetFallSpeedByState()
     {
-        switch (State.state)
+        switch (preState.state)
         {
-            case E_State.Walk:
-                _movementStateMachine.fallSpeed = _movementStateMachine.walkHorizontalSpeed;
+            case E_State.Idle:
                 break;
-            case E_State.Run:
-                _movementStateMachine.fallSpeed = _movementStateMachine.walkHorizontalSpeed;
-                break;
-            case E_State.Squat:
-                _movementStateMachine.fallSpeed = _movementStateMachine.squatSpeed;
-                break;
-            case E_State.Sliding:
-                _movementStateMachine.fallSpeed = _movementStateMachine.slidingSpeed;
-                break;
-            case E_State.Jump:
-                SetFallSpeedByState(State.preState);
-                break;
-            case E_State.WallRunning:
-                _movementStateMachine.fallSpeed = _movementStateMachine.wallRunningForwardSpeed;
-                break;
-            case E_State.Climb:
-                _movementStateMachine.fallSpeed = _movementStateMachine.climbHorizontalSpeed;
+            default:
+                _fallSpeed = preState.minSpeed;
                 break;
         }
     }

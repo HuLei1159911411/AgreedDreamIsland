@@ -205,6 +205,9 @@ public class TestPanel : MonoBehaviour
             case "Climb":
                 nowState.text = "攀爬";
                 break;
+            case "Null":
+                nowState.text = "初始化";
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }

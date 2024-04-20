@@ -9,7 +9,7 @@ public class PreviewCamera : MonoBehaviour
 {
     public CameraController MainCamera;
 
-#if UNITY_EDITOR
+
     void OnGUI()
     {
         if (GUI.Button(new Rect(200, 30, 120, 50), "预览第一人称"))
@@ -28,6 +28,7 @@ public class PreviewCamera : MonoBehaviour
         }
     }
 
+#if UNITY_EDITOR
     // 若需保证Editor下一直调用Update、OnGUI这些函数加入下面的函数，强制在OnDrawGizmos()中调用场景刷新的API，不需要的时候注释OnDrawGizmos()
     void OnDrawGizmos()
     {

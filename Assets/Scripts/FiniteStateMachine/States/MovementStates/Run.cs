@@ -53,7 +53,8 @@ public class Run : BaseState
         {
             // 通过给力移动
             _movementStateMachine.playerRigidbody.AddForce(
-                _movementStateMachine.nowMoveSpeed * _movementStateMachine.runMoveForce * _movementStateMachine.direction, ForceMode.Force);
+                _movementStateMachine.nowMoveSpeed * _movementStateMachine.runMoveForce *
+                _movementStateMachine.direction, ForceMode.Force);
         }
         else
         {
@@ -92,7 +93,8 @@ public class Run : BaseState
         }
 
         // 松开WASD或摁住WS或摁住AD或摁住WASD
-        if (_movementStateMachine.MoveInputInfo.VerticalInput == 0 && _movementStateMachine.MoveInputInfo.HorizontalInput == 0)
+        if (_movementStateMachine.MoveInputInfo.VerticalInput == 0 && 
+            _movementStateMachine.MoveInputInfo.HorizontalInput == 0)
         {
             stateMachine.ChangeState(_movementStateMachine.IdleState);
             return true;

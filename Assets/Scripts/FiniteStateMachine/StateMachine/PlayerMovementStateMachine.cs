@@ -307,7 +307,7 @@ public class PlayerMovementStateMachine : StateMachine
                 case E_State.Run:
                 case E_State.Squat:
                 case E_State.Sliding:
-                    playerRigidbody.AddForce(playerRigidbody.mass * 9.18f * Vector3
+                    playerRigidbody.AddForce(Mathf.Cos(slopeAngle) * playerRigidbody.mass * 9.18f * Vector3
                         .ProjectOnPlane(Vector3.down, _downRaycastHit.normal)
                         .normalized);
                     break;
@@ -394,17 +394,20 @@ public class PlayerMovementStateMachine : StateMachine
         MoveInputInfo.RunInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Run]);
         MoveInputInfo.SquatInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Squat]);
         MoveInputInfo.SlidingInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Sliding]);
-        
-        playerAnimator.SetBool(DicAnimatorIndexes["MoveForwardInput"], MoveInputInfo.MoveForwardInput);
-        playerAnimator.SetBool(DicAnimatorIndexes["MoveBackwardInput"], MoveInputInfo.MoveBackwardInput);
-        playerAnimator.SetBool(DicAnimatorIndexes["MoveLeftInput"], MoveInputInfo.MoveLeftInput);
-        playerAnimator.SetBool(DicAnimatorIndexes["MoveRightInput"], MoveInputInfo.MoveRightInput);
-        playerAnimator.SetFloat(DicAnimatorIndexes["VerticalInput"], _verticalInputForAnimator);
-        playerAnimator.SetFloat(DicAnimatorIndexes["HorizontalInput"], _horizontalInputForAnimator);
-        playerAnimator.SetBool(DicAnimatorIndexes["JumpInput"], MoveInputInfo.JumpInput);
-        playerAnimator.SetBool(DicAnimatorIndexes["RunInput"], MoveInputInfo.RunInput);
-        playerAnimator.SetBool(DicAnimatorIndexes["SquatInput"], MoveInputInfo.SquatInput);
-        playerAnimator.SetBool(DicAnimatorIndexes["SlidingInput"], MoveInputInfo.SlidingInput);
+
+        if (!(DicAnimatorIndexes is null))
+        {
+            playerAnimator.SetBool(DicAnimatorIndexes["MoveForwardInput"], MoveInputInfo.MoveForwardInput);
+            playerAnimator.SetBool(DicAnimatorIndexes["MoveBackwardInput"], MoveInputInfo.MoveBackwardInput);
+            playerAnimator.SetBool(DicAnimatorIndexes["MoveLeftInput"], MoveInputInfo.MoveLeftInput);
+            playerAnimator.SetBool(DicAnimatorIndexes["MoveRightInput"], MoveInputInfo.MoveRightInput);
+            playerAnimator.SetFloat(DicAnimatorIndexes["VerticalInput"], _verticalInputForAnimator);
+            playerAnimator.SetFloat(DicAnimatorIndexes["HorizontalInput"], _horizontalInputForAnimator);
+            playerAnimator.SetBool(DicAnimatorIndexes["JumpInput"], MoveInputInfo.JumpInput);
+            playerAnimator.SetBool(DicAnimatorIndexes["RunInput"], MoveInputInfo.RunInput);
+            playerAnimator.SetBool(DicAnimatorIndexes["SquatInput"], MoveInputInfo.SquatInput);
+            playerAnimator.SetBool(DicAnimatorIndexes["SlidingInput"], MoveInputInfo.SlidingInput);
+        }
     }
     
     // 更新MoveInputInfo中VerticalInput与HorizontalInput的值
@@ -620,6 +623,14 @@ public class PlayerMovementStateMachine : StateMachine
                 playerRigidbody.drag = InfoManager.Instance.airDrag;
             }
         }
+
+        // 在Animator组件上同步更新变量值
+        if (!(DicAnimatorIndexes is null) && DicAnimatorIndexes.ContainsKey("isOnGround") &&
+            DicAnimatorIndexes.ContainsKey("isOnSlope"))
+        {
+            playerAnimator.SetBool(DicAnimatorIndexes["isOnGround"], isOnGround);
+            playerAnimator.SetBool(DicAnimatorIndexes["isOnSlope"], isOnSlope);
+        }
     }
     
     // 向左右发射射线检测并且更新当前左边右边和前面的最大检测距离内是否存在可供滑行的墙壁
@@ -656,6 +667,10 @@ public class PlayerMovementStateMachine : StateMachine
     // 获取当前状态的状态名(状态名为状态类内部成员参数string name)
     public string GetNowStateString()
     {
+        if (_currentState is null)
+        {
+            return "Null";
+        }
         switch (_currentState.state)
         {
             case E_State.Idle:
@@ -689,7 +704,16 @@ public class PlayerMovementStateMachine : StateMachine
         {
             _velocityWithSpeedRatio = nowMoveSpeed / playerXozSpeed;
             _calVelocity.x = playerRigidbody.velocity.x * _velocityWithSpeedRatio;
-            _calVelocity.y = playerRigidbody.velocity.y;
+            // 斜面的话y轴速度同时也要限制不然会导致最终合成的速度方向产生变化导致在斜面上弹跳
+            if (isOnSlope)
+            {
+                _calVelocity.y = playerRigidbody.velocity.y * _velocityWithSpeedRatio;
+            }
+            else
+            {
+                _calVelocity.y = playerRigidbody.velocity.y;
+            }
+            
             _calVelocity.z = playerRigidbody.velocity.z * _velocityWithSpeedRatio;
             
             playerRigidbody.velocity = _calVelocity;
@@ -746,12 +770,6 @@ public class PlayerMovementStateMachine : StateMachine
     public bool CheckIsSlidingUp()
     {
         return Vector3.Angle(GetDirectionOnSlope(), Vector3.up) <= 90f;
-    }
-    
-    // 获取抵消自己加上的斜面重力
-    public Vector3 GetOffsetGravityOnSlope()
-    {
-        return -10f * playerRigidbody.mass * Vector3.ProjectOnPlane(Vector3.down, _downRaycastHit.normal).normalized;
     }
     
     // 获取与左或右墙壁或前相切的方向向量，即墙壁的方向向量，利用墙壁的法向量与向上的单位向量，以上两个向量的叉乘为同时垂直两向量的向量，为与墙壁这一侧面相切的向量

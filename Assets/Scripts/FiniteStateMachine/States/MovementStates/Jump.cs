@@ -8,6 +8,11 @@ public class Jump : BaseState
     private PlayerMovementStateMachine _movementStateMachine;
     private Vector3 _velocity;
     
+    // 是否监听脱离地面
+    private bool _isListenLeftGround;
+    // 是否脱离过地面
+    private bool _hasLeftGround;
+    
     public Jump(StateMachine stateMachine) : base(E_State.Jump, stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
@@ -19,8 +24,10 @@ public class Jump : BaseState
     public override void Enter()
     {
         base.Enter();
-        _movementStateMachine.isOnGround = false;
-        _movementStateMachine.isOnSlope = false;
+        _isListenLeftGround = true;
+        _hasLeftGround = _movementStateMachine.isOnGround;
+        minSpeed = preState.minSpeed;
+        
         DoJump();
     }
 
@@ -33,9 +40,18 @@ public class Jump : BaseState
     public override void UpdateLogic()
     {
         base.UpdatePhysic();
+
+        if (_isListenLeftGround)
+        {
+            if (!_movementStateMachine.isOnGround)
+            {
+                _hasLeftGround = true;
+                _isListenLeftGround = false;
+            }
+        }
         
         // 前方有墙壁
-        if (_movementStateMachine.hasWallOnForward)
+        if (_movementStateMachine.hasWallOnForward && _isListenLeftGround)
         {
             // 前一状态不是WallRunning并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度并且高度满足最低高度要求，切换为滑墙状态
             if (preState.state != E_State.WallRunning &&
@@ -65,8 +81,7 @@ public class Jump : BaseState
         }
         
         // 当向上速度小于等于0时自动转换为Fall状态
-        _velocity = _movementStateMachine.playerRigidbody.velocity;
-        if (_velocity.y <= 0)
+        if (_movementStateMachine.playerRigidbody.velocity.y < 0 && _hasLeftGround)
         {
             _movementStateMachine.ChangeState(_movementStateMachine.FallState);
             return;
@@ -77,14 +92,6 @@ public class Jump : BaseState
     {
         // 确保重力开启
         _movementStateMachine.playerRigidbody.useGravity = true;
-        // 如果是在斜面上跳则抵消自己加的斜面重力并且额外跳的高一点(加两倍遍向上的力)
-        if (_movementStateMachine.isOnSlope)
-        {
-            _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.GetOffsetGravityOnSlope());
-            _movementStateMachine.playerRigidbody.AddForce(
-                Mathf.Sqrt(_movementStateMachine.jumpHigh * (Physics.gravity.y) * (-2)) *
-                _movementStateMachine.playerRigidbody.mass * Vector3.up, ForceMode.Impulse);
-        }
         // 利用公式h = 1 /2 * g * t^2 和 F * t = m * v得
         // 在墙上跳跃时特殊处理
         if (preState.state == E_State.WallRunning || preState.state == E_State.Climb)

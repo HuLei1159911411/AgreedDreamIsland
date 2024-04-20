@@ -14985,12 +14985,12 @@ MonoBehaviour:
   inputValueRate: 0.03
   isQuickZeroing: 1
   quickZeroingRate: 5
-  nowMoveSpeed: 4
+  nowMoveSpeed: 1.5
   isOnGround: 1
   playerXozSpeed: 0
   playerXoySpeed: 0
   isOnSlope: 0
-  direction: {x: -0.018180706, y: 0, z: -0.9998348}
+  direction: {x: 0, y: 0, z: 0}
   hasWallOnLeft: 0
   hasWallOnRight: 0
   hasWallOnForward: 0
@@ -14999,14 +14999,14 @@ MonoBehaviour:
   isFastToRun: 0
   nowHigh: 0.8749999
   isUseSphereCast: 0
-  playerHeight: 2
+  playerHeight: 1.8
   maxSlopeAngle: 45
   walkForwardSpeed: 1.6
   walkBackwardSpeed: 1.5
   walkHorizontalSpeed: 1.5
   walkMoveForce: 10
-  heightOffset: 0.3
-  jumpHigh: 4
+  heightOffset: 0.2
+  jumpHigh: 2
   downSphereCastRadius: 0.5
   runForwardSpeed: 3.5
   runBackwardSpeed: 2
@@ -15022,7 +15022,7 @@ MonoBehaviour:
   slidingYScale: 0.2
   slidingCoolTime: 0.5
   fallGravityScale: 2
-  fallSpeed: 1
+  fallSpeed: 1.5
   wallRunningMinHigh: 1.8
   wallRunningForwardSpeed: 8
   wallRunningVertical: 3
@@ -15563,6 +15563,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1638575321}
     m_Modifications:
+    - target: {fileID: 100104, guid: db0e58d0841b90c478cc919c554c298c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 100106, guid: db0e58d0841b90c478cc919c554c298c, type: 3}
       propertyPath: m_Name
       value: SK_Mannequin
