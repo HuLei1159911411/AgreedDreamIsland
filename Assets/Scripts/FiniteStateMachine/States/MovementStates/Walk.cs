@@ -21,7 +21,7 @@ public class Walk : BaseState
     {
         base.Enter();
 
-        SetMinSpeed();
+        _movementStateMachine.isFastToRun = false;
         
         // 清空计时器
         _timerPressKey = 0f;
@@ -183,16 +183,5 @@ public class Walk : BaseState
                 _movementStateMachine.nowMoveSpeed = _movementStateMachine.walkHorizontalSpeed;
             }
         }
-    }
-
-    // 设置当前状态的最小最大速度
-    private void SetMinSpeed()
-    {
-        minSpeed = _movementStateMachine.walkForwardSpeed < _movementStateMachine.walkBackwardSpeed
-            ? _movementStateMachine.walkForwardSpeed
-            : _movementStateMachine.walkBackwardSpeed;
-        minSpeed = minSpeed < _movementStateMachine.walkHorizontalSpeed
-            ? minSpeed
-            : _movementStateMachine.walkHorizontalSpeed;
     }
 }

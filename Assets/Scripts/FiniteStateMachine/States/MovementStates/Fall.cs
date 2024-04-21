@@ -10,9 +10,6 @@ public class Fall : BaseState
     // 是否是快速降落
     private bool _isFastFall;
 
-    // 设置的Fall状态下水平方向的最大移动速度
-    private float _fallSpeed;
-
     // 是否松开过下蹲或滑铲键
     private bool _isReleaseSquatInput;
 
@@ -29,10 +26,14 @@ public class Fall : BaseState
         base.Enter();
         _isFastFall = false;
         _isReleaseSquatInput = false;
-        _fallSpeed = _movementStateMachine.fallSpeed;
 
-        SetFallSpeedByState();
+        SetNowSpeedByState();
         _movementStateMachine.nowMoveSpeed = _movementStateMachine.fallSpeed;
+    }
+    
+    public override void Exit()
+    {
+        base.Exit();
     }
 
     public override void UpdateLogic()
@@ -59,12 +60,6 @@ public class Fall : BaseState
         _movementStateMachine.playerRigidbody.AddForce((InfoManager.Instance.groundDrag + 1) *
                                                        _movementStateMachine.direction);
         _movementStateMachine.ClampXozVelocity();
-    }
-
-    public override void Exit()
-    {
-        base.Exit();
-        _movementStateMachine.fallSpeed = _fallSpeed;
     }
 
     private bool ListenInputToChangeState()
@@ -119,7 +114,7 @@ public class Fall : BaseState
             {
                 _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
             }
-            else if(_movementStateMachine.isFastToRun)
+            else if(_movementStateMachine.isFastToRun && _movementStateMachine.MoveInputInfo.VerticalInput == 1)
             {
                 _movementStateMachine.ChangeState(_movementStateMachine.RunState);
             } else if (_movementStateMachine.MoveInputInfo.VerticalInput != 0)
@@ -146,15 +141,11 @@ public class Fall : BaseState
         _movementStateMachine.direction = _movementStateMachine.direction.normalized;
     }
 
-    private void SetFallSpeedByState()
+    private void SetNowSpeedByState()
     {
-        switch (preState.state)
+        if (preState.state == E_State.Idle || preState.state == E_State.Jump && preState.preState.state == E_State.Idle)
         {
-            case E_State.Idle:
-                break;
-            default:
-                _fallSpeed = preState.minSpeed;
-                break;
+            _movementStateMachine.nowMoveSpeed = _movementStateMachine.fallSpeed;
         }
     }
 }

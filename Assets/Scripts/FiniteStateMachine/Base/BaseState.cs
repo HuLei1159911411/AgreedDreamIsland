@@ -7,7 +7,6 @@ public class BaseState
 {
     public E_State state;
     public BaseState preState;
-    public float minSpeed;
     protected StateMachine stateMachine;
 
     public BaseState(E_State state, StateMachine stateMachine)

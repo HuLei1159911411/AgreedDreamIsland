@@ -20,8 +20,7 @@ public class Run : BaseState
     {
         base.Enter();
         _timer = 0;
-        SetMinSpeed();
-        _movementStateMachine.isFastToRun = false;
+        
     }
 
     public override void Exit()
@@ -159,16 +158,5 @@ public class Run : BaseState
                 _movementStateMachine.nowMoveSpeed = _movementStateMachine.runHorizontalSpeed;
             }
         }
-    }
-    
-    // 设置当前状态的最小最大速度
-    private void SetMinSpeed()
-    {
-        minSpeed = _movementStateMachine.runForwardSpeed < _movementStateMachine.runBackwardSpeed
-            ? _movementStateMachine.runForwardSpeed
-            : _movementStateMachine.runBackwardSpeed;
-        minSpeed = minSpeed < _movementStateMachine.runHorizontalSpeed
-            ? minSpeed
-            : _movementStateMachine.runHorizontalSpeed;
     }
 }

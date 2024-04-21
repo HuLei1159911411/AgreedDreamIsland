@@ -22,31 +22,12 @@ public class Sliding : BaseState
         base.Enter();
 
         _timer = 0f;
-        // 将玩家模型压缩一半达到滑铲效果，之后导入模型和动作后改成播放对应动作，这里要改掉
-        _movementStateMachine.transform.localScale = new Vector3(_movementStateMachine.transform.localScale.x,
-             _movementStateMachine.slidingYScale,
-            _movementStateMachine.transform.localScale.z);
-        
-        
-        // 通过给力移动
-        _movementStateMachine.playerRigidbody.AddForce(
-            _movementStateMachine.nowMoveSpeed * _movementStateMachine.slidingMoveForce *
-            _movementStateMachine.direction, ForceMode.Force);
     }
 
     public override void Exit()
     {
         base.Exit();
-
-        // 让玩家远离地面
-        // _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.slidingMoveForce * 30f * Vector3.up);
-        _movementStateMachine.playerTransform.position += new Vector3(0,
-            _movementStateMachine.playerHeight * (1f - _movementStateMachine.slidingYScale) * 0.5f, 0);
         
-        // 将玩家模型还原，之后导入模型和动作后改成播放对应动作，这里要改掉
-        _movementStateMachine.transform.localScale = new Vector3(_movementStateMachine.transform.localScale.x,
-            1f,
-            _movementStateMachine.transform.localScale.z);
     }
 
     public override void UpdateLogic()
@@ -94,7 +75,7 @@ public class Sliding : BaseState
     private bool ListenInputToChangeState()
     {
         // 在地面上摁跳跃键
-        if (_movementStateMachine.isOnGround && _movementStateMachine.MoveInputInfo.JumpInput)
+        if (_movementStateMachine.isOnGround && _movementStateMachine.MoveInputInfo.JumpInput && _timer >= _movementStateMachine.slidingAccelerateTime * 0.5f)
         {
             stateMachine.ChangeState(_movementStateMachine.JumpState);
             return true;

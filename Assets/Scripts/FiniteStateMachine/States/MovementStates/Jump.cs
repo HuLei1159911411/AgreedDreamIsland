@@ -26,7 +26,6 @@ public class Jump : BaseState
         base.Enter();
         _isListenLeftGround = true;
         _hasLeftGround = _movementStateMachine.isOnGround;
-        minSpeed = preState.minSpeed;
         
         DoJump();
     }

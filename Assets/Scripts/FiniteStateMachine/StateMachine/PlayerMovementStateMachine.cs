@@ -286,6 +286,8 @@ public class PlayerMovementStateMachine : StateMachine
         
         UpdateHasWallOnForward();
         
+        UpdateAnimatorParameters();
+        
         UpdateXozVelocity();
         
         DrawLine();
@@ -328,6 +330,7 @@ public class PlayerMovementStateMachine : StateMachine
         
         SetColliderByCurrentState();
         playerAnimator.SetInteger(DicAnimatorIndexes["ToState"], (int)newState.state);
+        playerAnimator.SetBool(DicAnimatorIndexes["isFastToRun"], isFastToRun);
     }
 
     private void DrawLine()
@@ -380,9 +383,6 @@ public class PlayerMovementStateMachine : StateMachine
         MoveInputInfo.MoveBackwardInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.MoveBackward]);
         MoveInputInfo.MoveLeftInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.MoveLeft]);
         MoveInputInfo.MoveRightInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.MoveRight]);
-
-        // 更新用于在Animator组件里面给变量HorizontalInput和VerticalInput赋值的类型为float的Input值
-        UpdateVerticalInputWithHorizontalInputForAnimator();
         
         // 更新用于在状态机的不同状态中判断键盘输入的类型为int的Input值
         MoveInputInfo.VerticalInput =
@@ -394,20 +394,6 @@ public class PlayerMovementStateMachine : StateMachine
         MoveInputInfo.RunInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Run]);
         MoveInputInfo.SquatInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Squat]);
         MoveInputInfo.SlidingInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Sliding]);
-
-        if (!(DicAnimatorIndexes is null))
-        {
-            playerAnimator.SetBool(DicAnimatorIndexes["MoveForwardInput"], MoveInputInfo.MoveForwardInput);
-            playerAnimator.SetBool(DicAnimatorIndexes["MoveBackwardInput"], MoveInputInfo.MoveBackwardInput);
-            playerAnimator.SetBool(DicAnimatorIndexes["MoveLeftInput"], MoveInputInfo.MoveLeftInput);
-            playerAnimator.SetBool(DicAnimatorIndexes["MoveRightInput"], MoveInputInfo.MoveRightInput);
-            playerAnimator.SetFloat(DicAnimatorIndexes["VerticalInput"], _verticalInputForAnimator);
-            playerAnimator.SetFloat(DicAnimatorIndexes["HorizontalInput"], _horizontalInputForAnimator);
-            playerAnimator.SetBool(DicAnimatorIndexes["JumpInput"], MoveInputInfo.JumpInput);
-            playerAnimator.SetBool(DicAnimatorIndexes["RunInput"], MoveInputInfo.RunInput);
-            playerAnimator.SetBool(DicAnimatorIndexes["SquatInput"], MoveInputInfo.SquatInput);
-            playerAnimator.SetBool(DicAnimatorIndexes["SlidingInput"], MoveInputInfo.SlidingInput);
-        }
     }
     
     // 更新MoveInputInfo中VerticalInput与HorizontalInput的值
@@ -661,6 +647,31 @@ public class PlayerMovementStateMachine : StateMachine
         if (hasWallOnForward)
         {
             UpdateCameraForwardWithWallAbnormalAngle();
+        }
+    }
+    
+    // 在Animator组件中更新参数
+    private void UpdateAnimatorParameters()
+    {
+        // 更新用于在Animator组件里面给变量HorizontalInput和VerticalInput赋值的类型为float的Input值
+        UpdateVerticalInputWithHorizontalInputForAnimator();
+        
+        if (!(DicAnimatorIndexes is null))
+        {
+            playerAnimator.SetBool(DicAnimatorIndexes["MoveForwardInput"], MoveInputInfo.MoveForwardInput);
+            playerAnimator.SetBool(DicAnimatorIndexes["MoveBackwardInput"], MoveInputInfo.MoveBackwardInput);
+            playerAnimator.SetBool(DicAnimatorIndexes["MoveLeftInput"], MoveInputInfo.MoveLeftInput);
+            playerAnimator.SetBool(DicAnimatorIndexes["MoveRightInput"], MoveInputInfo.MoveRightInput);
+            playerAnimator.SetFloat(DicAnimatorIndexes["VerticalInput"], _verticalInputForAnimator);
+            playerAnimator.SetFloat(DicAnimatorIndexes["HorizontalInput"], _horizontalInputForAnimator);
+            playerAnimator.SetBool(DicAnimatorIndexes["JumpInput"], MoveInputInfo.JumpInput);
+            playerAnimator.SetBool(DicAnimatorIndexes["RunInput"], MoveInputInfo.RunInput);
+            playerAnimator.SetBool(DicAnimatorIndexes["SquatInput"], MoveInputInfo.SquatInput);
+            playerAnimator.SetBool(DicAnimatorIndexes["SlidingInput"], MoveInputInfo.SlidingInput);
+            playerAnimator.SetBool(DicAnimatorIndexes["isOnGround"], isOnGround);
+            playerAnimator.SetBool(DicAnimatorIndexes["isOnSlope"], isOnSlope);
+            playerAnimator.SetBool(DicAnimatorIndexes["hasWallOnLeft"], hasWallOnLeft);
+            playerAnimator.SetBool(DicAnimatorIndexes["hasWallOnRight"], hasWallOnRight);
         }
     }
 

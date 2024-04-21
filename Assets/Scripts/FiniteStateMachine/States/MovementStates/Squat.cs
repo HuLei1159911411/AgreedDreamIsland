@@ -17,8 +17,9 @@ public class Squat : BaseState
     public override void Enter()
     {
         base.Enter();
+
+        _movementStateMachine.isFastToRun = false;
         
-        SetMinSpeed();
     }
 
     public override void Exit()
@@ -102,11 +103,5 @@ public class Squat : BaseState
             
         // 更新速度
         _movementStateMachine.nowMoveSpeed = _movementStateMachine.squatSpeed;
-    }
-    
-    // 设置当前状态的最小最大速度
-    private void SetMinSpeed()
-    {
-        minSpeed = _movementStateMachine.squatSpeed;
     }
 }
