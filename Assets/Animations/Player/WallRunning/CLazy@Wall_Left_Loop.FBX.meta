@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 651037a9c9046d946aa32f8fd7b98791
+guid: 82fc1db5510fd814998ba32950f2f734
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable:
@@ -437,7 +437,7 @@ ModelImporter:
     second: CLazyRunner
   - first:
       74: 7400000
-    second: Wall_Left_Start
+    second: Wall_Left_Loop
   - first:
       95: 9500000
     second: //RootNode
@@ -463,10 +463,10 @@ ModelImporter:
     rigImportErrors: 
     rigImportWarnings: "Copied Avatar Rig Configuration mis-match. Bone length in
       copied configuration does not match position in animation file:\n\t'thigh_l'
-      : position error = 26.334082 mm\n\t'calf_l' : position error = 9.012853 mm\n\t'foot_l'
-      : position error = 8.593310 mm\n\t'ball_l' : position error = 2.209859 mm\n\t'thigh_r'
-      : position error = 11.319603 mm\n\t'calf_r' : position error = 10.231188 mm\n\t'foot_r'
-      : position error = 11.969149 mm\n\t'ball_r' : position error = 8.306018 mm\n"
+      : position error = 26.985638 mm\n\t'calf_l' : position error = 18.905548 mm\n\t'foot_l'
+      : position error = 12.230120 mm\n\t'ball_l' : position error = 5.698235 mm\n\t'thigh_r'
+      : position error = 15.796652 mm\n\t'calf_r' : position error = 6.908084 mm\n\t'foot_r'
+      : position error = 11.538867 mm\n\t'ball_r' : position error = 13.140696 mm\n"
     animationImportErrors: 
     animationImportWarnings: "\nClip 'Take 001' has import animation warnings that
       might lower retargeting quality:\nNote: Activate translation DOF on avatar
@@ -476,18 +476,10 @@ ModelImporter:
       animation that will be discarded.\n\t'upperarm_l' has translation animation
       that will be discarded.\n\t'lowerarm_l' has translation animation that will
       be discarded.\n\t'hand_l' has translation animation that will be discarded.\n\t'index_01_l'
-      has translation animation that will be discarded.\n\t'index_02_l' has translation
-      animation that will be discarded.\n\t'index_03_l' has translation animation
-      that will be discarded.\n\t'middle_01_l' has translation animation that will
-      be discarded.\n\t'middle_02_l' has translation animation that will be discarded.\n\t'middle_03_l'
-      has translation animation that will be discarded.\n\t'pinky_01_l' has translation
-      animation that will be discarded.\n\t'pinky_02_l' has translation animation
-      that will be discarded.\n\t'pinky_03_l' has translation animation that will
-      be discarded.\n\t'ring_01_l' has translation animation that will be discarded.\n\t'ring_02_l'
-      has translation animation that will be discarded.\n\t'ring_03_l' has translation
-      animation that will be discarded.\n\t'thumb_01_l' has translation animation
-      that will be discarded.\n\t'thumb_02_l' has translation animation that will
-      be discarded.\n\t'thumb_03_l' has translation animation that will be discarded.\n\t'clavicle_r'
+      has translation animation that will be discarded.\n\t'middle_01_l' has translation
+      animation that will be discarded.\n\t'pinky_01_l' has translation animation
+      that will be discarded.\n\t'ring_01_l' has translation animation that will
+      be discarded.\n\t'thumb_01_l' has translation animation that will be discarded.\n\t'clavicle_r'
       has translation animation that will be discarded.\n\t'upperarm_r' has translation
       animation that will be discarded.\n\t'lowerarm_r' has translation animation
       that will be discarded.\n\t'hand_r' has translation animation that will be
@@ -524,11 +516,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Wall_LDash_Start
+      name: Wall_Left_Loop
       takeName: Take 001
       internalID: 0
       firstFrame: 0
-      lastFrame: 13
+      lastFrame: 16
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

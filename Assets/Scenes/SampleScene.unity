@@ -15635,9 +15635,9 @@ MonoBehaviour:
   isUseSphereCast: 0
   playerHeight: 1.8
   maxSlopeAngle: 45
-  walkForwardSpeed: 1.6
-  walkBackwardSpeed: 1.5
-  walkHorizontalSpeed: 1.5
+  walkForwardSpeed: 2
+  walkBackwardSpeed: 1.8
+  walkHorizontalSpeed: 1.8
   walkMoveForce: 10
   heightOffset: 0.2
   jumpHigh: 2

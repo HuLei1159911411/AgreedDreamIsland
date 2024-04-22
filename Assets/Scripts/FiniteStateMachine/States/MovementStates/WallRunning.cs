@@ -81,6 +81,7 @@ public class WallRunning : BaseState
     {
         _timer += Time.deltaTime;
         
+        // 边上没有墙或者当前高度已经下降到地面了
         if (_movementStateMachine.nowHigh < _movementStateMachine.wallRunningMinHigh || 
             (!_movementStateMachine.hasWallOnLeft && 
             !_movementStateMachine.hasWallOnRight &&
@@ -89,8 +90,8 @@ public class WallRunning : BaseState
             _movementStateMachine.ChangeState(_movementStateMachine.FallState);
             return true;
         }
-
-        if (_timer < _movementStateMachine.wallRunningTime && _movementStateMachine.MoveInputInfo.JumpInput)
+        
+        if (_movementStateMachine.MoveInputInfo.JumpInput)
         {
             _movementStateMachine.ChangeState(_movementStateMachine.JumpState);
             return true;

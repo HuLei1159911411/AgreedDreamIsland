@@ -105,7 +105,7 @@ public class Jump : BaseState
                 new Vector3(0, _movementStateMachine.playerRigidbody.velocity.y, 0);
             _movementStateMachine.playerRigidbody.AddForce(
                 Mathf.Sqrt(_movementStateMachine.jumpHigh * (Physics.gravity.y) * (-2)) *
-                _movementStateMachine.playerRigidbody.mass * (Vector3.up * 0.5f + _movementStateMachine.GetWallNormal()).normalized,
+                _movementStateMachine.playerRigidbody.mass * (Vector3.up + _movementStateMachine.GetWallNormal()).normalized,
                 ForceMode.Impulse);
         }
         else

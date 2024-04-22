@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 651037a9c9046d946aa32f8fd7b98791
+guid: 65ae61d5a07bede46ae48175e719d057
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable:
@@ -524,7 +524,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Wall_LDash_Start
+      name: Wall_Left_Start
       takeName: Take 001
       internalID: 0
       firstFrame: 0
@@ -535,7 +535,7 @@ ModelImporter:
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 1
+      loopTime: 0
       loopBlend: 0
       loopBlendOrientation: 1
       loopBlendPositionY: 1
