@@ -85,7 +85,7 @@ public class Run : BaseState
         }
 
         // 摁跳跃键
-        if (_movementStateMachine.MoveInputInfo.JumpInput)
+        if (_movementStateMachine.MoveInputInfo.JumpInput && _timer > 0.2f)
         {
             stateMachine.ChangeState(_movementStateMachine.JumpState);
             return true;

@@ -80,7 +80,12 @@ public class Jump : BaseState
         }
         
         // 当向上速度小于等于0时自动转换为Fall状态
-        if (_movementStateMachine.playerRigidbody.velocity.y < 0 && _hasLeftGround)
+        if (_movementStateMachine.isOnSlope && _movementStateMachine.playerXozSpeed < 0.1f && _hasLeftGround)
+        {
+            _movementStateMachine.ChangeState(_movementStateMachine.FallState);
+            return;
+        }
+        if (_movementStateMachine.playerRigidbody.velocity.y <= float.Epsilon && _hasLeftGround)
         {
             _movementStateMachine.ChangeState(_movementStateMachine.FallState);
             return;

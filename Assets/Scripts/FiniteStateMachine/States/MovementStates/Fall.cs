@@ -8,7 +8,7 @@ public class Fall : BaseState
     private PlayerMovementStateMachine _movementStateMachine;
 
     // 是否是快速降落
-    private bool _isFastFall;
+    public bool _isFastFall;
 
     // 是否松开过下蹲或滑铲键
     private bool _isReleaseSquatInput;
@@ -28,7 +28,6 @@ public class Fall : BaseState
         _isReleaseSquatInput = false;
 
         SetNowSpeedByState();
-        _movementStateMachine.nowMoveSpeed = _movementStateMachine.fallSpeed;
     }
     
     public override void Exit()
@@ -117,7 +116,7 @@ public class Fall : BaseState
             else if(_movementStateMachine.isFastToRun && _movementStateMachine.MoveInputInfo.VerticalInput == 1)
             {
                 _movementStateMachine.ChangeState(_movementStateMachine.RunState);
-            } else if (_movementStateMachine.MoveInputInfo.VerticalInput != 0)
+            } else if (_movementStateMachine.MoveInputInfo.VerticalInput == 1)
             {
                 _movementStateMachine.ChangeState(_movementStateMachine.WalkState);
             }

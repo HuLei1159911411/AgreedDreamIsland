@@ -5,6 +5,8 @@ using UnityEngine;
 public class Idle : BaseState
 {
     private PlayerMovementStateMachine _movementStateMachine;
+    // 跳跃冷却计时器
+    private float _timerJump;
     public Idle(StateMachine stateMachine) : base(E_State.Idle, stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
@@ -17,6 +19,7 @@ public class Idle : BaseState
     {
         base.Enter();
 
+        _timerJump = 0f;
         _movementStateMachine.isFastToRun = false;
     }
 
@@ -29,12 +32,21 @@ public class Idle : BaseState
     {
         base.UpdateLogic();
 
+        _timerJump += Time.deltaTime;
+        
         // 不在地面
         if (!_movementStateMachine.isOnGround)
         {
             _movementStateMachine.ChangeState(_movementStateMachine.FallState);
             return;
         }
+
+        // 前一状态为下落并且快速下落
+        if (preState.state == E_State.Fall && (preState as Fall)._isFastFall && _timerJump < 0.5f)
+        {
+            return;
+        }
+        
         // 摁移动键
         if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0 || _movementStateMachine.MoveInputInfo.VerticalInput != 0)
         {
@@ -51,7 +63,7 @@ public class Idle : BaseState
             return;
         }
         // 摁跳跃键
-        if (_movementStateMachine.MoveInputInfo.JumpInput)
+        if (_movementStateMachine.MoveInputInfo.JumpInput && _timerJump > 0.2f)
         {
             stateMachine.ChangeState(_movementStateMachine.JumpState);
             return;

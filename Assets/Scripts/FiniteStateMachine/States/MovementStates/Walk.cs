@@ -8,6 +8,8 @@ public class Walk : BaseState
 
     // 玩家摁奔跑键的计时器
     private float _timerPressKey;
+    // 跳跃冷却计时器
+    private float _timerJump;
 
     public Walk(StateMachine stateMachine) : base(E_State.Walk, stateMachine)
     {
@@ -21,6 +23,7 @@ public class Walk : BaseState
     {
         base.Enter();
 
+        _timerJump = 0f;
         _movementStateMachine.isFastToRun = false;
         
         // 清空计时器
@@ -71,6 +74,7 @@ public class Walk : BaseState
 
     private bool ListenInputToChangeState()
     {
+        _timerJump += Time.deltaTime;
         // 不在地面
         if (!_movementStateMachine.isOnGround)
         {
@@ -89,7 +93,7 @@ public class Walk : BaseState
         }
         
         // 摁跳跃键
-        if (_movementStateMachine.MoveInputInfo.JumpInput)
+        if (_movementStateMachine.MoveInputInfo.JumpInput && _timerJump > 0.2f)
         {
             stateMachine.ChangeState(_movementStateMachine.JumpState);
             return true;

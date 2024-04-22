@@ -1000,7 +1000,6 @@ MonoBehaviour:
   slidingOnSlopeSpeed: 12
   slidingMoveForce: 10
   slidingAccelerateTime: 0.5
-  slidingYScale: 0.2
   slidingCoolTime: 0.5
   fallGravityScale: 2
   fallSpeed: 1
@@ -1104,7 +1103,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.8, y: 1.9, z: 2}
+  m_LocalPosition: {x: 42.59, y: 25.32, z: -5.7200003}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2396,8 +2395,8 @@ Transform:
   m_GameObject: {fileID: 1482141448}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.5, w: 0.8660254}
-  m_LocalPosition: {x: 18, y: 7, z: -5}
-  m_LocalScale: {x: 1, y: 30, z: 10}
+  m_LocalPosition: {x: 32.8, y: 12, z: -4.6}
+  m_LocalScale: {x: 1, y: 50, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 816956813}
@@ -15220,7 +15219,7 @@ Transform:
   m_GameObject: {fileID: 3500921927854055919}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.9, z: 5}
+  m_LocalPosition: {x: 41.79, y: 24.32, z: -2.72}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -15650,11 +15649,10 @@ MonoBehaviour:
   runMoveForce: 8
   squatSpeed: 1.4
   squatMoveForce: 10
-  slidingSpeed: 10
-  slidingOnSlopeSpeed: 12
+  slidingSpeed: 6
+  slidingOnSlopeSpeed: 8
   slidingMoveForce: 10
   slidingAccelerateTime: 0.5
-  slidingYScale: 0.2
   slidingCoolTime: 0.5
   fallGravityScale: 2
   fallSpeed: 1.5

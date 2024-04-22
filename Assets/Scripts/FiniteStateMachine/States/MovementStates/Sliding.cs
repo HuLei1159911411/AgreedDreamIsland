@@ -9,6 +9,7 @@ public class Sliding : BaseState
 
     // 滑铲加速时间计时器
     private float _timer;
+
     public Sliding(StateMachine stateMachine) : base(E_State.Sliding, stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
@@ -27,13 +28,12 @@ public class Sliding : BaseState
     public override void Exit()
     {
         base.Exit();
-        
     }
 
     public override void UpdateLogic()
     {
         base.UpdateLogic();
-        
+
         if (ListenInputToChangeState())
         {
             return;
@@ -67,7 +67,7 @@ public class Sliding : BaseState
                     _movementStateMachine.direction, ForceMode.Force);
             }
         }
-        
+
         // 限制玩家最大速度
         _movementStateMachine.ClampXozVelocity();
     }
@@ -75,34 +75,48 @@ public class Sliding : BaseState
     private bool ListenInputToChangeState()
     {
         // 在地面上摁跳跃键
-        if (_movementStateMachine.isOnGround && _movementStateMachine.MoveInputInfo.JumpInput && _timer >= _movementStateMachine.slidingAccelerateTime * 0.5f)
+        if (_movementStateMachine.isOnGround && _movementStateMachine.MoveInputInfo.JumpInput)
         {
             stateMachine.ChangeState(_movementStateMachine.JumpState);
             return true;
         }
-        
+
         // 滑铲加速未结束(及加速时间未到)
-        if (_timer < _movementStateMachine.slidingAccelerateTime)
+        if (_timer < _movementStateMachine.slidingAccelerateTime && !_movementStateMachine.isOnSlope)
         {
             return false;
         }
-        
+
+        // 结束加速后摁后退键
+        if (_movementStateMachine.MoveInputInfo.VerticalInput == -1)
+        {
+            _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
+            return true;
+        }
+
         // 未松开滑铲键并且水平速度未接近0则不会改变滑铲状态(若松开滑铲键了速度变接近0则变为Idle状态，若速度不接近0则不改变状态)
-        if (_movementStateMachine.playerXozSpeed > 0.1f && _movementStateMachine.MoveInputInfo.SlidingInput)
+        if (_movementStateMachine.playerXozSpeed > 0.3f && _movementStateMachine.MoveInputInfo.SlidingInput)
         {
             return false;
         }
         
-        // 松开WASD或摁住WS或摁住AD或摁住WASD且水平速度已经快接近0
-        if (_movementStateMachine.MoveInputInfo.HorizontalInput == 0 &&
-            _movementStateMachine.MoveInputInfo.VerticalInput == 0 && 
-            _movementStateMachine.playerXozSpeed <= 0.1f)
+        // 滑到空中并且加速结束
+        if (!_movementStateMachine.isOnGround && _timer >= _movementStateMachine.slidingAccelerateTime)
         {
             stateMachine.ChangeState(_movementStateMachine.IdleState);
             return true;
         }
-        else if(_movementStateMachine.MoveInputInfo.HorizontalInput != 0 ||
-                _movementStateMachine.MoveInputInfo.VerticalInput != 0)
+
+        // 松开WASD或摁住WS或摁住AD或摁住WASD且水平速度已经快接近0
+        if (_movementStateMachine.MoveInputInfo.HorizontalInput == 0 &&
+            _movementStateMachine.MoveInputInfo.VerticalInput == 0 &&
+            _movementStateMachine.playerXozSpeed <= 0.3f)
+        {
+            stateMachine.ChangeState(_movementStateMachine.IdleState);
+            return true;
+        }
+        else if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0 ||
+                 _movementStateMachine.MoveInputInfo.VerticalInput != 0)
         {
             stateMachine.ChangeState(_movementStateMachine.RunState);
             return true;
@@ -114,16 +128,25 @@ public class Sliding : BaseState
     private void UpdateDirectionWithSpeed()
     {
         // 更新移动方向
-        _movementStateMachine.direction = _movementStateMachine.playerTransform.forward *
-                                          _movementStateMachine.MoveInputInfo.VerticalInput;
+        if (_movementStateMachine.MoveInputInfo.SlidingInput)
+        {
+            _movementStateMachine.direction = _movementStateMachine.playerTransform.forward;
+        }
+        else
+        {
+            _movementStateMachine.direction = _movementStateMachine.playerTransform.forward *
+                                              _movementStateMachine.MoveInputInfo.VerticalInput;
+        }
+
         _movementStateMachine.direction += _movementStateMachine.playerTransform.right *
                                            _movementStateMachine.MoveInputInfo.HorizontalInput;
         _movementStateMachine.direction = _movementStateMachine.direction.normalized;
-            
+
         // 更新速度
         if (_movementStateMachine.isOnSlope)
         {
-            _movementStateMachine.nowMoveSpeed = _movementStateMachine.slidingOnSlopeSpeed * (1f + 0.5f * (_movementStateMachine.slopeAngle / 90f));
+            _movementStateMachine.nowMoveSpeed = _movementStateMachine.slidingOnSlopeSpeed *
+                                                 (1f + 0.5f * (_movementStateMachine.slopeAngle / 90f));
         }
         else
         {

@@ -172,8 +172,6 @@ public class PlayerMovementStateMachine : StateMachine
     public float slidingMoveForce = 30f;
     // 滑铲加速时间
     public float slidingAccelerateTime = 0.5f;
-    // 滑铲时玩家缩放系数
-    public float slidingYScale = 0.2f;
     // 滑铲冷却时间(进入Run状态后需要过一段时间后才能进行滑铲)
     public float slidingCoolTime = 0.2f;
     
