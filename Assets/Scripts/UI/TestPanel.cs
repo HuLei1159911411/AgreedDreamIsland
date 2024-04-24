@@ -12,7 +12,8 @@ public class TestPanel : MonoBehaviour
     public CameraController mainCamera;
     public Text nowState;
     public Text nowIsOnGround;
-    public Text nowSpeed;
+    public Text nowXozSpeed;
+    public Text nowXoySpeed;
     public Text nowMaxSpeed;
     public Text nowWallState;
     public Text nowHigh;
@@ -26,7 +27,9 @@ public class TestPanel : MonoBehaviour
     private bool _hasWallOnForward;
     private float _nowHigh;
     // 玩家XOZ平面移动速度大小
-    private float _playerSpeed;
+    private float _xozSpeed;
+    // 玩家XOY平面移动速度大小
+    private float _xoySpeed;
     // 玩家当前最大速度
     private float _nowMaxSpeed;
     private void Start()
@@ -41,7 +44,8 @@ public class TestPanel : MonoBehaviour
         _playerIsOnSlope = playerMovementStateMachine.isOnSlope;
         UpdatePlayerIsWhereText();
 
-        _playerSpeed = playerMovementStateMachine.playerXozSpeed;
+        _xozSpeed = playerMovementStateMachine.playerXozSpeed;
+        _xoySpeed = playerMovementStateMachine.playerXoySpeed;
         UpdatePlayerSpeedText();
 
         _nowMaxSpeed = playerMovementStateMachine.nowMoveSpeed;
@@ -55,56 +59,6 @@ public class TestPanel : MonoBehaviour
         _nowHigh = playerMovementStateMachine.nowHigh;
         UpdateNowHigh();
     }
-
-    // void Update()
-    // {
-    //     if (_cameraView != mainCamera.nowView)
-    //     {
-    //         _cameraView = mainCamera.nowView;
-    //         UpdateCameraViewText();
-    //     }
-    //
-    //     if (_playerState != playerMovementStateMachine.CurrentState)
-    //     {
-    //         _playerState = playerMovementStateMachine.CurrentState;
-    //         UpdatePlayerStateText();
-    //     }
-    //
-    //     if (_playerIsOnGround != playerMovementStateMachine.isOnGround || _playerIsOnSlope != playerMovementStateMachine.isOnSlope)
-    //     {
-    //         _playerIsOnGround = playerMovementStateMachine.isOnGround;
-    //         _playerIsOnSlope = playerMovementStateMachine.isOnSlope;
-    //         UpdatePlayerIsWhereText();
-    //     }
-    //
-    //     if (Math.Abs(_playerSpeed - playerMovementStateMachine.playerXozSpeed) > Single.Epsilon)
-    //     {
-    //         _playerSpeed = playerMovementStateMachine.playerXozSpeed;
-    //         UpdatePlayerSpeedText();
-    //     }
-    //
-    //     if (Math.Abs(_nowMaxSpeed - playerMovementStateMachine.nowMoveSpeed) > Single.Epsilon)
-    //     {
-    //         _nowMaxSpeed = playerMovementStateMachine.nowMoveSpeed;
-    //         UpdateNowMaxSpeed();
-    //     }
-    //
-    //     if (_hasWallOnLeft != playerMovementStateMachine.hasWallOnLeft ||
-    //         _hasWallOnRight != playerMovementStateMachine.hasWallOnRight ||
-    //         _hasWallOnForward != playerMovementStateMachine.hasWallOnForward)
-    //     {
-    //         _hasWallOnLeft = playerMovementStateMachine.hasWallOnLeft;
-    //         _hasWallOnRight = playerMovementStateMachine.hasWallOnRight;
-    //         _hasWallOnForward = playerMovementStateMachine.hasWallOnForward;
-    //         UpdateNowWallState();
-    //     }
-    //
-    //     if (_nowHigh != playerMovementStateMachine.nowHigh)
-    //     {
-    //         _nowHigh = playerMovementStateMachine.nowHigh;
-    //         UpdateNowHigh();
-    //     }
-    // }
 
     private void FixedUpdate()
     {
@@ -127,13 +81,15 @@ public class TestPanel : MonoBehaviour
             UpdatePlayerIsWhereText();
         }
 
-        if (Math.Abs(_playerSpeed - playerMovementStateMachine.playerXozSpeed) > Single.Epsilon)
+        if (Mathf.Abs(_xozSpeed - playerMovementStateMachine.playerXozSpeed) > float.Epsilon ||
+            Mathf.Abs(_xoySpeed - playerMovementStateMachine.playerXoySpeed) > float.Epsilon)
         {
-            _playerSpeed = playerMovementStateMachine.playerXozSpeed;
+            _xozSpeed = playerMovementStateMachine.playerXozSpeed;
+            _xoySpeed = playerMovementStateMachine.playerXoySpeed;
             UpdatePlayerSpeedText();
         }
 
-        if (Math.Abs(_nowMaxSpeed - playerMovementStateMachine.nowMoveSpeed) > Single.Epsilon)
+        if (Math.Abs(_nowMaxSpeed - playerMovementStateMachine.nowMoveSpeed) > float.Epsilon)
         {
             _nowMaxSpeed = playerMovementStateMachine.nowMoveSpeed;
             UpdateNowMaxSpeed();
@@ -231,7 +187,8 @@ public class TestPanel : MonoBehaviour
 
     void UpdatePlayerSpeedText()
     {
-        nowSpeed.text = "速度: " + _playerSpeed;
+        nowXozSpeed.text = "Xoz速度: " + _xozSpeed;
+        nowXoySpeed.text = "Xoy速度: " + _xoySpeed;
     }
 
     void UpdateNowMaxSpeed()

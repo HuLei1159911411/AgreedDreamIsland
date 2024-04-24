@@ -56,7 +56,7 @@ public class Fall : BaseState
                                                            Vector3.down);
         }
 
-        _movementStateMachine.playerRigidbody.AddForce((InfoManager.Instance.groundDrag + 1) *
+        _movementStateMachine.playerRigidbody.AddForce((InfoManager.Instance.airDrag + 10) *
                                                        _movementStateMachine.direction);
         _movementStateMachine.ClampXozVelocity();
     }
@@ -74,38 +74,7 @@ public class Fall : BaseState
         {
             _isFastFall = true;
         }
-
-        // 前方有墙壁
-        if (_movementStateMachine.hasWallOnForward)
-        {
-            // 前一状态不是WallRunning并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度切换为滑墙状态
-            if (preState.state != E_State.WallRunning && _movementStateMachine.cameraForwardWithWallAbnormalAngle >=
-                _movementStateMachine.climbMaxAngle &&
-                _movementStateMachine.nowHigh >= _movementStateMachine.wallRunningMinHigh)
-            {
-                _movementStateMachine.ChangeState(_movementStateMachine.WallRunningState);
-                return true;
-            }
-
-            // 前一状态不是Climb并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度切换为滑墙状态
-            if (preState.state != E_State.Climb && _movementStateMachine.MoveInputInfo.JumpInput &&
-                _movementStateMachine.cameraForwardWithWallAbnormalAngle < _movementStateMachine.climbMaxAngle)
-            {
-                // 摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度小于最大角度切换为攀爬状态
-                _movementStateMachine.ChangeState(_movementStateMachine.ClimbState);
-                return true;
-            }
-        }
         
-        // 左右两边有墙壁
-        if (preState.state != E_State.WallRunning &&
-            (_movementStateMachine.hasWallOnLeft && _movementStateMachine.MoveInputInfo.MoveLeftInput ||
-             _movementStateMachine.hasWallOnRight && _movementStateMachine.MoveInputInfo.MoveRightInput))
-        {
-            _movementStateMachine.ChangeState(_movementStateMachine.WallRunningState);
-            return true;
-        }
-
         // 落地
         if (_movementStateMachine.isOnGround)
         {
@@ -126,6 +95,39 @@ public class Fall : BaseState
             }
             return true;
         }
+
+        // 前方有墙壁
+        if (_movementStateMachine.hasWallOnForward)
+        {
+            // 前一状态不是WallRunning并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度切换为滑墙状态
+            // if (preState.state != E_State.WallRunning && _movementStateMachine.cameraForwardWithWallAbnormalAngle >
+            //     _movementStateMachine.climbMaxAngle &&
+            //     _movementStateMachine.nowHigh >= _movementStateMachine.wallRunningMinHigh)
+            // {
+            //     _movementStateMachine.ChangeState(_movementStateMachine.WallRunningState);
+            //     return true;
+            // }
+
+            // 前一状态不是Climb，并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度，并且摁下前进键，切换为攀爬状态
+            if (preState.state != E_State.Climb &&
+                _movementStateMachine.cameraForwardWithWallAbnormalAngle <= _movementStateMachine.climbMaxAngle &&
+                _movementStateMachine.MoveInputInfo.VerticalInput == 1)
+            {
+                // 摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度小于最大角度切换为攀爬状态
+                _movementStateMachine.ChangeState(_movementStateMachine.ClimbState);
+                return true;
+            }
+        }
+        
+        // 左右两边有墙壁
+        if (preState.state != E_State.WallRunning &&
+            (_movementStateMachine.hasWallOnLeft && _movementStateMachine.MoveInputInfo.MoveLeftInput ||
+             _movementStateMachine.hasWallOnRight && _movementStateMachine.MoveInputInfo.MoveRightInput))
+        {
+            _movementStateMachine.ChangeState(_movementStateMachine.WallRunningState);
+            return true;
+        }
+        
 
         return false;
     }

@@ -78,7 +78,7 @@ public class Run : BaseState
         if (_movementStateMachine.MoveInputInfo.MoveForwardInput && 
             _movementStateMachine.MoveInputInfo.JumpInput &&
             _movementStateMachine.hasWallOnForward &&
-            _movementStateMachine.cameraForwardWithWallAbnormalAngle < _movementStateMachine.climbMaxAngle)
+            _movementStateMachine.cameraForwardWithWallAbnormalAngle <= _movementStateMachine.climbMaxAngle)
         {
             stateMachine.ChangeState(_movementStateMachine.ClimbState);
             return true;

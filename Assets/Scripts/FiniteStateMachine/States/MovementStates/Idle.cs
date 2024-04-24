@@ -40,9 +40,9 @@ public class Idle : BaseState
             _movementStateMachine.ChangeState(_movementStateMachine.FallState);
             return;
         }
-
+        
         // 前一状态为下落并且快速下落
-        if (preState.state == E_State.Fall && (preState as Fall)._isFastFall && _timerJump < 0.5f)
+        if (!(preState is null) && preState.state == E_State.Fall && (preState as Fall)._isFastFall && _timerJump < 0.5f)
         {
             return;
         }
@@ -54,7 +54,7 @@ public class Idle : BaseState
             if (_movementStateMachine.MoveInputInfo.MoveForwardInput && 
                 _movementStateMachine.MoveInputInfo.JumpInput &&
                 _movementStateMachine.hasWallOnForward &&
-                _movementStateMachine.cameraForwardWithWallAbnormalAngle < _movementStateMachine.climbMaxAngle)
+                _movementStateMachine.cameraForwardWithWallAbnormalAngle <= _movementStateMachine.climbMaxAngle)
             {
                 stateMachine.ChangeState(_movementStateMachine.ClimbState);
                 return;

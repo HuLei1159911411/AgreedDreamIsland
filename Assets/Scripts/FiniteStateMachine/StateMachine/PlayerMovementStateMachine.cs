@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.Common;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -36,6 +37,8 @@ public class PlayerMovementStateMachine : StateMachine
     // 组件
     // 动画状态机
     public Animator playerAnimator;
+    public Transform head;
+    public Transform foot;
     [HideInInspector] public Transform playerTransform;
     [HideInInspector] public Rigidbody playerRigidbody;
     // 正常状态下的碰撞盒
@@ -44,7 +47,7 @@ public class PlayerMovementStateMachine : StateMachine
     public Collider squatCollider;
     // 滑铲状态下的碰撞盒
     public Collider slidingCollider;
-    
+
     // 当前状态
     [HideInInspector] public BaseState CurrentState => _currentState;
     // 空闲状态
@@ -66,8 +69,7 @@ public class PlayerMovementStateMachine : StateMachine
     // 攀爬状态
     [HideInInspector] public Climb ClimbState;
 
-    [Header("输入参数")]
-    [Range(0.01f, 1f)]
+    [Header("输入参数")] [Range(0.01f, 1f)]
     // 每帧垂直和水平方向输入影响数值大小
     public float inputValueRate = 0.01f;
     // 当同时摁住互斥的摁键和同时松开互斥的摁键时是否需要以更快的速度使值归零
@@ -94,6 +96,10 @@ public class PlayerMovementStateMachine : StateMachine
     [HideInInspector] public bool hasWallOnRight;
     // 前面是否有墙壁
     [HideInInspector] public bool hasWallOnForward;
+    // 人物脑袋前方是否有墙壁
+    [HideInInspector] public bool hasWallOnHeadForward;
+    // 人物脚前方是否有墙壁
+    [HideInInspector] public bool hasWallOnFootForward;
     // 当前斜面角度
     [HideInInspector] public float slopeAngle;
     // 摄像机在XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度
@@ -113,7 +119,7 @@ public class PlayerMovementStateMachine : StateMachine
     // 允许玩家运动的最大斜面角度
     public float maxSlopeAngle = 45f;
 
-    [Header("玩家运动相关参数")]
+    [Header("玩家运动相关参数")] 
     [Header("走路")]
     // 移动
     // 走路向前的速度的最大值
@@ -161,7 +167,7 @@ public class PlayerMovementStateMachine : StateMachine
     public float squatSpeed = 5f;
     // 下蹲时给予玩家力的大小
     public float squatMoveForce = 8f;
-
+    
     [Header("滑铲")]
     // 滑铲
     // 平地上滑铲速度最大速度
@@ -174,7 +180,7 @@ public class PlayerMovementStateMachine : StateMachine
     public float slidingAccelerateTime = 0.5f;
     // 滑铲冷却时间(进入Run状态后需要过一段时间后才能进行滑铲)
     public float slidingCoolTime = 0.2f;
-    
+
     [Header("下落")]
     // 下落
     // 快速下落时所受重力倍数
@@ -188,15 +194,13 @@ public class PlayerMovementStateMachine : StateMachine
     public float wallRunningMinHigh = 0.5f;
     // 在墙壁上向前滑行的最大速度
     public float wallRunningForwardSpeed = 8f;
-    // 在墙壁上下滑行的最大速度
-    public float wallRunningVertical = 3f;
     // 在墙上滑行时驱动玩家移动力的大小
     public float wallRunningForce = 6f;
     // 在墙上滑行的最大时间
     public float wallRunningTime = 3f;
     // 检查左右前是否有可以进行滑墙的墙的距离
     public float wallCheckDistance = 1f;
-    
+
     [Header("攀爬")]
     // 攀爬
     // 攀爬向上移动的最大速度
@@ -204,14 +208,14 @@ public class PlayerMovementStateMachine : StateMachine
     // 攀爬左右移动的最大速度
     public float climbHorizontalSpeed = 3f;
     // 攀爬时力的大小
-    public float climbForce = 5f; 
+    public float climbForce = 5f;
     // 攀爬的最大时间
     public float climbTime = 3f;
     // 最大攀爬角度
     public float climbMaxAngle = 30f;
     // 向前进行球形射线检测时球形的半径
     public float forwardSphereCastRadius = 0.25f;
-
+    
     // 计算Xoz或Xoy平面玩家刚体速度用的临时变量
     private Vector3 _calVelocity;
     // 由玩家向下发射的用于检测地面与斜面用的射线的击中信息
@@ -224,6 +228,10 @@ public class PlayerMovementStateMachine : StateMachine
     private RaycastHit _forwardRaycastHit;
     // 由玩家向下发射的用于检测玩家距离地面高度的距离为玩家最高高度的射线的击中信息
     private RaycastHit _downMaxRaycastHit;
+    // 由玩家头部向前发射的用于检测玩家头部前方是否有墙壁的射线的击中信息
+    private RaycastHit _forwardHeadRaycastHit;
+    // 由玩家脚向前发射的用于检测玩家脚前方是否有墙壁的射线的集中信息
+    private RaycastHit _forwardFootRaycastHit;
     // 人物Animator的参数集
     private AnimatorControllerParameter[] _animatorControllerParameters;
     // 限制玩家速度时用来计算x方向速度大小的临时变量
@@ -237,7 +245,9 @@ public class PlayerMovementStateMachine : StateMachine
     // 为Animator组件提供的垂直和水平方向的值(在-1到1之间有细小连续变化的Float值)
     private float _verticalInputForAnimator;
     private float _horizontalInputForAnimator;
-
+    // 上一次从角色脚部向前发射的射线能够集中墙壁的射线的击中信息
+    private RaycastHit _lastForwardFootRaycastHit;
+    
     private void Awake()
     {
         // 初始化状态
@@ -270,7 +280,7 @@ public class PlayerMovementStateMachine : StateMachine
 
         // 更新检查是否在地面
         UpdateIsOnGroundAndIsOnSlopeAndNowHigh();
-        
+
         // 距离地面高度高于滑墙的最小高度时检测左右是否存在墙壁
         if (nowHigh >= wallRunningMinHigh)
         {
@@ -281,15 +291,15 @@ public class PlayerMovementStateMachine : StateMachine
             hasWallOnLeft = false;
             hasWallOnRight = false;
         }
-        
+
         UpdateHasWallOnForward();
-        
+
         UpdateAnimatorParameters();
-        
+
         UpdateXozVelocity();
-        
+
         DrawLine();
-        
+
         base.Update();
     }
 
@@ -313,7 +323,7 @@ public class PlayerMovementStateMachine : StateMachine
                     break;
             }
         }
-        else if(_currentState.state != E_State.WallRunning && _currentState.state != E_State.Climb)
+        else if (_currentState.state != E_State.WallRunning && _currentState.state != E_State.Climb)
         {
             playerRigidbody.useGravity = true;
         }
@@ -325,7 +335,7 @@ public class PlayerMovementStateMachine : StateMachine
     {
         playerAnimator.SetInteger(DicAnimatorIndexes["PreState"], (int)_currentState.state);
         base.ChangeState(newState);
-        
+
         SetColliderByCurrentState();
         playerAnimator.SetInteger(DicAnimatorIndexes["ToState"], (int)newState.state);
         playerAnimator.SetBool(DicAnimatorIndexes["isFastToRun"], isFastToRun);
@@ -336,22 +346,31 @@ public class PlayerMovementStateMachine : StateMachine
         // 下
         Debug.DrawLine(playerTransform.position,
             playerTransform.position + Vector3.down * (playerHeight * 0.5f + heightOffset), Color.red);
-        
+
         // 左
         Debug.DrawLine(playerTransform.position,
             playerTransform.position - playerTransform.right * wallCheckDistance, Color.yellow);
-        
+
         // 右
         Debug.DrawLine(playerTransform.position,
             playerTransform.position + playerTransform.right * wallCheckDistance, Color.yellow);
+
+        Debug.Log("(wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f) - forwardSphereCastRadius = " + (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f) - forwardSphereCastRadius));
         
         // 前
         Debug.DrawLine(playerTransform.position,
-            playerTransform.position + playerTransform.forward * wallCheckDistance, Color.yellow);
-        
-        
+            playerTransform.position + playerTransform.forward * (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)), Color.yellow);
+
+        // 头顶前方
+        Debug.DrawLine(head.position,
+            head.position + head.forward * (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)), Color.green);
+
+        // 脚前方
+        Debug.DrawLine(foot.position,
+            head.position + foot.forward * (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)), Color.green);
+
         // 方向
-        Debug.DrawLine(playerTransform.position, playerTransform.position + direction * 10, Color.white);
+        Debug.DrawLine(playerTransform.position, playerTransform.position + direction * 5, Color.white);
     }
 
     protected override BaseState GetInitialState()
@@ -362,17 +381,18 @@ public class PlayerMovementStateMachine : StateMachine
     // 初始化参数
     private void InitParameters()
     {
-        UpdateIsOnGroundAndIsOnSlopeAndNowHigh();
-
         nowMoveSpeed = 0;
 
         _animatorControllerParameters = playerAnimator.parameters;
+
+        // 初始化Animator参数名与Hash对照表
         DicAnimatorIndexes = new Dictionary<string, int>();
         for (int i = 0; i < _animatorControllerParameters.Length; i++)
         {
             DicAnimatorIndexes.Add(_animatorControllerParameters[i].name, _animatorControllerParameters[i].nameHash);
         }
     }
+
 
     // 更新移动的输入信息(前到后1到-1，左到右-1到1);
     private void UpdateMoveInputInformation()
@@ -381,11 +401,11 @@ public class PlayerMovementStateMachine : StateMachine
         MoveInputInfo.MoveBackwardInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.MoveBackward]);
         MoveInputInfo.MoveLeftInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.MoveLeft]);
         MoveInputInfo.MoveRightInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.MoveRight]);
-        
+
         // 更新用于在状态机的不同状态中判断键盘输入的类型为int的Input值
         MoveInputInfo.VerticalInput =
             (MoveInputInfo.MoveForwardInput ? 1 : 0) + (MoveInputInfo.MoveBackwardInput ? -1 : 0);
-        MoveInputInfo.HorizontalInput = 
+        MoveInputInfo.HorizontalInput =
             (MoveInputInfo.MoveRightInput ? 1 : 0) + (MoveInputInfo.MoveLeftInput ? -1 : 0);
 
         MoveInputInfo.JumpInput = Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.Jump]);
@@ -393,7 +413,7 @@ public class PlayerMovementStateMachine : StateMachine
         MoveInputInfo.SquatInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Squat]);
         MoveInputInfo.SlidingInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Sliding]);
     }
-    
+
     // 更新MoveInputInfo中VerticalInput与HorizontalInput的值
     private void UpdateVerticalInputWithHorizontalInputForAnimator()
     {
@@ -403,15 +423,15 @@ public class PlayerMovementStateMachine : StateMachine
         {
             if (_verticalInputForAnimator > 0f)
             {
-                _verticalInputForAnimator -= inputValueRate * (isFastToRun ? quickZeroingRate : 1f);
+                _verticalInputForAnimator -= inputValueRate * (isQuickZeroing ? quickZeroingRate : 1f);
                 if (_verticalInputForAnimator < 0f)
                 {
                     _verticalInputForAnimator = 0f;
                 }
             }
-            else if(_verticalInputForAnimator < 0f)
+            else if (_verticalInputForAnimator < 0f)
             {
-                _verticalInputForAnimator += inputValueRate * (isFastToRun ? quickZeroingRate : 1f);
+                _verticalInputForAnimator += inputValueRate * (isQuickZeroing ? quickZeroingRate : 1f);
                 if (_verticalInputForAnimator > 0f)
                 {
                     _verticalInputForAnimator = 0f;
@@ -423,7 +443,7 @@ public class PlayerMovementStateMachine : StateMachine
             // 当水平方向有摁键输入且水平方向摁键的值不同，判断是否要快速改变摁键值至0
             if (MoveInputInfo.MoveForwardInput)
             {
-                if (_verticalInputForAnimator < 0f && isFastToRun)
+                if (_verticalInputForAnimator < 0f && isQuickZeroing)
                 {
                     _verticalInputForAnimator += inputValueRate * quickZeroingRate;
                 }
@@ -434,7 +454,7 @@ public class PlayerMovementStateMachine : StateMachine
             }
             else
             {
-                if (_verticalInputForAnimator > 0f && isFastToRun)
+                if (_verticalInputForAnimator > 0f && isQuickZeroing)
                 {
                     _verticalInputForAnimator -= inputValueRate * quickZeroingRate;
                 }
@@ -443,6 +463,7 @@ public class PlayerMovementStateMachine : StateMachine
                     _verticalInputForAnimator -= inputValueRate;
                 }
             }
+
             if (_verticalInputForAnimator > 1f)
             {
                 _verticalInputForAnimator = 1f;
@@ -453,22 +474,22 @@ public class PlayerMovementStateMachine : StateMachine
                 _verticalInputForAnimator = -1f;
             }
         }
-        
+
         // 水平方向
         if (((MoveInputInfo.MoveLeftInput && MoveInputInfo.MoveRightInput) ||
              (!MoveInputInfo.MoveLeftInput && !MoveInputInfo.MoveRightInput)))
         {
             if (_horizontalInputForAnimator > 0f)
             {
-                _horizontalInputForAnimator -= inputValueRate * (isFastToRun ? quickZeroingRate : 1f);
+                _horizontalInputForAnimator -= inputValueRate * (isQuickZeroing ? quickZeroingRate : 1f);
                 if (_horizontalInputForAnimator < 0f)
                 {
                     _horizontalInputForAnimator = 0f;
                 }
             }
-            else if(_horizontalInputForAnimator < 0f)
+            else if (_horizontalInputForAnimator < 0f)
             {
-                _horizontalInputForAnimator += inputValueRate * (isFastToRun ? quickZeroingRate : 1f);
+                _horizontalInputForAnimator += inputValueRate * (isQuickZeroing ? quickZeroingRate : 1f);
                 if (_horizontalInputForAnimator > 0f)
                 {
                     _horizontalInputForAnimator = 0f;
@@ -480,7 +501,7 @@ public class PlayerMovementStateMachine : StateMachine
             // 当垂直方向有摁键输入且垂直方向摁键的值不同，判断是否要快速改变摁键值至0
             if (MoveInputInfo.MoveRightInput)
             {
-                if (_horizontalInputForAnimator < 0f && isFastToRun)
+                if (_horizontalInputForAnimator < 0f && isQuickZeroing)
                 {
                     _horizontalInputForAnimator += inputValueRate * quickZeroingRate;
                 }
@@ -491,7 +512,7 @@ public class PlayerMovementStateMachine : StateMachine
             }
             else
             {
-                if (_horizontalInputForAnimator > 0f && isFastToRun)
+                if (_horizontalInputForAnimator > 0f && isQuickZeroing)
                 {
                     _horizontalInputForAnimator -= inputValueRate * quickZeroingRate;
                 }
@@ -500,7 +521,7 @@ public class PlayerMovementStateMachine : StateMachine
                     _horizontalInputForAnimator -= inputValueRate;
                 }
             }
-            
+
             if (_horizontalInputForAnimator > 1f)
             {
                 _horizontalInputForAnimator = 1f;
@@ -532,15 +553,16 @@ public class PlayerMovementStateMachine : StateMachine
                         out _downRaycastHit,
                         playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerWall);
                 }
+
                 if (isOnGround)
                 {
                     isUseSphereCast = false;
                 }
-                
+
                 // 球形检测部分
                 isOnGround = Physics.SphereCast(playerTransform.position, downSphereCastRadius, Vector3.down,
                     out _downRaycastHit,
-                    playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerGround);
+                    playerHeight * 0.5f + heightOffset - downSphereCastRadius, InfoManager.Instance.layerGround);
                 // 如果下面没有图层为Ground的地面，则再检测一次有没有为Wall的地面
                 if (!isOnGround)
                 {
@@ -562,7 +584,7 @@ public class PlayerMovementStateMachine : StateMachine
                         playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerWall);
                 }
             }
-            
+
             // 在地面上
             if (isOnGround)
             {
@@ -571,7 +593,7 @@ public class PlayerMovementStateMachine : StateMachine
                 // 更新玩家刚体阻力
                 playerRigidbody.drag = InfoManager.Instance.groundDrag + InfoManager.Instance.airDrag;
                 // 更新玩家当前是否在可运动角度范围内的斜面上
-                
+
                 // 排除玩家在攀爬的过程中可能会得到是斜面的可能
                 if (_downRaycastHit.transform.gameObject.layer != InfoManager.Instance.layerWall)
                 {
@@ -607,16 +629,8 @@ public class PlayerMovementStateMachine : StateMachine
                 playerRigidbody.drag = InfoManager.Instance.airDrag;
             }
         }
-
-        // 在Animator组件上同步更新变量值
-        if (!(DicAnimatorIndexes is null) && DicAnimatorIndexes.ContainsKey("isOnGround") &&
-            DicAnimatorIndexes.ContainsKey("isOnSlope"))
-        {
-            playerAnimator.SetBool(DicAnimatorIndexes["isOnGround"], isOnGround);
-            playerAnimator.SetBool(DicAnimatorIndexes["isOnSlope"], isOnSlope);
-        }
     }
-    
+
     // 向左右发射射线检测并且更新当前左边右边和前面的最大检测距离内是否存在可供滑行的墙壁
     private void UpdateHasWallOnLeftWithRight()
     {
@@ -624,7 +638,7 @@ public class PlayerMovementStateMachine : StateMachine
         hasWallOnLeft = Physics.Raycast(playerTransform.position, -playerTransform.right, out _leftRaycastHit,
             wallCheckDistance,
             InfoManager.Instance.layerWall);
-        
+
         // 向右发射射线检测是否存在墙壁
         hasWallOnRight = Physics.Raycast(playerTransform.position, playerTransform.right, out _rightRaycastHit,
             wallCheckDistance,
@@ -635,25 +649,39 @@ public class PlayerMovementStateMachine : StateMachine
     private void UpdateHasWallOnForward()
     {
         // 向前发射射线检测是否存在墙壁
-        // hasWallOnForward = Physics.Raycast(playerTransform.position, playerTransform.forward, out _forwardRaycastHit,
-        //     wallCheckDistance, InfoManager.Instance.layerWall);
-        hasWallOnForward = Physics.SphereCast(playerTransform.position, forwardSphereCastRadius, playerTransform.forward,
+        hasWallOnForward = Physics.SphereCast(playerTransform.position, forwardSphereCastRadius,
+            playerTransform.forward,
             out _forwardRaycastHit,
-            wallCheckDistance, InfoManager.Instance.layerWall);
-        
+            wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f) - forwardSphereCastRadius,
+            InfoManager.Instance.layerWall);
+
+        // 在头上向前发射射线检测是否存在墙壁
+        hasWallOnHeadForward = Physics.Raycast(head.position, head.forward, out _forwardHeadRaycastHit,
+            wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f), InfoManager.Instance.layerWall);
+
+        // 在脚前方向前发射射线检测是否存在墙壁
+        hasWallOnFootForward = Physics.Raycast(foot.position, foot.forward, out _forwardFootRaycastHit,
+            wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f), InfoManager.Instance.layerWall);
+
+        // 脚前面有墙
+        if (hasWallOnFootForward)
+        {
+            _lastForwardFootRaycastHit = _forwardFootRaycastHit;
+        }
+
         // 当前前方存在墙壁时更新计算cameraForwardWithWallAbnormalAngle
         if (hasWallOnForward)
         {
             UpdateCameraForwardWithWallAbnormalAngle();
         }
     }
-    
+
     // 在Animator组件中更新参数
     private void UpdateAnimatorParameters()
     {
         // 更新用于在Animator组件里面给变量HorizontalInput和VerticalInput赋值的类型为float的Input值
         UpdateVerticalInputWithHorizontalInputForAnimator();
-        
+
         if (!(DicAnimatorIndexes is null))
         {
             playerAnimator.SetBool(DicAnimatorIndexes["MoveForwardInput"], MoveInputInfo.MoveForwardInput);
@@ -670,6 +698,9 @@ public class PlayerMovementStateMachine : StateMachine
             playerAnimator.SetBool(DicAnimatorIndexes["isOnSlope"], isOnSlope);
             playerAnimator.SetBool(DicAnimatorIndexes["hasWallOnLeft"], hasWallOnLeft);
             playerAnimator.SetBool(DicAnimatorIndexes["hasWallOnRight"], hasWallOnRight);
+            playerAnimator.SetBool(DicAnimatorIndexes["hasWallOnForward"], hasWallOnForward);
+            playerAnimator.SetBool(DicAnimatorIndexes["hasWallOnHeadForward"], hasWallOnHeadForward);
+            playerAnimator.SetBool(DicAnimatorIndexes["hasWallOnFootForward"], hasWallOnFootForward);
         }
     }
 
@@ -680,6 +711,7 @@ public class PlayerMovementStateMachine : StateMachine
         {
             return "Null";
         }
+
         switch (_currentState.state)
         {
             case E_State.Idle:
@@ -722,37 +754,39 @@ public class PlayerMovementStateMachine : StateMachine
             {
                 _calVelocity.y = playerRigidbody.velocity.y;
             }
-            
+
             _calVelocity.z = playerRigidbody.velocity.z * _velocityWithSpeedRatio;
-            
+
             playerRigidbody.velocity = _calVelocity;
-            
+
             playerXozSpeed = nowMoveSpeed;
         }
     }
+
     // 更新玩家刚体当前在XOZ水平面的速度大小标量
     private void UpdateXozVelocity()
     {
         playerXozSpeed = Vector2.Distance(Vector2.zero,
             new Vector2(playerRigidbody.velocity.x, playerRigidbody.velocity.z));
     }
-    
+
     // 限制玩家垂直速度值在当前最大速度内
     public void ClampXoyVelocity()
     {
         UpdateXoyVelocity();
         if (playerXoySpeed > nowMoveSpeed)
         {
-            _velocityWithSpeedRatio = nowMoveSpeed / playerXozSpeed;
+            _velocityWithSpeedRatio = nowMoveSpeed / playerXoySpeed;
             _calVelocity.x = playerRigidbody.velocity.x * _velocityWithSpeedRatio;
             _calVelocity.y = playerRigidbody.velocity.y * _velocityWithSpeedRatio;
             _calVelocity.z = playerRigidbody.velocity.z;
-            
+
             playerRigidbody.velocity = _calVelocity;
-            
-            playerXozSpeed = nowMoveSpeed;
+
+            playerXoySpeed = nowMoveSpeed;
         }
     }
+
     // 更新玩家刚体当前在XOY水平面的速度大小标量
     private void UpdateXoyVelocity()
     {
@@ -765,33 +799,35 @@ public class PlayerMovementStateMachine : StateMachine
     {
         cameraForwardWithWallAbnormalAngle =
             Vector3.Angle(Vector3.ProjectOnPlane(-_forwardRaycastHit.normal, Vector3.up),
-                Vector3.ProjectOnPlane(CameraController.Instance.transform.forward,Vector3.up));
+                Vector3.ProjectOnPlane(CameraController.Instance.transform.forward, Vector3.up));
     }
-    
+
     // 获取玩家在斜面运动的方向
     public Vector3 GetDirectionOnSlope()
     {
         // ProjectOnPlane(a,b)函数的返回值为向量a在以向量b为法向量的平面的投影向量,又_downRaycastHit.normal为射线击中点的平面的法向量,所以这里返回的是玩家原水平运动方向在斜面上的投影的方向向量
         return Vector3.ProjectOnPlane(direction, _downRaycastHit.normal).normalized;
     }
-    
+
     // 判断玩家是否在向上滑铲
     public bool CheckIsSlidingUp()
     {
         return Vector3.Angle(GetDirectionOnSlope(), Vector3.up) <= 90f;
     }
-    
+
     // 获取与左或右墙壁或前相切的方向向量，即墙壁的方向向量，利用墙壁的法向量与向上的单位向量，以上两个向量的叉乘为同时垂直两向量的向量，为与墙壁这一侧面相切的向量
     public Vector3 GetWallForward()
     {
         if (hasWallOnLeft)
         {
-            return Vector3.Cross(Vector3.up,_leftRaycastHit.normal);
+            return Vector3.Cross(Vector3.up, _leftRaycastHit.normal);
         }
+
         if (hasWallOnRight)
         {
-            return Vector3.Cross(Vector3.up,_rightRaycastHit.normal);
+            return Vector3.Cross(Vector3.up, _rightRaycastHit.normal);
         }
+
         if (hasWallOnForward)
         {
             return Vector3.Cross(Vector3.up, _forwardRaycastHit.normal);
@@ -799,7 +835,7 @@ public class PlayerMovementStateMachine : StateMachine
 
         return Vector3.zero;
     }
-    
+
     // 获取墙壁的法向量
     public Vector3 GetWallNormal()
     {
@@ -807,18 +843,20 @@ public class PlayerMovementStateMachine : StateMachine
         {
             return _forwardRaycastHit.normal;
         }
+
         if (hasWallOnLeft)
         {
             return _leftRaycastHit.normal;
         }
+
         if (hasWallOnRight)
         {
             return _rightRaycastHit.normal;
         }
-        
+
         return Vector3.zero;
     }
-    
+
     // 根据状态设置碰撞盒
     private void SetColliderByCurrentState()
     {
@@ -844,5 +882,20 @@ public class PlayerMovementStateMachine : StateMachine
                     break;
             }
         }
+    }
+    
+    // 获取
+    public Vector3 GetDirectionFootToWall()
+    {
+        Debug.Log("foot.transform.position = " + foot.transform.position);
+        Debug.Log("_lastForwardFootRaycastHit.point = " + _lastForwardFootRaycastHit.point);
+        return (_lastForwardFootRaycastHit.point - foot.transform.position).normalized;
+    }
+
+    // 动画事件----------------------
+    // 从Climb状态切换为Fall状态
+    public void ChangeStateClimbToFall()
+    {
+        ClimbState.ChangeStateClimbToFall();
     }
 }

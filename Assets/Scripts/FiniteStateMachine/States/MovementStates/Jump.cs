@@ -52,18 +52,19 @@ public class Jump : BaseState
         // 前方有墙壁
         if (_movementStateMachine.hasWallOnForward && _isListenLeftGround)
         {
-            // 前一状态不是WallRunning并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度并且高度满足最低高度要求，切换为滑墙状态
-            if (preState.state != E_State.WallRunning &&
-                _movementStateMachine.cameraForwardWithWallAbnormalAngle >= _movementStateMachine.climbMaxAngle
-                && _movementStateMachine.nowHigh >= _movementStateMachine.wallRunningMinHigh)
-            {
-                _movementStateMachine.ChangeState(_movementStateMachine.WallRunningState);
-                return;
-            }
+            // // 前一状态不是WallRunning并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度并且高度满足最低高度要求，切换为滑墙状态
+            // if (preState.state != E_State.WallRunning &&
+            //     _movementStateMachine.cameraForwardWithWallAbnormalAngle > _movementStateMachine.climbMaxAngle
+            //     && _movementStateMachine.nowHigh >= _movementStateMachine.wallRunningMinHigh)
+            // {
+            //     _movementStateMachine.ChangeState(_movementStateMachine.WallRunningState);
+            //     return;
+            // }
 
-            // 前一状态不是Climb并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度切换为滑墙状态
-            if (preState.state != E_State.Climb && _movementStateMachine.MoveInputInfo.JumpInput &&
-                _movementStateMachine.cameraForwardWithWallAbnormalAngle < _movementStateMachine.climbMaxAngle)
+            // 前一状态不是Climb，并且摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度大于最大角度，并且摁下前进键，切换为攀爬状态
+            if (preState.state != E_State.Climb &&
+                _movementStateMachine.cameraForwardWithWallAbnormalAngle <= _movementStateMachine.climbMaxAngle &&
+                _movementStateMachine.MoveInputInfo.VerticalInput == 1)
             {
                 // 摄像机XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度小于最大角度切换为攀爬状态
                 _movementStateMachine.ChangeState(_movementStateMachine.ClimbState);
@@ -100,9 +101,8 @@ public class Jump : BaseState
         // 在墙上跳跃时特殊处理
         if (preState.state == E_State.WallRunning || preState.state == E_State.Climb)
         {
-            // 清空水平方向速度
-            _movementStateMachine.playerRigidbody.velocity =
-                new Vector3(0, _movementStateMachine.playerRigidbody.velocity.y, 0);
+            // 清空速度
+            _movementStateMachine.playerRigidbody.velocity = Vector3.zero;
             _movementStateMachine.playerRigidbody.AddForce(
                 Mathf.Sqrt(_movementStateMachine.jumpHigh * (Physics.gravity.y) * (-2)) *
                 _movementStateMachine.playerRigidbody.mass * (Vector3.up + _movementStateMachine.GetWallNormal()).normalized,
@@ -114,20 +114,6 @@ public class Jump : BaseState
                 Mathf.Sqrt(_movementStateMachine.jumpHigh * (Physics.gravity.y) * (-2)) *
                 _movementStateMachine.playerRigidbody.mass * Vector3.up, ForceMode.Impulse);
         }
-
-        // if (_movementStateMachine.jumpByForce)
-        // {
-        //     _velocity = _movementStateMachine.playerRigidbody.velocity;
-        //     // 清空角色垂直方向上的速度
-        //     _movementStateMachine.playerRigidbody.velocity = new Vector3(_velocity.x, 0f, _velocity.z);
-        //     // 为角色增加一个向上的力
-        //     _movementStateMachine.playerRigidbody.AddForce(
-        //         _movementStateMachine.playerTransform.up * _movementStateMachine.jumpForce, ForceMode.Impulse);
-        // }
-        // else
-        // {
-        //     // 为角色增加一个向上的速度
-        //     _movementStateMachine.playerRigidbody.velocity += new Vector3(0, _movementStateMachine.jumpVelocity, 0);
-        // }
+        
     }
 }

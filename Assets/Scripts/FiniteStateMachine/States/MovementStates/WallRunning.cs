@@ -27,7 +27,7 @@ public class WallRunning : BaseState
         // 前一状态时Climb状态则继承其攀爬的时间
         if (preState.state == E_State.Climb)
         {
-            _timer = (preState as Climb)._climbTimer;
+            _timer = (preState as Climb).ClimbTimer;
         }
         else
         {
@@ -130,6 +130,7 @@ public class WallRunning : BaseState
 
     private void CloseGravity()
     {
+        _movementStateMachine.playerRigidbody.useGravity = false; 
         // 清空Y轴速度
         _movementStateMachine.playerRigidbody.velocity = new Vector3(_movementStateMachine.playerRigidbody.velocity.x,
             0, _movementStateMachine.playerRigidbody.velocity.z);
