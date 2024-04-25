@@ -5,8 +5,12 @@ using UnityEngine;
 public class Run : BaseState
 {
     private PlayerMovementStateMachine _movementStateMachine;
-    // 滑铲CD计时器
-    private float _timer;
+    // CD计时器
+    private float _coolTimeTimer;
+    // 是否监听shift键松开
+    private bool isListenReleaseShiftKey;
+    // 是否松开过shift键
+    private bool hasReleaseShiftKey;
 
     public Run(StateMachine stateMachine) : base(E_State.Run, stateMachine)
     {
@@ -19,8 +23,17 @@ public class Run : BaseState
     public override void Enter()
     {
         base.Enter();
-        _timer = 0;
-        
+        _coolTimeTimer = 0f;
+        if (_movementStateMachine.MoveInputInfo.RunInput)
+        {
+            isListenReleaseShiftKey = true;
+            hasReleaseShiftKey = false;
+        }
+        else
+        {
+            isListenReleaseShiftKey = false;
+            hasReleaseShiftKey = true;
+        }
     }
 
     public override void Exit()
@@ -32,6 +45,12 @@ public class Run : BaseState
     public override void UpdateLogic()
     {
         base.UpdateLogic();
+        
+        if (isListenReleaseShiftKey && !_movementStateMachine.MoveInputInfo.RunInput)
+        {
+            isListenReleaseShiftKey = false;
+            hasReleaseShiftKey = true;
+        }
         
         if (ListenInputToChangeState())
         {
@@ -85,9 +104,16 @@ public class Run : BaseState
         }
 
         // 摁跳跃键
-        if (_movementStateMachine.MoveInputInfo.JumpInput && _timer > 0.2f)
+        if (_movementStateMachine.MoveInputInfo.JumpInput && _coolTimeTimer > 0.2f)
         {
             stateMachine.ChangeState(_movementStateMachine.JumpState);
+            return true;
+        }
+        
+        // 摁跑步键
+        if (_movementStateMachine.MoveInputInfo.RunInput  && _coolTimeTimer > 0.1f && hasReleaseShiftKey)
+        {
+            stateMachine.ChangeState(_movementStateMachine.RollState);
             return true;
         }
 
@@ -99,9 +125,9 @@ public class Run : BaseState
             return true;
         }
 
-        _timer += Time.deltaTime;
+        _coolTimeTimer += Time.deltaTime;
         // 摁下蹲键/滑铲键
-        if (_timer >= _movementStateMachine.slidingCoolTime && _movementStateMachine.MoveInputInfo.SquatInput)
+        if (_coolTimeTimer >= _movementStateMachine.slidingCoolTime && _movementStateMachine.MoveInputInfo.SquatInput && _coolTimeTimer > 0.1f)
         {
             stateMachine.ChangeState(_movementStateMachine.SlidingState);
             return true;

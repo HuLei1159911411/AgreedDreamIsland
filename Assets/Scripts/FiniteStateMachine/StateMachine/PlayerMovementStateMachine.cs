@@ -16,6 +16,7 @@ public enum E_State
     Sliding = 6,
     WallRunning = 7,
     Climb = 8,
+    Roll = 9,
 }
 
 public struct MoveInputInformation
@@ -68,6 +69,8 @@ public class PlayerMovementStateMachine : StateMachine
     [HideInInspector] public WallRunning WallRunningState;
     // 攀爬状态
     [HideInInspector] public Climb ClimbState;
+    // 翻滚状态
+    [HideInInspector] public Roll RollState;
 
     [Header("输入参数")] [Range(0.01f, 1f)]
     // 每帧垂直和水平方向输入影响数值大小
@@ -215,6 +218,13 @@ public class PlayerMovementStateMachine : StateMachine
     public float climbMaxAngle = 30f;
     // 向前进行球形射线检测时球形的半径
     public float forwardSphereCastRadius = 0.25f;
+
+    [Header("翻滚")]
+    // 翻滚
+    // 翻滚的最大速度
+    public float rollSpeed = 5f;
+    // 翻滚时力的大小
+    public float rollForce = 5f;
     
     // 计算Xoz或Xoy平面玩家刚体速度用的临时变量
     private Vector3 _calVelocity;
@@ -260,6 +270,7 @@ public class PlayerMovementStateMachine : StateMachine
         SlidingState = new Sliding(this);
         WallRunningState = new WallRunning(this);
         ClimbState = new Climb(this);
+        RollState = new Roll(this);
 
         // 获取组件
         playerTransform = transform;
@@ -354,8 +365,6 @@ public class PlayerMovementStateMachine : StateMachine
         // 右
         Debug.DrawLine(playerTransform.position,
             playerTransform.position + playerTransform.right * wallCheckDistance, Color.yellow);
-
-        Debug.Log("(wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f) - forwardSphereCastRadius = " + (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f) - forwardSphereCastRadius));
         
         // 前
         Debug.DrawLine(playerTransform.position,
@@ -688,8 +697,10 @@ public class PlayerMovementStateMachine : StateMachine
             playerAnimator.SetBool(DicAnimatorIndexes["MoveBackwardInput"], MoveInputInfo.MoveBackwardInput);
             playerAnimator.SetBool(DicAnimatorIndexes["MoveLeftInput"], MoveInputInfo.MoveLeftInput);
             playerAnimator.SetBool(DicAnimatorIndexes["MoveRightInput"], MoveInputInfo.MoveRightInput);
-            playerAnimator.SetFloat(DicAnimatorIndexes["VerticalInput"], _verticalInputForAnimator);
-            playerAnimator.SetFloat(DicAnimatorIndexes["HorizontalInput"], _horizontalInputForAnimator);
+            playerAnimator.SetFloat(DicAnimatorIndexes["VerticalInputFloat"], _verticalInputForAnimator);
+            playerAnimator.SetFloat(DicAnimatorIndexes["HorizontalInputFloat"], _horizontalInputForAnimator);
+            playerAnimator.SetInteger(DicAnimatorIndexes["VerticalInputInt"], MoveInputInfo.VerticalInput);
+            playerAnimator.SetInteger(DicAnimatorIndexes["HorizontalInputInt"], MoveInputInfo.HorizontalInput);
             playerAnimator.SetBool(DicAnimatorIndexes["JumpInput"], MoveInputInfo.JumpInput);
             playerAnimator.SetBool(DicAnimatorIndexes["RunInput"], MoveInputInfo.RunInput);
             playerAnimator.SetBool(DicAnimatorIndexes["SquatInput"], MoveInputInfo.SquatInput);
@@ -732,6 +743,8 @@ public class PlayerMovementStateMachine : StateMachine
                 return "WallRunning";
             case E_State.Climb:
                 return "Climb";
+            case E_State.Roll:
+                return "Roll";
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -745,6 +758,7 @@ public class PlayerMovementStateMachine : StateMachine
         {
             _velocityWithSpeedRatio = nowMoveSpeed / playerXozSpeed;
             _calVelocity.x = playerRigidbody.velocity.x * _velocityWithSpeedRatio;
+            
             // 斜面的话y轴速度同时也要限制不然会导致最终合成的速度方向产生变化导致在斜面上弹跳
             if (isOnSlope)
             {
@@ -860,8 +874,8 @@ public class PlayerMovementStateMachine : StateMachine
     // 根据状态设置碰撞盒
     private void SetColliderByCurrentState()
     {
-        if (_currentState.preState.state == E_State.Squat || _currentState.preState.state == E_State.Sliding ||
-            _currentState.state == E_State.Squat || _currentState.state == E_State.Sliding)
+        if (_currentState.preState.state == E_State.Squat || _currentState.preState.state == E_State.Sliding || _currentState.preState.state == E_State.Roll ||
+            _currentState.state == E_State.Squat || _currentState.state == E_State.Sliding || _currentState.state == E_State.Roll)
         {
             switch (_currentState.state)
             {
@@ -871,6 +885,11 @@ public class PlayerMovementStateMachine : StateMachine
                     slidingCollider.gameObject.SetActive(false);
                     break;
                 case E_State.Sliding:
+                    slidingCollider.gameObject.SetActive(true);
+                    baseCollider.gameObject.SetActive(false);
+                    squatCollider.gameObject.SetActive(false);
+                    break;
+                case E_State.Roll:
                     slidingCollider.gameObject.SetActive(true);
                     baseCollider.gameObject.SetActive(false);
                     squatCollider.gameObject.SetActive(false);
@@ -887,8 +906,6 @@ public class PlayerMovementStateMachine : StateMachine
     // 获取
     public Vector3 GetDirectionFootToWall()
     {
-        Debug.Log("foot.transform.position = " + foot.transform.position);
-        Debug.Log("_lastForwardFootRaycastHit.point = " + _lastForwardFootRaycastHit.point);
         return (_lastForwardFootRaycastHit.point - foot.transform.position).normalized;
     }
 
@@ -897,5 +914,10 @@ public class PlayerMovementStateMachine : StateMachine
     public void ChangeStateClimbToFall()
     {
         ClimbState.ChangeStateClimbToFall();
+    }
+
+    public void ExitRollState()
+    {
+        RollState.ExitRollState();
     }
 }

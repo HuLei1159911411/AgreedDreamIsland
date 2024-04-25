@@ -10,4 +10,9 @@ public class PlayerAnimatorEvents : MonoBehaviour
     {
         movementStateMachine.ChangeStateClimbToFall();
     }
+
+    public void ExitRollState()
+    {
+        movementStateMachine.ExitRollState();
+    }
 }

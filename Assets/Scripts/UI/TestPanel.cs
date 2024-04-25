@@ -161,6 +161,9 @@ public class TestPanel : MonoBehaviour
             case "Climb":
                 nowState.text = "攀爬";
                 break;
+            case "Roll":
+                nowState.text = "翻滚";
+                break;
             case "Null":
                 nowState.text = "初始化";
                 break;

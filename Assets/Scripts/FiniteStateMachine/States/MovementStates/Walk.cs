@@ -7,9 +7,9 @@ public class Walk : BaseState
     private PlayerMovementStateMachine _movementStateMachine;
 
     // 玩家摁奔跑键的计时器
-    private float _timerPressKey;
-    // 跳跃冷却计时器
-    private float _timerJump;
+    private float _pressRunKeyTimer;
+    // 冷却计时器
+    private float _coolTimeTimer;
 
     public Walk(StateMachine stateMachine) : base(E_State.Walk, stateMachine)
     {
@@ -23,11 +23,11 @@ public class Walk : BaseState
     {
         base.Enter();
 
-        _timerJump = 0f;
+        _coolTimeTimer = 0f;
         _movementStateMachine.isFastToRun = false;
         
         // 清空计时器
-        _timerPressKey = 0f;
+        _pressRunKeyTimer = 0f;
         _movementStateMachine.isFastToRun = false;
     }
 
@@ -40,6 +40,8 @@ public class Walk : BaseState
     {
         base.UpdateLogic();
 
+        _coolTimeTimer += Time.deltaTime;
+        
         if (ListenInputToChangeState())
         {
             return;
@@ -74,7 +76,6 @@ public class Walk : BaseState
 
     private bool ListenInputToChangeState()
     {
-        _timerJump += Time.deltaTime;
         // 不在地面
         if (!_movementStateMachine.isOnGround)
         {
@@ -93,7 +94,7 @@ public class Walk : BaseState
         }
         
         // 摁跳跃键
-        if (_movementStateMachine.MoveInputInfo.JumpInput && _timerJump > 0.2f)
+        if (_movementStateMachine.MoveInputInfo.JumpInput && _coolTimeTimer > 0.2f)
         {
             stateMachine.ChangeState(_movementStateMachine.JumpState);
             return true;
@@ -114,26 +115,27 @@ public class Walk : BaseState
             return true;
         }
         
-        // 是由向后或向左和向右跑步变为的走路摁前进后恢复跑步
-        if (preState.state == E_State.Run && _movementStateMachine.MoveInputInfo.VerticalInput == 1)
-        {
-            stateMachine.ChangeState(_movementStateMachine.RunState);
-            return true;
-        }
-        
         // 切换Run
-        if (_movementStateMachine.MoveInputInfo.RunInput && _movementStateMachine.MoveInputInfo.VerticalInput == 1)
+        if (_movementStateMachine.MoveInputInfo.RunInput)
         {
-            _timerPressKey += Time.deltaTime;
-            if (_timerPressKey >= _movementStateMachine.toRunTime)
+            if (_pressRunKeyTimer < _movementStateMachine.toRunTime)
             {
-                _timerPressKey = 0;
+                _pressRunKeyTimer += Time.deltaTime;
+            }
+            if (_movementStateMachine.MoveInputInfo.VerticalInput == 1 && _pressRunKeyTimer >= _movementStateMachine.toRunTime)
+            {
                 _movementStateMachine.ChangeState(_movementStateMachine.RunState);
+                return true;
             }
         }
         else
         {
-            _timerPressKey = 0f;
+            // 摁过Shift
+            if (_pressRunKeyTimer > 0f && _coolTimeTimer > 0.1f)
+            {
+                _movementStateMachine.ChangeState(_movementStateMachine.RollState);
+                return true;
+            }
         }
 
         return false;
