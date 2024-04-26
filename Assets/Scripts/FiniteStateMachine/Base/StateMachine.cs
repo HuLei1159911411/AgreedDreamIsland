@@ -30,7 +30,7 @@ public class StateMachine : MonoBehaviour
         }
     }
 
-    public virtual void ChangeState(BaseState newState)
+    public virtual bool ChangeState(BaseState newState)
     {
         _currentState.Exit();
         
@@ -38,9 +38,11 @@ public class StateMachine : MonoBehaviour
         _currentState = newState;
         
         _currentState.Enter();
+
+        return true;
     }
 
-    protected virtual BaseState GetInitialState()
+    public virtual BaseState GetInitialState()
     {
         return null;
     }

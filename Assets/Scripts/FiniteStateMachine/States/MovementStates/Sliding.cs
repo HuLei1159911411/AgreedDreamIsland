@@ -15,6 +15,7 @@ public class Sliding : BaseState
         if (stateMachine is PlayerMovementStateMachine)
         {
             _movementStateMachine = stateMachine as PlayerMovementStateMachine;
+            preState = _movementStateMachine.GetInitialState();
         }
     }
 
@@ -49,7 +50,7 @@ public class Sliding : BaseState
         // 根据移动方向移动
         // Translate移动
         // _movementStateMachine.playerTransform.Translate(_movementStateMachine.nowMoveSpeed * Time.deltaTime * _movementStateMachine.direction,Space.World);
-        if (_movementStateMachine.isOnSlope && !_movementStateMachine.CheckIsSlidingUp())
+        if ((_movementStateMachine.isOnSlope && !_movementStateMachine.CheckIsSlidingUp()))
         {
             // 通过给力移动
             _movementStateMachine.playerRigidbody.AddForce(
@@ -58,7 +59,8 @@ public class Sliding : BaseState
         }
         else
         {
-            if (_timer < _movementStateMachine.slidingAccelerateTime)
+            if (_timer < _movementStateMachine.slidingAccelerateTime ||
+                (_movementStateMachine.IsTryToChangeState))
             {
                 _timer += Time.fixedDeltaTime;
                 // 通过给力移动
@@ -77,8 +79,7 @@ public class Sliding : BaseState
         // 在地面上摁跳跃键
         if (_movementStateMachine.isOnGround && _movementStateMachine.MoveInputInfo.JumpInput)
         {
-            stateMachine.ChangeState(_movementStateMachine.JumpState);
-            return true;
+            return stateMachine.ChangeState(_movementStateMachine.JumpState);
         }
 
         // 滑铲加速未结束(及加速时间未到)
@@ -86,12 +87,17 @@ public class Sliding : BaseState
         {
             return false;
         }
+        
+        // 加速结束后摁奔跑键进入翻滚状态
+        if (_movementStateMachine.MoveInputInfo.RunInput)
+        {
+            return _movementStateMachine.ChangeState(_movementStateMachine.RollState);
+        }
 
         // 结束加速后摁后退键
         if (_movementStateMachine.MoveInputInfo.VerticalInput == -1)
         {
-            _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
-            return true;
+            return _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
         }
 
         // 未松开滑铲键并且水平速度未接近0则不会改变滑铲状态(若松开滑铲键了速度变接近0则变为Idle状态，若速度不接近0则不改变状态)
@@ -103,8 +109,7 @@ public class Sliding : BaseState
         // 滑到空中并且加速结束
         if (!_movementStateMachine.isOnGround && _timer >= _movementStateMachine.slidingAccelerateTime)
         {
-            stateMachine.ChangeState(_movementStateMachine.IdleState);
-            return true;
+            return stateMachine.ChangeState(_movementStateMachine.IdleState);
         }
 
         // 松开WASD或摁住WS或摁住AD或摁住WASD且水平速度已经快接近0
@@ -112,14 +117,12 @@ public class Sliding : BaseState
             _movementStateMachine.MoveInputInfo.VerticalInput == 0 &&
             _movementStateMachine.playerXozSpeed <= 0.3f)
         {
-            stateMachine.ChangeState(_movementStateMachine.IdleState);
-            return true;
+            return stateMachine.ChangeState(_movementStateMachine.IdleState);
         }
         else if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0 ||
                  _movementStateMachine.MoveInputInfo.VerticalInput != 0)
         {
-            stateMachine.ChangeState(_movementStateMachine.RunState);
-            return true;
+            return stateMachine.ChangeState(_movementStateMachine.RunState);
         }
 
         return false;
@@ -128,7 +131,7 @@ public class Sliding : BaseState
     private void UpdateDirectionWithSpeed()
     {
         // 更新移动方向
-        if (_movementStateMachine.MoveInputInfo.SlidingInput)
+        if (_movementStateMachine.MoveInputInfo.SlidingInput || _movementStateMachine.IsTryToChangeState)
         {
             _movementStateMachine.direction = _movementStateMachine.playerTransform.forward;
         }

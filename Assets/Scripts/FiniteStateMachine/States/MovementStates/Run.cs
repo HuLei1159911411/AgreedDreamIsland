@@ -17,6 +17,7 @@ public class Run : BaseState
         if (stateMachine is PlayerMovementStateMachine)
         {
             _movementStateMachine = stateMachine as PlayerMovementStateMachine;
+            preState = _movementStateMachine.GetInitialState();
         }
     }
 

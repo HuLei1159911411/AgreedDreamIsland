@@ -15,7 +15,8 @@ public class Roll : BaseState
     {
         if (stateMachine is PlayerMovementStateMachine)
         {
-            _movementStateMachine = stateMachine as PlayerMovementStateMachine;;
+            _movementStateMachine = stateMachine as PlayerMovementStateMachine;
+            preState = _movementStateMachine.GetInitialState();
         }
     }
 
@@ -52,7 +53,7 @@ public class Roll : BaseState
 
     private void SetDirection()
     {
-        if (_movementStateMachine.MoveInputInfo.VerticalInput == 0 && _movementStateMachine.MoveInputInfo.HorizontalInput == 0)
+        if ((_movementStateMachine.MoveInputInfo.VerticalInput == 0 && _movementStateMachine.MoveInputInfo.HorizontalInput == 0) || preState.state == E_State.Sliding)
         {
             _movementStateMachine.direction = _movementStateMachine.playerTransform.forward;
         }
@@ -72,15 +73,20 @@ public class Roll : BaseState
         switch (preState.state)
         {
             case E_State.Idle:
-                _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
-                // 清空水平速度
-                _movementStateMachine.playerRigidbody.velocity =
-                    new Vector3(0, _movementStateMachine.playerRigidbody.velocity.y, 0);
+                if (_movementStateMachine.ChangeState(_movementStateMachine.IdleState))
+                {
+                    // 清空水平速度
+                    _movementStateMachine.playerRigidbody.velocity =
+                        new Vector3(0, _movementStateMachine.playerRigidbody.velocity.y, 0);
+                }
                 break;
             case E_State.Walk:
                 _movementStateMachine.ChangeState(_movementStateMachine.WalkState);
                 break;
             case E_State.Run:
+                _movementStateMachine.ChangeState(_movementStateMachine.RunState);
+                break;
+            case E_State.Sliding:
                 _movementStateMachine.ChangeState(_movementStateMachine.RunState);
                 break;
         }

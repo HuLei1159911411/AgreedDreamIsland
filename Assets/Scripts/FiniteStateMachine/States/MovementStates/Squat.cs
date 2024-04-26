@@ -11,6 +11,7 @@ public class Squat : BaseState
         if (stateMachine is PlayerMovementStateMachine)
         {
             _movementStateMachine = stateMachine as PlayerMovementStateMachine;
+            preState = _movementStateMachine.GetInitialState();
         }
     }
 
@@ -70,8 +71,7 @@ public class Squat : BaseState
         // 不在地面
         if (!_movementStateMachine.isOnGround)
         {
-            _movementStateMachine.ChangeState(_movementStateMachine.FallState);
-            return true;
+            return _movementStateMachine.ChangeState(_movementStateMachine.FallState);
         }
         
         // 松开WASD或摁住WS或摁住AD或摁住WASD并且松开下蹲键
@@ -79,14 +79,12 @@ public class Squat : BaseState
             _movementStateMachine.MoveInputInfo.VerticalInput == 0 &&
             !_movementStateMachine.MoveInputInfo.SquatInput)
         {
-            stateMachine.ChangeState(_movementStateMachine.IdleState);
-            return true;
+            return stateMachine.ChangeState(_movementStateMachine.IdleState);
         }
         // 摁了移动键但是松开下蹲键
         else if (!_movementStateMachine.MoveInputInfo.SquatInput)
         {
-            stateMachine.ChangeState(_movementStateMachine.WalkState);
-            return true;
+            return stateMachine.ChangeState(_movementStateMachine.WalkState);
         }
 
         return false;
