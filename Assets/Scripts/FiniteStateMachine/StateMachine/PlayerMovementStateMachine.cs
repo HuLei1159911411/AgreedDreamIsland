@@ -2,8 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UIElements;
 
 public enum E_State
 {
@@ -17,6 +20,7 @@ public enum E_State
     WallRunning = 7,
     Climb = 8,
     Roll = 9,
+    Grapple = 10,
 }
 
 public struct MoveInputInformation
@@ -31,103 +35,188 @@ public struct MoveInputInformation
     public bool RunInput;
     public bool SquatInput;
     public bool SlidingInput;
+    public bool HookShootLeftInput;
+    public bool HookShootRightInput;
+    public bool FireInput;
+    public bool AimInput;
 }
 
 public class PlayerMovementStateMachine : StateMachine
 {
+    private static PlayerMovementStateMachine _instance;
+    public static PlayerMovementStateMachine Instance => _instance;
+    
+    #region Component
+
     // 组件
     // 动画状态机
     public Animator playerAnimator;
     public Transform head;
     public Transform foot;
     [HideInInspector] public Transform playerTransform;
+
     [HideInInspector] public Rigidbody playerRigidbody;
+
     // 正常状态下的碰撞盒
     public CapsuleCollider baseCollider;
+
     // 下蹲状态下的碰撞盒
     public CapsuleCollider squatCollider;
+
     // 滑铲状态下的碰撞盒
     public CapsuleCollider slidingCollider;
 
+    // 左钩锁发射器
+    public GrapplingHook leftGrapplingHook;
+
+    // 右钩锁发射器
+    public GrapplingHook rightGrapplingHook;
+
+    #endregion
+
+    #region StateObjects
+
     // 当前状态
     [HideInInspector] public BaseState CurrentState => _currentState;
+
     // 空闲状态
     [HideInInspector] public Idle IdleState;
+
     // 走路状态
     [HideInInspector] public Walk WalkState;
+
     // 跳跃状态
     [HideInInspector] public Jump JumpState;
+
     // 下落状态
     [HideInInspector] public Fall FallState;
+
     // 奔跑状态
     [HideInInspector] public Run RunState;
+
     // 下蹲状态
     [HideInInspector] public Squat SquatState;
+
     // 滑铲状态
     [HideInInspector] public Sliding SlidingState;
+
     // 滑墙状态
     [HideInInspector] public WallRunning WallRunningState;
+
     // 攀爬状态
     [HideInInspector] public Climb ClimbState;
+
     // 翻滚状态
     [HideInInspector] public Roll RollState;
+
+    #endregion
+
+    #region PublicGettableParamaters
 
     [Header("输入参数")] [Range(0.01f, 1f)]
     // 每帧垂直和水平方向输入影响数值大小
     public float inputValueRate = 0.01f;
+
     // 当同时摁住互斥的摁键和同时松开互斥的摁键时是否需要以更快的速度使值归零
     public bool isQuickZeroing;
+
     // 快速归零时速率倍数
     public float quickZeroingRate = 2f;
+
     // 移动输入信息
     [HideInInspector] public MoveInputInformation MoveInputInfo;
+
     // 当前水平移动移动速度的最大值
     [HideInInspector] public float nowMoveSpeed;
+
     // 当前玩家是否在地面上
     [HideInInspector] public bool isOnGround;
+
     // 当前玩家刚体在XOZ平面上移动速度大小
     [HideInInspector] public float playerXozSpeed;
+
     // 当前玩家刚体在XOY平面上移动速度大小
     [HideInInspector] public float playerXoySpeed;
+
     // 当前玩家是否在可运动角度范围内的斜面上
     [HideInInspector] public bool isOnSlope;
+
     // 玩家移动的方向
     [HideInInspector] public Vector3 direction;
+
     // 左边是否有墙壁
     [HideInInspector] public bool hasWallOnLeft;
+
     // 右边是否有墙壁
     [HideInInspector] public bool hasWallOnRight;
+
     // 前面是否有墙壁
     [HideInInspector] public bool hasWallOnForward;
+
     // 人物脑袋前方是否有墙壁
     [HideInInspector] public bool hasWallOnHeadForward;
+
     // 人物脚前方是否有墙壁
     [HideInInspector] public bool hasWallOnFootForward;
+
     // 当前斜面角度
     [HideInInspector] public float slopeAngle;
+
     // 摄像机在XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度
     [HideInInspector] public float cameraForwardWithWallAbnormalAngle;
+
     // 在下落、跳跃后能否快速进入奔跑状态
     [HideInInspector] public bool isFastToRun;
+
     // 当前玩家距离地面高度
     [HideInInspector] public float nowHigh;
+
     // 是否向下使用球形检测
     [HideInInspector] public bool isUseSphereCast;
+
     // PlayerMovementStateMachine中参数在Animator中参数的索引字典
     [HideInInspector] public Dictionary<string, int> DicAnimatorIndexes;
+
     // 是否尝试改变碰撞盒到当前状态的碰撞盒(在当前位置无法正常设置碰撞盒为当前状态碰撞盒时该值为true)
     public bool IsTryToChangeState => _isTryToChangeState;
+
     // 尝试去切换的状态
     public BaseState TryToState => _tryToState;
+
+    // 是否存在可供钩锁勾中的位置
+    [HideInInspector] public bool hasHookCheckPoint;
+
+    // 钩锁勾中的位置
+    [HideInInspector] public Vector3 hookCheckPoint;
+
+    // 左钩锁发射器是否自动找到了勾中点
+    [HideInInspector] public bool hasAutoLeftGrapplingHookCheckPoint;
+    
+    // 左钩锁发射器自动找到的勾中点坐标
+    [HideInInspector] public Vector3 leftGrapplingHookCastHitHookCheckPoint;
+
+    // 右钩锁发射器是否自动找到了勾中点
+    [HideInInspector] public bool hasAutoRightGrapplingHookCheckPoint;
+    
+    // 右钩锁发射器自动找到的勾中点坐标
+    [HideInInspector] public Vector3 rightGrapplingHookCastHitHookCheckPoint;
+
+    #endregion
+
+    #region PublicSettablePlayerAndSceneParamaters
 
     [Header("玩家及场景参数")] // 以后考虑是不是要换到别的脚本里面去
     // 玩家高度
     public float playerHeight = 2f;
+
     // 允许玩家运动的最大斜面角度
     public float maxSlopeAngle = 45f;
 
-    [Header("玩家运动相关参数")] 
-    [Header("走路")]
+    #endregion
+
+    #region PublicSettableMovementStateParamaters
+
+    [Header("玩家运动相关参数")] [Header("走路")]
     // 移动
     // 走路向前的速度的最大值
     public float walkForwardSpeed = 8f;
@@ -174,7 +263,7 @@ public class PlayerMovementStateMachine : StateMachine
     public float squatSpeed = 5f;
     // 下蹲时给予玩家力的大小
     public float squatMoveForce = 8f;
-    
+
     [Header("滑铲")]
     // 滑铲
     // 平地上滑铲速度最大速度
@@ -194,7 +283,7 @@ public class PlayerMovementStateMachine : StateMachine
     public float fallGravityScale = 3f;
     // 下落时水平移动的最大速度
     public float fallSpeed = 1f;
-    
+
     [Header("滑墙")]
     // 滑墙
     // 可以进行滑墙的最低高度
@@ -229,7 +318,20 @@ public class PlayerMovementStateMachine : StateMachine
     public float rollSpeed = 5f;
     // 翻滚时力的大小
     public float rollForce = 5f;
-    
+
+    [Header("钩锁")]
+    // 钩锁
+    // 从摄像机出发检测可以进行钩锁勾爪勾住的最大距离
+    public float maxHookCheckDistance = 10f;
+    // 从摄像机射出射线进行球形检测半径大小
+    public float cameraHookCheckPointSphereCastRadius = 1f;
+    // 从立体机动装置射出球形射线对两边进行自动寻找勾住点的半径大小
+    public float autoHookCheckPointSphereCastRadius = 1f;
+
+    #endregion
+
+    #region PrivateInternalParamaters
+
     // 计算Xoz或Xoy平面玩家刚体速度用的临时变量
     private Vector3 _calVelocity;
     // 由玩家向下发射的用于检测地面与斜面用的射线的击中信息
@@ -277,8 +379,28 @@ public class PlayerMovementStateMachine : StateMachine
     private Vector3 _squatCenterOffset;
     // BaseCollider中心点与其gameObject对象的Transform组件中心点的偏移量
     private Vector3 _baseCenterOffset;
+    // 从摄像机坐标向摄像机面朝向向量方向发射用来检测是否存在可供钩锁勾中的图层的射线的击中信息(先射线检测若是不存在击中点则使用球形检测)
+    private RaycastHit _cameraForwardRaycastHit;
+    // 左钩锁向从摄像机发射射线击中点发射的射线的击中信息
+    private RaycastHit _leftHookRaycastHit;
+    // 右钩锁向从摄像机发射射线击中点发射的射线的击中信息
+    private RaycastHit _rightHookRaycastHit;
+    // 用来计算钩锁发射器距离勾中点距离
+    private float _grapplingHookDistance;
+    // 从左边立体机动装置射出球形射线检测的方向
+    private Vector3 _leftAutoHookCheckPointSphereDirection;
+    // 从右边立体机动装置射出球形射线检测的方向
+    private Vector3 _rightAutoHookCheckPointSphereDirection;
+
+    #endregion
+
     private void Awake()
     {
+        if (_instance == null)
+        {
+            _instance = this;
+        }
+        
         // 初始化状态
         IdleState = new Idle(this);
         WalkState = new Walk(this);
@@ -329,7 +451,13 @@ public class PlayerMovementStateMachine : StateMachine
         UpdateXozVelocity();
 
         DrawLine();
-        
+
+        // 更新钩锁勾中点
+        UpdateHasHookCheckPoint();
+
+        // 监听钩锁发射控制
+        ListenGrapplingHookShoot();
+
         // 当前状态需要尝试去进行切换
         if (_isTryToChangeState)
         {
@@ -379,12 +507,12 @@ public class PlayerMovementStateMachine : StateMachine
         {
             _isTryToChangeState = false;
             _tryToState = null;
-            
+
             playerAnimator.SetInteger(DicAnimatorIndexes["PreState"], (int)_currentState.state);
-            
+
             base.ChangeState(newState);
             SetColliderByCurrentState();
-            
+
             playerAnimator.SetInteger(DicAnimatorIndexes["ToState"], (int)newState.state);
             playerAnimator.SetBool(DicAnimatorIndexes["isFastToRun"], isFastToRun);
             return true;
@@ -393,39 +521,35 @@ public class PlayerMovementStateMachine : StateMachine
 
     private void DrawLine()
     {
-        // // 下
-        // Debug.DrawLine(playerTransform.position,
-        //     playerTransform.position + Vector3.down * (playerHeight * 0.5f + heightOffset), Color.red);
-        //
-        // // 左
-        // Debug.DrawLine(playerTransform.position,
-        //     playerTransform.position - playerTransform.right * wallCheckDistance, Color.yellow);
-        //
-        // // 右
-        // Debug.DrawLine(playerTransform.position,
-        //     playerTransform.position + playerTransform.right * wallCheckDistance, Color.yellow);
-        //
-        // // 前
-        // Debug.DrawLine(playerTransform.position,
-        //     playerTransform.position + playerTransform.forward * (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)), Color.yellow);
-        //
-        // // 头顶前方
-        // Debug.DrawLine(head.position,
-        //     head.position + head.forward * (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)), Color.green);
-        //
-        // // 脚前方
-        // Debug.DrawLine(foot.position,
-        //     foot.position + foot.forward * (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)), Color.green);
-        //
-        // // 方向
-        // Debug.DrawLine(playerTransform.position, playerTransform.position + direction * 5, Color.white);
-        
-        // 画画
-        Debug.DrawLine(squatCollider.transform.position + squatCollider.center * squatCollider.transform.localScale.y, 
-            squatCollider.transform.position + squatCollider.center * squatCollider.transform.localScale.y + Vector3.up *
-            ((baseCollider.transform.position.y + (baseCollider.center.y * baseCollider.transform.localScale.y)) - 
-             (squatCollider.transform.position.y + (squatCollider.center.y * squatCollider.transform.localScale.y)) +
-             (baseCollider.height * baseCollider.transform.localScale.y * 0.5f)), Color.magenta);
+        // 下
+        Debug.DrawLine(playerTransform.position,
+            playerTransform.position + Vector3.down * (playerHeight * 0.5f + heightOffset), Color.red);
+
+        // 左
+        Debug.DrawLine(playerTransform.position,
+            playerTransform.position - playerTransform.right * wallCheckDistance, Color.yellow);
+
+        // 右
+        Debug.DrawLine(playerTransform.position,
+            playerTransform.position + playerTransform.right * wallCheckDistance, Color.yellow);
+
+        // 前
+        Debug.DrawLine(playerTransform.position,
+            playerTransform.position + playerTransform.forward *
+            (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)), Color.yellow);
+
+        // 头顶前方
+        Debug.DrawLine(head.position,
+            head.position + head.forward * (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)),
+            Color.green);
+
+        // 脚前方
+        Debug.DrawLine(foot.position,
+            foot.position + foot.forward * (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)),
+            Color.green);
+
+        // 方向
+        Debug.DrawLine(playerTransform.position, playerTransform.position + direction * 5, Color.white);
     }
 
     public override BaseState GetInitialState()
@@ -446,11 +570,11 @@ public class PlayerMovementStateMachine : StateMachine
         {
             DicAnimatorIndexes.Add(_animatorControllerParameters[i].name, _animatorControllerParameters[i].nameHash);
         }
-        
+
         // 设置碰撞盒
         InitCollider();
         _isTryToChangeState = false;
-        
+
         // 计算碰撞盒中心点坐标的偏移量
         _slidingCenterOffset = new Vector3(slidingCollider.center.x * slidingCollider.transform.localScale.x,
             slidingCollider.center.y * slidingCollider.transform.localScale.y,
@@ -461,6 +585,11 @@ public class PlayerMovementStateMachine : StateMachine
         _baseCenterOffset = new Vector3(baseCollider.center.x * baseCollider.transform.localScale.x,
             baseCollider.center.y * baseCollider.transform.localScale.y,
             baseCollider.center.z * baseCollider.transform.localScale.z);
+
+        // 初始化钩锁相关参数
+        hasHookCheckPoint = false;
+        hasAutoLeftGrapplingHookCheckPoint = false;
+        hasAutoRightGrapplingHookCheckPoint = false;
     }
 
 
@@ -482,6 +611,12 @@ public class PlayerMovementStateMachine : StateMachine
         MoveInputInfo.RunInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Run]);
         MoveInputInfo.SquatInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Squat]);
         MoveInputInfo.SlidingInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Sliding]);
+        MoveInputInfo.HookShootLeftInput =
+            Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.HookShootLeft]);
+        MoveInputInfo.HookShootRightInput =
+            Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.HookShootRight]);
+        MoveInputInfo.FireInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Fire]);
+        MoveInputInfo.AimInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Aim]);
     }
 
     // 更新MoveInputInfo中VerticalInput与HorizontalInput的值
@@ -746,6 +881,220 @@ public class PlayerMovementStateMachine : StateMachine
         }
     }
 
+    // 由摄像机向前发射是否存在可以勾中的位置，若摄像机未对准可以勾中的位置由钩锁发射器自行对两边进行查找
+    private void UpdateHasHookCheckPoint()
+    {
+        // 当两个钩锁发射器均处于发射钩锁或钩锁勾中状态时不需要更新勾中点
+        if (leftGrapplingHook.IsGrapplingHookLocked() && rightGrapplingHook.IsGrapplingHookLocked())
+        {
+            hasHookCheckPoint = false;
+            return;
+        }
+
+        // 摄像机向前射线检测两个层级
+        hasHookCheckPoint = Physics.Raycast(
+            CameraController.Instance.transform.position,
+            CameraController.Instance.transform.forward,
+            out _cameraForwardRaycastHit,
+            maxHookCheckDistance,
+            InfoManager.Instance.layerGround);
+        if (!hasHookCheckPoint)
+        {
+            hasHookCheckPoint = Physics.Raycast(
+                CameraController.Instance.transform.position,
+                CameraController.Instance.transform.forward,
+                out _cameraForwardRaycastHit,
+                maxHookCheckDistance,
+                InfoManager.Instance.layerWall);
+        }
+
+        // 射线检测检测不到击中点时使用球形射线对两个图层检测
+        if (!hasHookCheckPoint)
+        {
+            hasHookCheckPoint = Physics.SphereCast(
+                CameraController.Instance.transform.position,
+                cameraHookCheckPointSphereCastRadius,
+                CameraController.Instance.transform.forward,
+                out _cameraForwardRaycastHit,
+                maxHookCheckDistance - cameraHookCheckPointSphereCastRadius,
+                InfoManager.Instance.layerGround);
+        }
+        if (!hasHookCheckPoint)
+        {
+            hasHookCheckPoint = Physics.SphereCast(
+                CameraController.Instance.transform.position,
+                cameraHookCheckPointSphereCastRadius,
+                CameraController.Instance.transform.forward,
+                out _cameraForwardRaycastHit,
+                maxHookCheckDistance - cameraHookCheckPointSphereCastRadius,
+                InfoManager.Instance.layerWall);
+        }
+        
+        // 画画
+        Debug.DrawLine(CameraController.Instance.transform.position,
+            CameraController.Instance.transform.position + CameraController.Instance.transform.forward * maxHookCheckDistance,
+            Color.cyan);
+
+        // 当摄像机前不存在勾中点两个钩锁发射器中未发射钩锁的自行向两边寻找是否存在钩锁勾中点
+        if (!hasHookCheckPoint)
+        {
+            // 更新查找射线方向
+            _leftAutoHookCheckPointSphereDirection =
+                (playerTransform.forward + playerTransform.up + -playerTransform.right).normalized;
+            _rightAutoHookCheckPointSphereDirection =
+                (playerTransform.forward + playerTransform.up + playerTransform.right).normalized;
+
+            // 左钩锁发射器不是发射过去的过程中和勾中了的锁定状态，未左钩锁发射器自动寻找勾中点
+            if (!leftGrapplingHook.IsGrapplingHookLocked())
+            {
+                hasAutoLeftGrapplingHookCheckPoint = Physics.SphereCast(
+                    leftGrapplingHook.hookShootPoint.position,
+                    autoHookCheckPointSphereCastRadius,
+                    _leftAutoHookCheckPointSphereDirection,
+                    out _leftHookRaycastHit,
+                    maxHookCheckDistance - autoHookCheckPointSphereCastRadius,
+                    InfoManager.Instance.layerGround);
+                if (!hasAutoLeftGrapplingHookCheckPoint)
+                {
+                    hasAutoLeftGrapplingHookCheckPoint = Physics.SphereCast(
+                        leftGrapplingHook.hookShootPoint.position,
+                        autoHookCheckPointSphereCastRadius,
+                        _leftAutoHookCheckPointSphereDirection,
+                        out _leftHookRaycastHit,
+                        maxHookCheckDistance - autoHookCheckPointSphereCastRadius,
+                        InfoManager.Instance.layerWall);
+                }
+
+                if (hasAutoLeftGrapplingHookCheckPoint)
+                {
+                    leftGrapplingHookCastHitHookCheckPoint = _leftHookRaycastHit.point;
+                }
+                
+                // 画画
+                Debug.DrawLine(leftGrapplingHook.hookShootPoint.position,
+                    leftGrapplingHook.hookShootPoint.position + _leftAutoHookCheckPointSphereDirection * maxHookCheckDistance,
+                    Color.cyan);
+            }
+            else
+            {
+                hasAutoLeftGrapplingHookCheckPoint = false;
+            }
+
+            // 右钩锁发射器不是发射过去的过程中和勾中了的锁定状态，未左钩锁发射器自动寻找勾中点
+            if (!rightGrapplingHook.IsGrapplingHookLocked())
+            {
+                hasAutoRightGrapplingHookCheckPoint = Physics.SphereCast(
+                    rightGrapplingHook.hookShootPoint.position,
+                    autoHookCheckPointSphereCastRadius,
+                    _rightAutoHookCheckPointSphereDirection,
+                    out _rightHookRaycastHit,
+                    maxHookCheckDistance - autoHookCheckPointSphereCastRadius,
+                    InfoManager.Instance.layerGround);
+                if (!hasAutoRightGrapplingHookCheckPoint)
+                {
+                    Physics.SphereCast(
+                        rightGrapplingHook.hookShootPoint.position,
+                        autoHookCheckPointSphereCastRadius,
+                        _rightAutoHookCheckPointSphereDirection,
+                        out _rightHookRaycastHit,
+                        maxHookCheckDistance - autoHookCheckPointSphereCastRadius,
+                        InfoManager.Instance.layerGround);
+                }
+
+                if (hasAutoRightGrapplingHookCheckPoint)
+                {
+                    rightGrapplingHookCastHitHookCheckPoint = _rightHookRaycastHit.point;
+                }
+            }
+            else
+            {
+                hasAutoRightGrapplingHookCheckPoint = false;
+            }
+            
+            // 画画
+            Debug.DrawLine(rightGrapplingHook.hookShootPoint.position,
+                rightGrapplingHook.hookShootPoint.position + _rightAutoHookCheckPointSphereDirection * maxHookCheckDistance,
+                Color.cyan);
+        }
+        else
+        {
+            hookCheckPoint = _cameraForwardRaycastHit.point;
+            hasAutoLeftGrapplingHookCheckPoint = false;
+            hasAutoRightGrapplingHookCheckPoint = false;
+        }
+    }
+
+    // 当摄像机前存在勾中点，指定发射钩锁的发射器，由钩锁发射器向这点发射射线更新勾中点坐标，当是自动勾中点更新勾中点为左右自动勾中点其一
+    private void UpdateHookCheckPoint(bool isLeft)
+    {
+        if (!hasHookCheckPoint)
+        {
+            hookCheckPoint = isLeft ? leftGrapplingHookCastHitHookCheckPoint : rightGrapplingHookCastHitHookCheckPoint;
+            return;
+        }
+
+        if (isLeft)
+        {
+            _grapplingHookDistance =
+                Vector3.Distance(leftGrapplingHook.hookShootPoint.position, _cameraForwardRaycastHit.point);
+            if (Physics.Raycast(leftGrapplingHook.hookShootPoint.position,
+                    _cameraForwardRaycastHit.point - leftGrapplingHook.hookShootPoint.position,
+                    out _leftHookRaycastHit,
+                    _grapplingHookDistance,
+                    InfoManager.Instance.layerGround
+                ))
+            {
+                hookCheckPoint = _leftHookRaycastHit.point;
+            }
+            else
+            {
+                if (Physics.Raycast(leftGrapplingHook.hookShootPoint.position,
+                        _cameraForwardRaycastHit.point - leftGrapplingHook.hookShootPoint.position,
+                        out _leftHookRaycastHit,
+                        _grapplingHookDistance,
+                        InfoManager.Instance.layerWall
+                    ))
+                {
+                    hookCheckPoint = _leftHookRaycastHit.point;
+                }
+            }
+            // 画画
+            Debug.DrawLine(leftGrapplingHook.hookShootPoint.position,
+                _cameraForwardRaycastHit.point,
+                Color.cyan);
+        }
+        else
+        {
+            _grapplingHookDistance =
+                Vector3.Distance(rightGrapplingHook.hookShootPoint.position, _cameraForwardRaycastHit.point);
+            if (Physics.Raycast(rightGrapplingHook.hookShootPoint.position,
+                    _cameraForwardRaycastHit.point - rightGrapplingHook.hookShootPoint.position,
+                    out _rightHookRaycastHit,
+                    _grapplingHookDistance,
+                    InfoManager.Instance.layerGround
+                ))
+            {
+                hookCheckPoint = _rightHookRaycastHit.point;
+            }
+            else
+            {
+                if (Physics.Raycast(rightGrapplingHook.hookShootPoint.position,
+                        _cameraForwardRaycastHit.point - rightGrapplingHook.hookShootPoint.position,
+                        out _rightHookRaycastHit,
+                        _grapplingHookDistance,
+                        InfoManager.Instance.layerWall
+                    ))
+                {
+                    hookCheckPoint = _rightHookRaycastHit.point;
+                }
+            }
+            // 画画
+            Debug.DrawLine(rightGrapplingHook.hookShootPoint.position,
+                _cameraForwardRaycastHit.point,
+                Color.cyan);
+        }
+    }
+
     // 在Animator组件中更新参数
     private void UpdateAnimatorParameters()
     {
@@ -786,7 +1135,7 @@ public class PlayerMovementStateMachine : StateMachine
 
         return GetStateString(_currentState.state);
     }
-    
+
     // 获取对应状态枚举的字符串状态名
     public string GetStateString(E_State state)
     {
@@ -825,7 +1174,7 @@ public class PlayerMovementStateMachine : StateMachine
         {
             _velocityWithSpeedRatio = nowMoveSpeed / playerXozSpeed;
             _calVelocity.x = playerRigidbody.velocity.x * _velocityWithSpeedRatio;
-            
+
             // 斜面的话y轴速度同时也要限制不然会导致最终合成的速度方向产生变化导致在斜面上弹跳
             if (isOnSlope)
             {
@@ -941,8 +1290,10 @@ public class PlayerMovementStateMachine : StateMachine
     // 根据状态设置碰撞盒
     private void SetColliderByCurrentState()
     {
-        if (_currentState.preState.state == E_State.Squat || _currentState.preState.state == E_State.Sliding || _currentState.preState.state == E_State.Roll ||
-            _currentState.state == E_State.Squat || _currentState.state == E_State.Sliding || _currentState.state == E_State.Roll)
+        if (_currentState.preState.state == E_State.Squat || _currentState.preState.state == E_State.Sliding ||
+            _currentState.preState.state == E_State.Roll ||
+            _currentState.state == E_State.Squat || _currentState.state == E_State.Sliding ||
+            _currentState.state == E_State.Roll)
         {
             switch (_currentState.state)
             {
@@ -955,7 +1306,7 @@ public class PlayerMovementStateMachine : StateMachine
                     slidingCollider.gameObject.SetActive(true);
                     baseCollider.gameObject.SetActive(false);
                     squatCollider.gameObject.SetActive(false);
-                    
+
                     break;
                 case E_State.Roll:
                     slidingCollider.gameObject.SetActive(true);
@@ -978,13 +1329,13 @@ public class PlayerMovementStateMachine : StateMachine
         squatCollider.gameObject.SetActive(false);
         slidingCollider.gameObject.SetActive(false);
     }
-    
+
     // 获取最后一帧脚前方有墙壁时从脚到墙壁的方向
     public Vector3 GetDirectionFootToWall()
     {
         return (_lastForwardFootRaycastHit.point - foot.transform.position).normalized;
     }
-    
+
     // 检测人物上下空间高度是否满足目标状态的collider的切换
     private bool IsHighMatchCondition(E_State preEState, E_State nowEState)
     {
@@ -995,25 +1346,29 @@ public class PlayerMovementStateMachine : StateMachine
                 // 向上发射射线检测上方高度
                 _hasGroundInDistance = Physics.SphereCast(
                     slidingCollider.transform.position + _slidingCenterOffset,
-                    squatCollider.radius * Mathf.Max(squatCollider.transform.localScale.x, squatCollider.transform.localScale.z),
+                    squatCollider.radius * Mathf.Max(squatCollider.transform.localScale.x,
+                        squatCollider.transform.localScale.z),
                     Vector3.up,
                     out _upHighRaycastHit,
                     (squatCollider.transform.position + _squatCenterOffset).y -
                     (slidingCollider.transform.position + _slidingCenterOffset).y +
-                    (squatCollider.height * 0.5f * squatCollider.transform.localScale.y) - 
-                    (squatCollider.radius * Mathf.Max(squatCollider.transform.localScale.x, squatCollider.transform.localScale.z)),
+                    (squatCollider.height * 0.5f * squatCollider.transform.localScale.y) -
+                    (squatCollider.radius * Mathf.Max(squatCollider.transform.localScale.x,
+                        squatCollider.transform.localScale.z)),
                     InfoManager.Instance.layerGround);
                 _hasWallInDistance = Physics.SphereCast(
                     slidingCollider.transform.position + _slidingCenterOffset,
-                    squatCollider.radius * Mathf.Max(squatCollider.transform.localScale.x, squatCollider.transform.localScale.z),
+                    squatCollider.radius * Mathf.Max(squatCollider.transform.localScale.x,
+                        squatCollider.transform.localScale.z),
                     Vector3.up,
                     out _upHighRaycastHit,
                     (squatCollider.transform.position + _squatCenterOffset).y -
                     (slidingCollider.transform.position + _slidingCenterOffset).y +
-                    (squatCollider.height * 0.5f * squatCollider.transform.localScale.y) - 
-                    (squatCollider.radius * Mathf.Max(squatCollider.transform.localScale.x, squatCollider.transform.localScale.z)),
+                    (squatCollider.height * 0.5f * squatCollider.transform.localScale.y) -
+                    (squatCollider.radius * Mathf.Max(squatCollider.transform.localScale.x,
+                        squatCollider.transform.localScale.z)),
                     InfoManager.Instance.layerWall);
-                
+
                 // 画画
                 Debug.DrawLine(
                     slidingCollider.transform.position + _slidingCenterOffset,
@@ -1022,12 +1377,12 @@ public class PlayerMovementStateMachine : StateMachine
                     (((squatCollider.transform.position + _squatCenterOffset).y -
                       (slidingCollider.transform.position + _slidingCenterOffset).y) +
                      (squatCollider.height * 0.5f * squatCollider.transform.localScale.y)), Color.magenta);
-                
+
                 if (!_hasGroundInDistance && !_hasWallInDistance)
                 {
                     return true;
                 }
-                
+
                 return false;
             // 使用slidingCollider或squatCollider的状态转换为使用baseCollider的状态
             default:
@@ -1037,71 +1392,80 @@ public class PlayerMovementStateMachine : StateMachine
                     // 向上发射射线检测上方高度
                     _hasGroundInDistance = Physics.SphereCast(
                         slidingCollider.transform.position + _slidingCenterOffset,
-                        baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x, baseCollider.transform.localScale.z),
+                        baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
+                            baseCollider.transform.localScale.z),
                         Vector3.up,
                         out _upHighRaycastHit,
-                        (baseCollider.transform.position + _baseCenterOffset).y - 
-                         (slidingCollider.transform.position + _slidingCenterOffset).y +
+                        (baseCollider.transform.position + _baseCenterOffset).y -
+                        (slidingCollider.transform.position + _slidingCenterOffset).y +
                         (baseCollider.height * 0.5f * baseCollider.transform.localScale.y) -
-                        (baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x, baseCollider.transform.localScale.z)), 
+                        (baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
+                            baseCollider.transform.localScale.z)),
                         InfoManager.Instance.layerGround);
                     _hasWallInDistance = Physics.SphereCast(
                         slidingCollider.transform.position + _slidingCenterOffset,
-                        baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x, baseCollider.transform.localScale.z),
+                        baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
+                            baseCollider.transform.localScale.z),
                         Vector3.up,
                         out _upHighRaycastHit,
-                        (baseCollider.transform.position + _baseCenterOffset).y - 
+                        (baseCollider.transform.position + _baseCenterOffset).y -
                         (slidingCollider.transform.position + _slidingCenterOffset).y +
                         (baseCollider.height * 0.5f * baseCollider.transform.localScale.y) -
-                        (baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x, baseCollider.transform.localScale.z)), 
+                        (baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
+                            baseCollider.transform.localScale.z)),
                         InfoManager.Instance.layerWall);
 
                     // 画画
-                    Debug.DrawLine(slidingCollider.transform.position + _slidingCenterOffset, 
-                        slidingCollider.transform.position + _slidingCenterOffset + 
+                    Debug.DrawLine(slidingCollider.transform.position + _slidingCenterOffset,
+                        slidingCollider.transform.position + _slidingCenterOffset +
                         Vector3.up *
-                        (((baseCollider.transform.position + _baseCenterOffset).y - 
-                         (slidingCollider.transform.position + _slidingCenterOffset).y) +
+                        (((baseCollider.transform.position + _baseCenterOffset).y -
+                          (slidingCollider.transform.position + _slidingCenterOffset).y) +
                          (baseCollider.height * 0.5f * baseCollider.transform.localScale.y)), Color.magenta);
-                    
+
                     if (!_hasGroundInDistance && !_hasWallInDistance)
                     {
                         return true;
                     }
-                    
+
                     return false;
                 }
+
                 // squatCollider -> baseCollider
                 if (preEState == E_State.Squat)
                 {
                     // 向上发射射线检测上方高度
                     _hasGroundInDistance = Physics.SphereCast(
-                        squatCollider.transform.position + _squatCenterOffset, 
-                        baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x, baseCollider.transform.localScale.z),
+                        squatCollider.transform.position + _squatCenterOffset,
+                        baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
+                            baseCollider.transform.localScale.z),
                         Vector3.up,
                         out _upHighRaycastHit,
-                        (baseCollider.transform.position + _baseCenterOffset).y - 
+                        (baseCollider.transform.position + _baseCenterOffset).y -
                         (squatCollider.transform.position + _squatCenterOffset).y +
                         (baseCollider.height * baseCollider.transform.localScale.y * 0.5f) -
-                        (baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x, baseCollider.transform.localScale.z)),
+                        (baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
+                            baseCollider.transform.localScale.z)),
                         InfoManager.Instance.layerGround);
                     _hasWallInDistance = Physics.SphereCast(
-                        squatCollider.transform.position + _squatCenterOffset, 
-                        baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x, baseCollider.transform.localScale.z),
+                        squatCollider.transform.position + _squatCenterOffset,
+                        baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
+                            baseCollider.transform.localScale.z),
                         Vector3.up,
                         out _upHighRaycastHit,
-                        (baseCollider.transform.position + _baseCenterOffset).y - 
+                        (baseCollider.transform.position + _baseCenterOffset).y -
                         (squatCollider.transform.position + _squatCenterOffset).y +
                         (baseCollider.height * baseCollider.transform.localScale.y * 0.5f) -
-                        (baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x, baseCollider.transform.localScale.z)),
+                        (baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
+                            baseCollider.transform.localScale.z)),
                         InfoManager.Instance.layerWall);
-                    
+
                     // 画画
-                    Debug.DrawLine(squatCollider.transform.position + _squatCenterOffset, 
+                    Debug.DrawLine(squatCollider.transform.position + _squatCenterOffset,
                         squatCollider.transform.position + _squatCenterOffset +
                         Vector3.up *
-                        (((baseCollider.transform.position + _baseCenterOffset).y - 
-                         (squatCollider.transform.position + _squatCenterOffset).y) +
+                        (((baseCollider.transform.position + _baseCenterOffset).y -
+                          (squatCollider.transform.position + _squatCenterOffset).y) +
                          (baseCollider.height * baseCollider.transform.localScale.y * 0.5f)), Color.magenta);
 
                     if (!_hasGroundInDistance && !_hasWallInDistance)
@@ -1114,8 +1478,65 @@ public class PlayerMovementStateMachine : StateMachine
 
                 break;
         }
-        
+
         return true;
+    }
+
+    // 监听钩锁发射与回收
+    private void ListenGrapplingHookShoot()
+    {
+        if (MoveInputInfo.AimInput)
+        {
+            if (leftGrapplingHook.isCompletedMove)
+            {
+                leftGrapplingHook.RetractRope();
+            }
+
+            if (rightGrapplingHook.isCompletedMove)
+            {
+                rightGrapplingHook.RetractRope();
+            }
+            
+        }
+        
+        if (!hasHookCheckPoint && !hasAutoLeftGrapplingHookCheckPoint && !hasAutoRightGrapplingHookCheckPoint)
+        {
+            return;
+        }
+
+        if (MoveInputInfo.HookShootLeftInput)
+        {
+            if (leftGrapplingHook.IsGrapplingHookLocked())
+            {
+                
+            }
+            else
+            {
+                if (hasHookCheckPoint || hasAutoLeftGrapplingHookCheckPoint)
+                {
+                    UpdateHookCheckPoint(true);
+                    leftGrapplingHook.ShootHook(hookCheckPoint);
+                }
+                
+            }
+        }
+
+        if (MoveInputInfo.HookShootRightInput)
+        {
+            if (rightGrapplingHook.IsGrapplingHookLocked())
+            {
+                
+            }
+            else
+            {
+                if (hasHookCheckPoint || hasAutoRightGrapplingHookCheckPoint)
+                {
+                    UpdateHookCheckPoint(false);
+                    rightGrapplingHook.ShootHook(hookCheckPoint);
+                }
+                
+            }
+        }
     }
 
     // 动画事件----------------------

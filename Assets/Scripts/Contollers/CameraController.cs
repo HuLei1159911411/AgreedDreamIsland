@@ -47,7 +47,7 @@ public class CameraController : MonoBehaviour
     // 绕世界坐标right向量旋转角度
     private float _rightAngle;
     // Player向摄像机发射的射线的击中信息
-    RaycastHit _hit;
+    private RaycastHit _hit;
     // 玩家在Xoz平面的面朝向向量
     private Vector3 _playerForwardXoz;
     // 摄像机在Xoz平面的面朝向向量

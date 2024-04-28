@@ -14,6 +14,10 @@ public enum E_InputBehavior
     ChangeView,
     Squat,
     Sliding,
+    HookShootLeft,
+    HookShootRight,
+    Fire,
+    Aim,
 }
 public class InputManager : MonoBehaviour
 {
@@ -49,8 +53,12 @@ public class InputManager : MonoBehaviour
             { E_InputBehavior.Jump, KeyCode.Space },
             { E_InputBehavior.Run, KeyCode.LeftShift },
             { E_InputBehavior.ChangeView, KeyCode.V },
-            { E_InputBehavior.Squat, KeyCode.LeftControl},
-            { E_InputBehavior.Sliding , KeyCode.LeftControl},
+            { E_InputBehavior.Squat, KeyCode.LeftControl },
+            { E_InputBehavior.Sliding, KeyCode.LeftControl },
+            { E_InputBehavior.HookShootLeft, KeyCode.Q },
+            { E_InputBehavior.HookShootRight, KeyCode.E },
+            { E_InputBehavior.Fire, KeyCode.Mouse0 },
+            { E_InputBehavior.Aim , KeyCode.Mouse1 },
         };
     }
 }
