@@ -783,7 +783,6 @@ MonoBehaviour:
   isUseSphereCast: 0
   hasHookCheckPoint: 0
   hookCheckPoint: {x: 0, y: 0, z: 0}
-  isCameraCastHitHookCheckPoint: 0
   hasAutoLeftGrapplingHookCheckPoint: 0
   leftGrapplingHookCastHitHookCheckPoint: {x: 0, y: 0, z: 0}
   hasAutoRightGrapplingHookCheckPoint: 0
@@ -15843,6 +15842,26 @@ MonoBehaviour:
   groundDrag: 4
   airDrag: 0
   maxHigh: 100
+  layersGroundCheck:
+  - serializedVersion: 2
+    m_Bits: 8
+  - serializedVersion: 2
+    m_Bits: 64
+  layerGroundCheck:
+    serializedVersion: 2
+    m_Bits: 0
+  layersWallCheck:
+  - serializedVersion: 2
+    m_Bits: 64
+  layerWallCheck:
+    serializedVersion: 2
+    m_Bits: 0
+  layersGrapplingHookCheck:
+  - serializedVersion: 2
+    m_Bits: 72
+  layerGrapplingHookCheck:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1 &604833193557174465
 GameObject:
   m_ObjectHideFlags: 0
@@ -16559,7 +16578,6 @@ MonoBehaviour:
   isUseSphereCast: 0
   hasHookCheckPoint: 0
   hookCheckPoint: {x: 0, y: 0, z: 0}
-  isCameraCastHitHookCheckPoint: 0
   hasAutoLeftGrapplingHookCheckPoint: 0
   leftGrapplingHookCastHitHookCheckPoint: {x: 0, y: 0, z: 0}
   hasAutoRightGrapplingHookCheckPoint: 0
@@ -16601,7 +16619,7 @@ MonoBehaviour:
   rollSpeed: 7
   rollForce: 40
   maxHookCheckDistance: 20
-  cameraHookCheckPointSphereCastRadius: 1
+  cameraHookCheckPointSphereCastRadius: 0.5
   autoHookCheckPointSphereCastRadius: 1
 --- !u!114 &4959207914713938750
 MonoBehaviour:

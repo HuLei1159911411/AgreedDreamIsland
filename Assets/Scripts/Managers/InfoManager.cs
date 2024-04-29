@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -14,12 +15,36 @@ public class InfoManager : MonoBehaviour
     [Header("地面阻力")] public float groundDrag;
     [Header("空气阻力")] public float airDrag;
     [Header("玩家最高高度")] public float maxHigh = 100f;
+    [Header("用来检测是否在地面的射线检测的图层")] public List<LayerMask> layersGroundCheck;
+    public LayerMask layerGroundCheck;
+    [Header("用来检测墙壁的射线检测的图层")] public List<LayerMask> layersWallCheck;
+    public LayerMask layerWallCheck;
+    [Header("用来检测可供钩锁勾住的勾中点的图层")] public List<LayerMask> layersGrapplingHookCheck;
+    public LayerMask layerGrapplingHookCheck; 
+    
+    // 遍历用参数
+    private int _count;
 
     private void Awake()
     {
         if (_instance is null)
         {
             _instance = this;
+        }
+        
+        for (_count = 0; _count < layersGroundCheck.Count; _count++)
+        {
+            layerGroundCheck |= layersGroundCheck[_count];
+        }
+        
+        for (_count = 0; _count < layersWallCheck.Count; _count++)
+        {
+            layerWallCheck |= layersWallCheck[_count];
+        }
+        
+        for (_count = 0; _count < layersGrapplingHookCheck.Count; _count++)
+        {
+            layerGrapplingHookCheck |= layersGrapplingHookCheck[_count];
         }
     }
 }

@@ -401,6 +401,7 @@ public class PlayerMovementStateMachine : StateMachine
             _instance = this;
         }
         
+        
         // 初始化状态
         IdleState = new Idle(this);
         WalkState = new Walk(this);
@@ -750,44 +751,25 @@ public class PlayerMovementStateMachine : StateMachine
                 // 当可以用射线检测检测到地面时放弃使用球形检测
                 isOnGround = Physics.Raycast(playerTransform.position, Vector3.down,
                     out _downRaycastHit,
-                    playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerGround);
-                // 如果下面没有图层为Ground的地面，则再检测一次有没有为Wall的地面
-                if (!isOnGround)
-                {
-                    isOnGround = Physics.Raycast(playerTransform.position, Vector3.down,
-                        out _downRaycastHit,
-                        playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerWall);
-                }
+                    playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerGroundCheck);
 
                 if (isOnGround)
                 {
                     isUseSphereCast = false;
                 }
-
-                // 球形检测部分
-                isOnGround = Physics.SphereCast(playerTransform.position, downSphereCastRadius, Vector3.down,
-                    out _downRaycastHit,
-                    playerHeight * 0.5f + heightOffset - downSphereCastRadius, InfoManager.Instance.layerGround);
-                // 如果下面没有图层为Ground的地面，则再检测一次有没有为Wall的地面
-                if (!isOnGround)
+                else
                 {
+                    // 球形检测部分
                     isOnGround = Physics.SphereCast(playerTransform.position, downSphereCastRadius, Vector3.down,
                         out _downRaycastHit,
-                        playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerWall);
+                        playerHeight * 0.5f + heightOffset - downSphereCastRadius, InfoManager.Instance.layerGroundCheck);
                 }
             }
             else
             {
                 isOnGround = Physics.Raycast(playerTransform.position, Vector3.down,
                     out _downRaycastHit,
-                    playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerGround);
-                // 如果下面没有图层为Ground的地面，则再检测一次有没有为Wall的地面
-                if (!isOnGround)
-                {
-                    isOnGround = Physics.Raycast(playerTransform.position, Vector3.down,
-                        out _downRaycastHit,
-                        playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerWall);
-                }
+                    playerHeight * 0.5f + heightOffset, InfoManager.Instance.layerGroundCheck);
             }
 
             // 在地面上
@@ -827,7 +809,7 @@ public class PlayerMovementStateMachine : StateMachine
             else
             {
                 nowHigh = Physics.Raycast(playerTransform.position, Vector3.down, out _downMaxRaycastHit,
-                    InfoManager.Instance.maxHigh, InfoManager.Instance.layerGround)
+                    InfoManager.Instance.maxHigh, InfoManager.Instance.layerGroundCheck)
                     ? Vector3.Distance(_downMaxRaycastHit.point, playerTransform.position)
                     : InfoManager.Instance.maxHigh;
                 isOnSlope = false;
@@ -842,12 +824,12 @@ public class PlayerMovementStateMachine : StateMachine
         // 向左发射射线检测是否存在墙壁
         hasWallOnLeft = Physics.Raycast(playerTransform.position, -playerTransform.right, out _leftRaycastHit,
             wallCheckDistance,
-            InfoManager.Instance.layerWall);
+            InfoManager.Instance.layerWallCheck);
 
         // 向右发射射线检测是否存在墙壁
         hasWallOnRight = Physics.Raycast(playerTransform.position, playerTransform.right, out _rightRaycastHit,
             wallCheckDistance,
-            InfoManager.Instance.layerWall);
+            InfoManager.Instance.layerWallCheck);
     }
 
     // 向前方发射射线检测是否存在墙壁
@@ -858,15 +840,15 @@ public class PlayerMovementStateMachine : StateMachine
             playerTransform.forward,
             out _forwardRaycastHit,
             wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f) - forwardSphereCastRadius,
-            InfoManager.Instance.layerWall);
+            InfoManager.Instance.layerWallCheck);
 
         // 在头上向前发射射线检测是否存在墙壁
         hasWallOnHeadForward = Physics.Raycast(head.position, head.forward, out _forwardHeadRaycastHit,
-            wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f), InfoManager.Instance.layerWall);
+            wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f), InfoManager.Instance.layerWallCheck);
 
         // 在脚前方向前发射射线检测是否存在墙壁
         hasWallOnFootForward = Physics.Raycast(foot.position, foot.forward, out _forwardFootRaycastHit,
-            wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f), InfoManager.Instance.layerWall);
+            wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f), InfoManager.Instance.layerWallCheck);
 
         // 脚前面有墙
         if (hasWallOnFootForward)
@@ -891,22 +873,13 @@ public class PlayerMovementStateMachine : StateMachine
             return;
         }
 
-        // 摄像机向前射线检测两个层级
+        // 摄像机向前射线检测
         hasHookCheckPoint = Physics.Raycast(
             CameraController.Instance.transform.position,
             CameraController.Instance.transform.forward,
             out _cameraForwardRaycastHit,
             maxHookCheckDistance,
-            InfoManager.Instance.layerGround);
-        if (!hasHookCheckPoint)
-        {
-            hasHookCheckPoint = Physics.Raycast(
-                CameraController.Instance.transform.position,
-                CameraController.Instance.transform.forward,
-                out _cameraForwardRaycastHit,
-                maxHookCheckDistance,
-                InfoManager.Instance.layerWall);
-        }
+            InfoManager.Instance.layerGrapplingHookCheck);
 
         // 射线检测检测不到击中点时使用球形射线对两个图层检测
         if (!hasHookCheckPoint)
@@ -917,17 +890,7 @@ public class PlayerMovementStateMachine : StateMachine
                 CameraController.Instance.transform.forward,
                 out _cameraForwardRaycastHit,
                 maxHookCheckDistance - cameraHookCheckPointSphereCastRadius,
-                InfoManager.Instance.layerGround);
-        }
-        if (!hasHookCheckPoint)
-        {
-            hasHookCheckPoint = Physics.SphereCast(
-                CameraController.Instance.transform.position,
-                cameraHookCheckPointSphereCastRadius,
-                CameraController.Instance.transform.forward,
-                out _cameraForwardRaycastHit,
-                maxHookCheckDistance - cameraHookCheckPointSphereCastRadius,
-                InfoManager.Instance.layerWall);
+                InfoManager.Instance.layerGrapplingHookCheck);
         }
         
         // 画画
@@ -953,17 +916,7 @@ public class PlayerMovementStateMachine : StateMachine
                     _leftAutoHookCheckPointSphereDirection,
                     out _leftHookRaycastHit,
                     maxHookCheckDistance - autoHookCheckPointSphereCastRadius,
-                    InfoManager.Instance.layerGround);
-                if (!hasAutoLeftGrapplingHookCheckPoint)
-                {
-                    hasAutoLeftGrapplingHookCheckPoint = Physics.SphereCast(
-                        leftGrapplingHook.hookShootPoint.position,
-                        autoHookCheckPointSphereCastRadius,
-                        _leftAutoHookCheckPointSphereDirection,
-                        out _leftHookRaycastHit,
-                        maxHookCheckDistance - autoHookCheckPointSphereCastRadius,
-                        InfoManager.Instance.layerWall);
-                }
+                    InfoManager.Instance.layerGrapplingHookCheck);
 
                 if (hasAutoLeftGrapplingHookCheckPoint)
                 {
@@ -989,32 +942,22 @@ public class PlayerMovementStateMachine : StateMachine
                     _rightAutoHookCheckPointSphereDirection,
                     out _rightHookRaycastHit,
                     maxHookCheckDistance - autoHookCheckPointSphereCastRadius,
-                    InfoManager.Instance.layerGround);
-                if (!hasAutoRightGrapplingHookCheckPoint)
-                {
-                    Physics.SphereCast(
-                        rightGrapplingHook.hookShootPoint.position,
-                        autoHookCheckPointSphereCastRadius,
-                        _rightAutoHookCheckPointSphereDirection,
-                        out _rightHookRaycastHit,
-                        maxHookCheckDistance - autoHookCheckPointSphereCastRadius,
-                        InfoManager.Instance.layerGround);
-                }
+                    InfoManager.Instance.layerGrapplingHookCheck);
 
                 if (hasAutoRightGrapplingHookCheckPoint)
                 {
                     rightGrapplingHookCastHitHookCheckPoint = _rightHookRaycastHit.point;
                 }
+                
+                // 画画
+                Debug.DrawLine(rightGrapplingHook.hookShootPoint.position,
+                    rightGrapplingHook.hookShootPoint.position + _rightAutoHookCheckPointSphereDirection * maxHookCheckDistance,
+                    Color.cyan);
             }
             else
             {
                 hasAutoRightGrapplingHookCheckPoint = false;
             }
-            
-            // 画画
-            Debug.DrawLine(rightGrapplingHook.hookShootPoint.position,
-                rightGrapplingHook.hookShootPoint.position + _rightAutoHookCheckPointSphereDirection * maxHookCheckDistance,
-                Color.cyan);
         }
         else
         {
@@ -1041,23 +984,12 @@ public class PlayerMovementStateMachine : StateMachine
                     _cameraForwardRaycastHit.point - leftGrapplingHook.hookShootPoint.position,
                     out _leftHookRaycastHit,
                     _grapplingHookDistance,
-                    InfoManager.Instance.layerGround
+                    InfoManager.Instance.layerGrapplingHookCheck
                 ))
             {
                 hookCheckPoint = _leftHookRaycastHit.point;
             }
-            else
-            {
-                if (Physics.Raycast(leftGrapplingHook.hookShootPoint.position,
-                        _cameraForwardRaycastHit.point - leftGrapplingHook.hookShootPoint.position,
-                        out _leftHookRaycastHit,
-                        _grapplingHookDistance,
-                        InfoManager.Instance.layerWall
-                    ))
-                {
-                    hookCheckPoint = _leftHookRaycastHit.point;
-                }
-            }
+
             // 画画
             Debug.DrawLine(leftGrapplingHook.hookShootPoint.position,
                 _cameraForwardRaycastHit.point,
@@ -1071,23 +1003,12 @@ public class PlayerMovementStateMachine : StateMachine
                     _cameraForwardRaycastHit.point - rightGrapplingHook.hookShootPoint.position,
                     out _rightHookRaycastHit,
                     _grapplingHookDistance,
-                    InfoManager.Instance.layerGround
+                    InfoManager.Instance.layerGrapplingHookCheck
                 ))
             {
                 hookCheckPoint = _rightHookRaycastHit.point;
             }
-            else
-            {
-                if (Physics.Raycast(rightGrapplingHook.hookShootPoint.position,
-                        _cameraForwardRaycastHit.point - rightGrapplingHook.hookShootPoint.position,
-                        out _rightHookRaycastHit,
-                        _grapplingHookDistance,
-                        InfoManager.Instance.layerWall
-                    ))
-                {
-                    hookCheckPoint = _rightHookRaycastHit.point;
-                }
-            }
+
             // 画画
             Debug.DrawLine(rightGrapplingHook.hookShootPoint.position,
                 _cameraForwardRaycastHit.point,
@@ -1355,19 +1276,7 @@ public class PlayerMovementStateMachine : StateMachine
                     (squatCollider.height * 0.5f * squatCollider.transform.localScale.y) -
                     (squatCollider.radius * Mathf.Max(squatCollider.transform.localScale.x,
                         squatCollider.transform.localScale.z)),
-                    InfoManager.Instance.layerGround);
-                _hasWallInDistance = Physics.SphereCast(
-                    slidingCollider.transform.position + _slidingCenterOffset,
-                    squatCollider.radius * Mathf.Max(squatCollider.transform.localScale.x,
-                        squatCollider.transform.localScale.z),
-                    Vector3.up,
-                    out _upHighRaycastHit,
-                    (squatCollider.transform.position + _squatCenterOffset).y -
-                    (slidingCollider.transform.position + _slidingCenterOffset).y +
-                    (squatCollider.height * 0.5f * squatCollider.transform.localScale.y) -
-                    (squatCollider.radius * Mathf.Max(squatCollider.transform.localScale.x,
-                        squatCollider.transform.localScale.z)),
-                    InfoManager.Instance.layerWall);
+                    InfoManager.Instance.layerGroundCheck);
 
                 // 画画
                 Debug.DrawLine(
@@ -1401,19 +1310,7 @@ public class PlayerMovementStateMachine : StateMachine
                         (baseCollider.height * 0.5f * baseCollider.transform.localScale.y) -
                         (baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
                             baseCollider.transform.localScale.z)),
-                        InfoManager.Instance.layerGround);
-                    _hasWallInDistance = Physics.SphereCast(
-                        slidingCollider.transform.position + _slidingCenterOffset,
-                        baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
-                            baseCollider.transform.localScale.z),
-                        Vector3.up,
-                        out _upHighRaycastHit,
-                        (baseCollider.transform.position + _baseCenterOffset).y -
-                        (slidingCollider.transform.position + _slidingCenterOffset).y +
-                        (baseCollider.height * 0.5f * baseCollider.transform.localScale.y) -
-                        (baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
-                            baseCollider.transform.localScale.z)),
-                        InfoManager.Instance.layerWall);
+                        InfoManager.Instance.layerGroundCheck);
 
                     // 画画
                     Debug.DrawLine(slidingCollider.transform.position + _slidingCenterOffset,
@@ -1446,19 +1343,7 @@ public class PlayerMovementStateMachine : StateMachine
                         (baseCollider.height * baseCollider.transform.localScale.y * 0.5f) -
                         (baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
                             baseCollider.transform.localScale.z)),
-                        InfoManager.Instance.layerGround);
-                    _hasWallInDistance = Physics.SphereCast(
-                        squatCollider.transform.position + _squatCenterOffset,
-                        baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
-                            baseCollider.transform.localScale.z),
-                        Vector3.up,
-                        out _upHighRaycastHit,
-                        (baseCollider.transform.position + _baseCenterOffset).y -
-                        (squatCollider.transform.position + _squatCenterOffset).y +
-                        (baseCollider.height * baseCollider.transform.localScale.y * 0.5f) -
-                        (baseCollider.radius * Mathf.Max(baseCollider.transform.localScale.x,
-                            baseCollider.transform.localScale.z)),
-                        InfoManager.Instance.layerWall);
+                        InfoManager.Instance.layerGroundCheck);
 
                     // 画画
                     Debug.DrawLine(squatCollider.transform.position + _squatCenterOffset,
