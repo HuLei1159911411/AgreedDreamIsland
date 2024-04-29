@@ -164,6 +164,9 @@ public class TestPanel : MonoBehaviour
             case "Roll":
                 nowState.text = "翻滚";
                 break;
+            case "Grapple":
+                nowState.text = "钩锁";
+                break;
             case "Null":
                 nowState.text = "初始化";
                 break;

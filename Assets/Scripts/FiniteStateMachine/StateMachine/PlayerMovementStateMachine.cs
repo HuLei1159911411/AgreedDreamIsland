@@ -54,60 +54,49 @@ public class PlayerMovementStateMachine : StateMachine
     public Transform head;
     public Transform foot;
     [HideInInspector] public Transform playerTransform;
-
     [HideInInspector] public Rigidbody playerRigidbody;
-
     // 正常状态下的碰撞盒
     public CapsuleCollider baseCollider;
-
     // 下蹲状态下的碰撞盒
     public CapsuleCollider squatCollider;
-
     // 滑铲状态下的碰撞盒
     public CapsuleCollider slidingCollider;
-
     // 左钩锁发射器
     public GrapplingHook leftGrapplingHook;
-
     // 右钩锁发射器
     public GrapplingHook rightGrapplingHook;
-
+    // 左右钩锁发射器弹簧节点
+    public List<SpringJoint> springJoints;
+    
     #endregion
 
     #region StateObjects
 
     // 当前状态
     [HideInInspector] public BaseState CurrentState => _currentState;
-
+    
     // 空闲状态
     [HideInInspector] public Idle IdleState;
-
     // 走路状态
     [HideInInspector] public Walk WalkState;
-
     // 跳跃状态
     [HideInInspector] public Jump JumpState;
-
     // 下落状态
     [HideInInspector] public Fall FallState;
-
     // 奔跑状态
     [HideInInspector] public Run RunState;
-
     // 下蹲状态
     [HideInInspector] public Squat SquatState;
-
     // 滑铲状态
     [HideInInspector] public Sliding SlidingState;
-
     // 滑墙状态
     [HideInInspector] public WallRunning WallRunningState;
-
     // 攀爬状态
     [HideInInspector] public Climb ClimbState;
-
     // 翻滚状态
     [HideInInspector] public Roll RollState;
+    // 钩锁状态
+    [HideInInspector] public Grapple GrappleState;
 
     #endregion
 
@@ -116,90 +105,69 @@ public class PlayerMovementStateMachine : StateMachine
     [Header("输入参数")] [Range(0.01f, 1f)]
     // 每帧垂直和水平方向输入影响数值大小
     public float inputValueRate = 0.01f;
-
     // 当同时摁住互斥的摁键和同时松开互斥的摁键时是否需要以更快的速度使值归零
     public bool isQuickZeroing;
-
     // 快速归零时速率倍数
     public float quickZeroingRate = 2f;
-
+    
     // 移动输入信息
     [HideInInspector] public MoveInputInformation MoveInputInfo;
-
     // 当前水平移动移动速度的最大值
     [HideInInspector] public float nowMoveSpeed;
-
     // 当前玩家是否在地面上
     [HideInInspector] public bool isOnGround;
-
     // 当前玩家刚体在XOZ平面上移动速度大小
     [HideInInspector] public float playerXozSpeed;
-
     // 当前玩家刚体在XOY平面上移动速度大小
     [HideInInspector] public float playerXoySpeed;
-
     // 当前玩家是否在可运动角度范围内的斜面上
     [HideInInspector] public bool isOnSlope;
-
     // 玩家移动的方向
     [HideInInspector] public Vector3 direction;
-
     // 左边是否有墙壁
     [HideInInspector] public bool hasWallOnLeft;
-
     // 右边是否有墙壁
     [HideInInspector] public bool hasWallOnRight;
-
     // 前面是否有墙壁
     [HideInInspector] public bool hasWallOnForward;
-
     // 人物脑袋前方是否有墙壁
     [HideInInspector] public bool hasWallOnHeadForward;
-
     // 人物脚前方是否有墙壁
     [HideInInspector] public bool hasWallOnFootForward;
-
     // 当前斜面角度
     [HideInInspector] public float slopeAngle;
-
     // 摄像机在XOZ平面面朝向角度与面前的墙的法向量在XOZ平面的反方向角度
     [HideInInspector] public float cameraForwardWithWallAbnormalAngle;
-
     // 在下落、跳跃后能否快速进入奔跑状态
     [HideInInspector] public bool isFastToRun;
-
     // 当前玩家距离地面高度
     [HideInInspector] public float nowHigh;
-
     // 是否向下使用球形检测
     [HideInInspector] public bool isUseSphereCast;
-
     // PlayerMovementStateMachine中参数在Animator中参数的索引字典
     [HideInInspector] public Dictionary<string, int> DicAnimatorIndexes;
-
     // 是否尝试改变碰撞盒到当前状态的碰撞盒(在当前位置无法正常设置碰撞盒为当前状态碰撞盒时该值为true)
     public bool IsTryToChangeState => _isTryToChangeState;
-
     // 尝试去切换的状态
     public BaseState TryToState => _tryToState;
-
     // 是否存在可供钩锁勾中的位置
     [HideInInspector] public bool hasHookCheckPoint;
-
     // 钩锁勾中的位置
     [HideInInspector] public Vector3 hookCheckPoint;
-
     // 左钩锁发射器是否自动找到了勾中点
     [HideInInspector] public bool hasAutoLeftGrapplingHookCheckPoint;
-    
     // 左钩锁发射器自动找到的勾中点坐标
     [HideInInspector] public Vector3 leftGrapplingHookCastHitHookCheckPoint;
-
     // 右钩锁发射器是否自动找到了勾中点
     [HideInInspector] public bool hasAutoRightGrapplingHookCheckPoint;
-    
     // 右钩锁发射器自动找到的勾中点坐标
     [HideInInspector] public Vector3 rightGrapplingHookCastHitHookCheckPoint;
+    // 钩锁目标最大长度
+    [HideInInspector] public float grapplingHookMaxLength;
+    // 钩锁目标最小长度
+    [HideInInspector] public float grapplingHookMinLength;
+    // 钩锁自动断开长度
+    [HideInInspector] public float grapplingHookRopeDestroyLength;
 
     #endregion
 
@@ -216,6 +184,7 @@ public class PlayerMovementStateMachine : StateMachine
 
     #region PublicSettableMovementStateParamaters
 
+    #region 移动
     [Header("玩家运动相关参数")] [Header("走路")]
     // 移动
     // 走路向前的速度的最大值
@@ -226,7 +195,9 @@ public class PlayerMovementStateMachine : StateMachine
     public float walkHorizontalSpeed = 5f;
     // 走路时给予玩家力的相对大小(与上面的限制玩家最大速度成正比?目前是这样实现，为玩家加力时力的大小 = walkMoveForce * nowMoveSpeed)
     public float walkMoveForce = 10f;
+    #endregion
 
+    #region 跳跃
     [Header("跳跃")]
     // 跳跃
     // 是否通过给力让玩家跳跃
@@ -243,7 +214,9 @@ public class PlayerMovementStateMachine : StateMachine
     public float jumpHigh;
     // 向下进行球形射线检测时球形的半径
     public float downSphereCastRadius = 0.25f;
+    #endregion
 
+    #region 奔跑
     [Header("奔跑")]
     // 奔跑
     // 跑步向前的速度的最大值
@@ -256,14 +229,18 @@ public class PlayerMovementStateMachine : StateMachine
     public float toRunTime = 0.5f;
     // 奔跑时给予玩家力的相对大小(与上面的限制玩家最大速度成正比?目前是这样实现，为玩家加力时力的大小 = runMoveForce * nowMoveSpeed)
     public float runMoveForce = 20f;
+    #endregion
 
+    #region 下蹲
     [Header("下蹲")]
     // 下蹲
     // 下蹲时移动的速度的最大值
     public float squatSpeed = 5f;
     // 下蹲时给予玩家力的大小
     public float squatMoveForce = 8f;
+    #endregion
 
+    #region 滑铲
     [Header("滑铲")]
     // 滑铲
     // 平地上滑铲速度最大速度
@@ -276,14 +253,18 @@ public class PlayerMovementStateMachine : StateMachine
     public float slidingAccelerateTime = 0.5f;
     // 滑铲冷却时间(进入Run状态后需要过一段时间后才能进行滑铲)
     public float slidingCoolTime = 0.2f;
+    #endregion
 
+    #region 下落
     [Header("下落")]
     // 下落
     // 快速下落时所受重力倍数
     public float fallGravityScale = 3f;
     // 下落时水平移动的最大速度
     public float fallSpeed = 1f;
-
+    #endregion
+    
+    #region 滑墙
     [Header("滑墙")]
     // 滑墙
     // 可以进行滑墙的最低高度
@@ -296,7 +277,9 @@ public class PlayerMovementStateMachine : StateMachine
     public float wallRunningTime = 3f;
     // 检查左右前是否有可以进行滑墙的墙的距离
     public float wallCheckDistance = 1f;
+    #endregion
 
+    #region 攀爬
     [Header("攀爬")]
     // 攀爬
     // 攀爬向上移动的最大速度
@@ -311,14 +294,18 @@ public class PlayerMovementStateMachine : StateMachine
     public float climbMaxAngle = 30f;
     // 向前进行球形射线检测时球形的半径
     public float forwardSphereCastRadius = 0.25f;
+    #endregion
 
+    #region 翻滚
     [Header("翻滚")]
     // 翻滚
     // 翻滚的最大速度
     public float rollSpeed = 5f;
     // 翻滚时力的大小
     public float rollForce = 5f;
+    #endregion
 
+    #region 钩锁
     [Header("钩锁")]
     // 钩锁
     // 从摄像机出发检测可以进行钩锁勾爪勾住的最大距离
@@ -327,6 +314,21 @@ public class PlayerMovementStateMachine : StateMachine
     public float cameraHookCheckPointSphereCastRadius = 1f;
     // 从立体机动装置射出球形射线对两边进行自动寻找勾住点的半径大小
     public float autoHookCheckPointSphereCastRadius = 1f;
+    // 钩锁移动过程中最高点距离起始点的相对高度
+    public float grapplingHighestPointRelativeHigh = 2f;
+    // 钩锁绳子基础长度
+    public float grapplingHookRopeLength = 10f;
+    // 钩锁绳子拉长系数
+    public float grapplingHookRopeMaxLengthRatio = 1.2f;
+    // 钩锁绳子缩短系数
+    public float grapplingHookRopeMinLengthRatio = 0f;
+    // 钩锁自动回收系数
+    public float grapplingHookRopeDestroyLengthRatio = 1.3f;
+    // 钩锁移动距离系数(系数为一时移动后到达位置差不多为钩锁勾中位置)
+    public float grapplingHookRopeMoveVelocityRatio = 1f;
+    // 钩锁移动时移动控制力的大小
+    public float grapplingForce = 10f;
+    #endregion
 
     #endregion
 
@@ -391,6 +393,8 @@ public class PlayerMovementStateMachine : StateMachine
     private Vector3 _leftAutoHookCheckPointSphereDirection;
     // 从右边立体机动装置射出球形射线检测的方向
     private Vector3 _rightAutoHookCheckPointSphereDirection;
+    // 临时计数器
+    private int _count;
 
     #endregion
 
@@ -400,7 +404,6 @@ public class PlayerMovementStateMachine : StateMachine
         {
             _instance = this;
         }
-        
         
         // 初始化状态
         IdleState = new Idle(this);
@@ -413,10 +416,15 @@ public class PlayerMovementStateMachine : StateMachine
         WallRunningState = new WallRunning(this);
         ClimbState = new Climb(this);
         RollState = new Roll(this);
+        GrappleState = new Grapple(this);
 
         // 获取组件
         playerTransform = transform;
         playerRigidbody = GetComponent<Rigidbody>();
+        for (_count = 0; _count < 2; _count++)
+        {
+            springJoints[_count] = transform.AddComponent<SpringJoint>();
+        }
 
         // 初始化参数
         InitParameters();
@@ -567,9 +575,9 @@ public class PlayerMovementStateMachine : StateMachine
 
         // 初始化Animator参数名与Hash对照表
         DicAnimatorIndexes = new Dictionary<string, int>();
-        for (int i = 0; i < _animatorControllerParameters.Length; i++)
+        for (_count = 0; _count < _animatorControllerParameters.Length; _count++)
         {
-            DicAnimatorIndexes.Add(_animatorControllerParameters[i].name, _animatorControllerParameters[i].nameHash);
+            DicAnimatorIndexes.Add(_animatorControllerParameters[_count].name, _animatorControllerParameters[_count].nameHash);
         }
 
         // 设置碰撞盒
@@ -591,6 +599,23 @@ public class PlayerMovementStateMachine : StateMachine
         hasHookCheckPoint = false;
         hasAutoLeftGrapplingHookCheckPoint = false;
         hasAutoRightGrapplingHookCheckPoint = false;
+        
+        // 初始化弹簧关节参数
+        grapplingHookMaxLength = grapplingHookRopeLength * grapplingHookRopeMaxLengthRatio;
+        grapplingHookMinLength = grapplingHookRopeLength * grapplingHookRopeMinLengthRatio;
+        grapplingHookRopeDestroyLength = grapplingHookRopeLength * grapplingHookRopeDestroyLengthRatio;
+        for (_count = 0; _count < springJoints.Count; _count++)
+        {
+            springJoints[_count].autoConfigureConnectedAnchor = false;
+            springJoints[_count].spring = 4.5f;
+            springJoints[_count].damper = 1f;
+            springJoints[_count].massScale = 4.5f;
+            InitPlayerSpringJoint(_count);
+        }
+        
+        // 初始化两钩锁发射器
+        leftGrapplingHook.isLeft = true;
+        rightGrapplingHook.isLeft = false;
     }
 
 
@@ -815,6 +840,14 @@ public class PlayerMovementStateMachine : StateMachine
                 isOnSlope = false;
                 playerRigidbody.drag = InfoManager.Instance.airDrag;
             }
+            
+            // 如果是跳跃下落钩锁状态取消地面阻力
+            if (_currentState.state == E_State.Jump ||
+                _currentState.state == E_State.Fall ||
+                _currentState.state == E_State.Grapple)
+            {
+                playerRigidbody.drag = InfoManager.Instance.airDrag;
+            }
         }
     }
 
@@ -866,8 +899,8 @@ public class PlayerMovementStateMachine : StateMachine
     // 由摄像机向前发射是否存在可以勾中的位置，若摄像机未对准可以勾中的位置由钩锁发射器自行对两边进行查找
     private void UpdateHasHookCheckPoint()
     {
-        // 当两个钩锁发射器均处于发射钩锁或钩锁勾中状态时不需要更新勾中点
-        if (leftGrapplingHook.IsGrapplingHookLocked() && rightGrapplingHook.IsGrapplingHookLocked())
+        // 当两个钩锁发射器均处于发射钩锁或钩锁勾中状态或回收钩锁时不需要更新勾中点
+        if (leftGrapplingHook.isDrawHookAndRope && rightGrapplingHook.isDrawHookAndRope)
         {
             hasHookCheckPoint = false;
             return;
@@ -907,8 +940,8 @@ public class PlayerMovementStateMachine : StateMachine
             _rightAutoHookCheckPointSphereDirection =
                 (playerTransform.forward + playerTransform.up + playerTransform.right).normalized;
 
-            // 左钩锁发射器不是发射过去的过程中和勾中了的锁定状态，未左钩锁发射器自动寻找勾中点
-            if (!leftGrapplingHook.IsGrapplingHookLocked())
+            // 左钩锁发射器不是发射过去的过程中和勾中了的锁定状态和回收状态，未左钩锁发射器自动寻找勾中点
+            if (!leftGrapplingHook.isDrawHookAndRope)
             {
                 hasAutoLeftGrapplingHookCheckPoint = Physics.SphereCast(
                     leftGrapplingHook.hookShootPoint.position,
@@ -933,8 +966,8 @@ public class PlayerMovementStateMachine : StateMachine
                 hasAutoLeftGrapplingHookCheckPoint = false;
             }
 
-            // 右钩锁发射器不是发射过去的过程中和勾中了的锁定状态，未左钩锁发射器自动寻找勾中点
-            if (!rightGrapplingHook.IsGrapplingHookLocked())
+            // 右钩锁发射器不是发射过去的过程中和锁定状态，未左钩锁发射器自动寻找勾中点
+            if (!rightGrapplingHook.isDrawHookAndRope)
             {
                 hasAutoRightGrapplingHookCheckPoint = Physics.SphereCast(
                     rightGrapplingHook.hookShootPoint.position,
@@ -1082,6 +1115,8 @@ public class PlayerMovementStateMachine : StateMachine
                 return "Climb";
             case E_State.Roll:
                 return "Roll";
+            case E_State.Grapple:
+                return "Grapple";
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -1372,16 +1407,42 @@ public class PlayerMovementStateMachine : StateMachine
     {
         if (MoveInputInfo.AimInput)
         {
-            if (leftGrapplingHook.isCompletedMove)
+            if (leftGrapplingHook.IsGrapplingHookLocked())
             {
                 leftGrapplingHook.RetractRope();
             }
 
-            if (rightGrapplingHook.isCompletedMove)
+            if (rightGrapplingHook.IsGrapplingHookLocked())
             {
                 rightGrapplingHook.RetractRope();
             }
             
+        }
+        
+        // 人拉向钩锁
+        if (MoveInputInfo.FireInput &&
+             (leftGrapplingHook.IsGrapplingHookLocked() &&
+              (_currentState.state != E_State.Grapple || 
+               !GrappleState.IsMoveToLeftHookCheckPoint)
+             ||
+             (rightGrapplingHook.IsGrapplingHookLocked() &&
+              (_currentState.state != E_State.Grapple ||
+              !GrappleState.IsMoveToRightHookCheckPoint))))
+        {
+            if (_currentState.state != E_State.Grapple)
+            {
+                if (ChangeState(GrappleState))
+                {
+                    return;
+                }
+            }
+            else
+            {
+                if (!GrappleState.IsMoveToLeftHookCheckPoint || !GrappleState.IsMoveToRightHookCheckPoint)
+                {
+                    GrappleState.SetVelocity();
+                }
+            }
         }
         
         if (!hasHookCheckPoint && !hasAutoLeftGrapplingHookCheckPoint && !hasAutoRightGrapplingHookCheckPoint)
@@ -1389,39 +1450,25 @@ public class PlayerMovementStateMachine : StateMachine
             return;
         }
 
-        if (MoveInputInfo.HookShootLeftInput)
+        if (MoveInputInfo.HookShootLeftInput && !leftGrapplingHook.isDrawHookAndRope && (hasHookCheckPoint || hasAutoLeftGrapplingHookCheckPoint))
         {
-            if (leftGrapplingHook.IsGrapplingHookLocked())
-            {
-                
-            }
-            else
-            {
-                if (hasHookCheckPoint || hasAutoLeftGrapplingHookCheckPoint)
-                {
-                    UpdateHookCheckPoint(true);
-                    leftGrapplingHook.ShootHook(hookCheckPoint);
-                }
-                
-            }
+            UpdateHookCheckPoint(true);
+            leftGrapplingHook.ShootHook(hookCheckPoint);
         }
 
-        if (MoveInputInfo.HookShootRightInput)
+        if (MoveInputInfo.HookShootRightInput && !rightGrapplingHook.isDrawHookAndRope && (hasHookCheckPoint || hasAutoRightGrapplingHookCheckPoint))
         {
-            if (rightGrapplingHook.IsGrapplingHookLocked())
-            {
-                
-            }
-            else
-            {
-                if (hasHookCheckPoint || hasAutoRightGrapplingHookCheckPoint)
-                {
-                    UpdateHookCheckPoint(false);
-                    rightGrapplingHook.ShootHook(hookCheckPoint);
-                }
-                
-            }
+            UpdateHookCheckPoint(false);
+            rightGrapplingHook.ShootHook(hookCheckPoint);
         }
+    }
+    
+    // 初始化弹簧组件
+    public void InitPlayerSpringJoint(int index)
+    {
+        Debug.Log(index == 0 ? "Left" : "Right");
+        springJoints[index].maxDistance = float.PositiveInfinity;
+        springJoints[index].minDistance = 0f;
     }
 
     // 动画事件----------------------

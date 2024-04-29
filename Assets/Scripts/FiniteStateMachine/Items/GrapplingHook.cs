@@ -13,6 +13,8 @@ public class GrapplingHook : MonoBehaviour
     public Transform hook;
     // 勾爪父节点
     public Transform hookFather;
+    // 是否为左钩锁
+    public bool isLeft;
     
     // 速度
     [Range(0,1f)]
@@ -24,12 +26,18 @@ public class GrapplingHook : MonoBehaviour
     public bool isCompletedMove;
     // 是否在回收勾爪
     public bool isRetractingRope;
+    // 勾爪目标位置
+    public Vector3 TargetPoint => _targetPoint;
     
     private LineRenderer _rope;
     // 目标位置
     private Vector3 _targetPoint;
     // 勾爪运动协程
     private Coroutine _moveCoroutine;
+    // 钩锁勾中时间计时器
+    private float _timer;
+    // 临时保存计算绳索距离的变量
+    private float _distance;
     private void Awake()
     {
         _rope = GetComponent<LineRenderer>();
@@ -41,6 +49,26 @@ public class GrapplingHook : MonoBehaviour
         HideGrapplingHook();
     }
 
+    private void Update()
+    {
+        if (isDrawHookAndRope)
+        {
+            if (_timer < 1f)
+            {
+                _timer += Time.deltaTime;
+            }
+            else
+            {
+                _distance = Vector3.Distance(hookShootPoint.position, hookFather.position);
+                if ((_distance > PlayerMovementStateMachine.Instance.grapplingHookRopeDestroyLength ||
+                     _distance < PlayerMovementStateMachine.Instance.playerHeight * 0.5f + PlayerMovementStateMachine.Instance.heightOffset))
+                {
+                    RetractRope();
+                }
+            }
+        }
+    }
+    
     private void LateUpdate()
     {
         if (isDrawHookAndRope)
@@ -55,6 +83,12 @@ public class GrapplingHook : MonoBehaviour
         _rope.SetPosition(0, hookShootPoint.position);
         // 更新绳子头部位置
         _rope.SetPosition(1, hookFather.position);
+    }
+    
+    // 返回钩锁是否勾中锁定(飞行完成与物体接触)
+    public bool IsGrapplingHookLocked()
+    {
+        return isCompletedMove && isDrawHookAndRope;
     }
     
     public bool ShootHook(Vector3 targetPoint)
@@ -77,11 +111,16 @@ public class GrapplingHook : MonoBehaviour
         {
             return;
         }
-
+        
+        if (isDrawHookAndRope && isCompletedMove)
+        {
+            PlayerMovementStateMachine.Instance.InitPlayerSpringJoint(isLeft ? 0 : 1);
+        }
+        
         if (!isCompletedMove)
         {
-            StopCoroutine(_moveCoroutine);
-            _moveCoroutine = null;
+            // 在发射中直接不允许回收
+            return;
         }
         
         isRetractingRope = true;
@@ -98,25 +137,32 @@ public class GrapplingHook : MonoBehaviour
             if (isRetractingRope)
             {
                 _targetPoint = hookShootPoint.position;
+                hookFather.position = Vector3.Lerp(hookFather.position, _targetPoint, hookMoveSpeed * 2f);
             }
-            hookFather.position = Vector3.Lerp(hookFather.position, _targetPoint, hookMoveSpeed);
+            else
+            {
+                hookFather.position = Vector3.Lerp(hookFather.position, _targetPoint, hookMoveSpeed);
+            }
             yield return null;
         }
-        
-        hookFather.position = _targetPoint;
-        isCompletedMove = true;
         
         if (isRetractingRope)
         {
             HideGrapplingHook();
             isRetractingRope = false;
         }
-    }
-
-    // 是否是勾中状态或飞行到勾中点状态
-    public bool IsGrapplingHookLocked()
-    {
-        return isDrawHookAndRope && !isRetractingRope;
+        else
+        {
+            PlayerMovementStateMachine.Instance.springJoints[isLeft ? 0 : 1].connectedAnchor = _targetPoint;
+            PlayerMovementStateMachine.Instance.springJoints[isLeft ? 0 : 1].maxDistance =
+                PlayerMovementStateMachine.Instance.grapplingHookMaxLength;
+            PlayerMovementStateMachine.Instance.springJoints[isLeft ? 0 : 1].minDistance =
+                PlayerMovementStateMachine.Instance.grapplingHookMinLength;
+            _timer = 0;
+        }
+        
+        hookFather.position = _targetPoint;
+        isCompletedMove = true;
     }
 
     private void HideGrapplingHook()
@@ -142,5 +188,4 @@ public class GrapplingHook : MonoBehaviour
         _rope.SetPosition(1, hookShootPoint.position);
         _rope.enabled = true;
     }
-    
 } 

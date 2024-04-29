@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public enum E_CameraView
@@ -38,6 +39,8 @@ public class CameraController : MonoBehaviour
     private Vector3 _curFocusPosition;
     // 旋转后聚焦点到的摄像机单位向量
     private Vector3 _dir;
+    // 旋转后聚焦点到摄像机方向向量在XOZ平面的投影
+    private Vector3 _dirXoz;
     // 鼠标X坐标变化
     private float _mouseX;
     // 绕世界坐标up向量旋转角度
@@ -60,7 +63,11 @@ public class CameraController : MonoBehaviour
     private Quaternion _startRotation;
     // 人物旋转至目标角度计时器
     private float _rotateTimer;
-
+    // 控制人物旋转至目标角度协程
+    private Coroutine _rotateCoroutine;
+    // 当前人物是否在旋转至目标角度
+    private bool _isRotating;
+    
     // 组件
     private PlayerMovementStateMachine _playerMovementStateMachine;
 
@@ -73,17 +80,17 @@ public class CameraController : MonoBehaviour
         _playerMovementStateMachine = player.GetComponent<PlayerMovementStateMachine>();
     }
 
-    void Start()
+    private void Start()
     {
         Init();
     }
 
-    void Update()
+    private void Update()
     {
         
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
         ListenCameraBehaviorInput();
     }
@@ -95,7 +102,7 @@ public class CameraController : MonoBehaviour
         UpdateCameraPositionWithRotation();
     }
 
-    void Init()
+    private void Init()
     {
         LockWithHideCursor();
         InitParameters();
@@ -110,7 +117,7 @@ public class CameraController : MonoBehaviour
     }
 
     // 监听与摄像机有关行为输入
-    void ListenCameraBehaviorInput()
+    private void ListenCameraBehaviorInput()
     {
         if (!(InputManager.Instance is null))
         {
@@ -146,6 +153,7 @@ public class CameraController : MonoBehaviour
                 _rightAngle -= _mouseY * mouseSpeed * Time.deltaTime;
                 // 左右角度变化
                 _upAngle += _mouseX * mouseSpeed * Time.deltaTime;
+                
                 switch (nowView)
                 {
                     // 第一人称摄像机逻辑的更新摄像机位置并根据鼠标X和Y变换旋转角度
@@ -174,18 +182,10 @@ public class CameraController : MonoBehaviour
                         break;
                 }
             }
-            // 一直都要更新，因为有可能在Idle状态下玩家的角度和摄像机角度差距过大，但是玩家的角度还没同步到目标角度 但是玩家并没进行任何操作
-            else if (!(_playerMovementStateMachine is null) && _playerMovementStateMachine.GetNowStateString() == "Idle")
-            {
-                if (player.rotation != _targetRotation)
-                {
-                    StartToTargetRotation();
-                }
-            }
         }
     }
 
-    void LockWithHideCursor()
+    private void LockWithHideCursor()
     {
         // 锁定并隐藏鼠标
         Cursor.lockState = CursorLockMode.Locked;
@@ -193,7 +193,7 @@ public class CameraController : MonoBehaviour
     }
 
     // 更新聚焦点位置
-    bool UpdateFocusPosition()
+    private bool UpdateFocusPosition()
     {
         switch (nowView)
         {
@@ -232,7 +232,7 @@ public class CameraController : MonoBehaviour
     }
     
     // 限制上下旋转的角度
-    float ClampAngle(float angle, float min, float max)
+    private float ClampAngle(float angle, float min, float max)
     {
         if (angle < -360)
             angle += 360;
@@ -242,11 +242,11 @@ public class CameraController : MonoBehaviour
     }
     
     // 检测聚焦点到摄像机之间是否有环境层的遮挡，有则摄像机到聚焦点距离缩短到射线碰撞的距离
-    Vector3 CheckFocusToTargetPoint(Vector3 position)
+    private Vector3 CheckFocusToTargetPoint(Vector3 position)
     {
         Debug.DrawLine(_focusPosition, position, Color.green);
         // 在编辑器模式下预览相机位置也会进行这个射线检测，所以需要对InfoManager进行判空处理，因为InfoManager是继承MonoBehaviour的单例，在执行Awake时才会去进行赋值，所以在编辑器编辑器模式下InfoManager为空
-        if (!(InfoManager.Instance is null) && Physics.Linecast(_focusPosition, position, out _hit, InfoManager.Instance.layerGround))
+        if (!(InfoManager.Instance is null) && Physics.Linecast(_focusPosition, position, out _hit, InfoManager.Instance.layerCameraCheck))
         {
             if (!_hit.collider.gameObject.CompareTag("MainCamera") )
             {
@@ -259,7 +259,7 @@ public class CameraController : MonoBehaviour
     }
     
     // 更新摄像机位置及旋转
-    public void UpdateCameraPositionWithRotation()
+    private void UpdateCameraPositionWithRotation()
     {
         switch (nowView)
         {
@@ -272,6 +272,7 @@ public class CameraController : MonoBehaviour
                 
                 // 更新玩家旋转
                 UpdatePlayerTargetAngle();
+                
                 break;
             case E_CameraView.ThirdPerson:
                 // 第三人称摄像机位置旋转更新
@@ -279,8 +280,12 @@ public class CameraController : MonoBehaviour
                 _dir = Quaternion.AngleAxis(_rightAngle, Vector3.right) * Vector3.forward;
                 // 计算摄像头绕聚焦点左右旋转后聚焦点到摄像机的方向向量
                 _dir = Quaternion.AngleAxis(_upAngle, Vector3.up) * _dir;
+                _dirXoz = Quaternion.AngleAxis(_upAngle, Vector3.up) * Vector3.forward;
+                _dir = _dir.normalized;
+                
                 // 设置左右旋转后摄像机的位置
-                transform.position = CheckFocusToTargetPoint(_focusPosition + distance * -_dir);
+                transform.position = 
+                    CheckFocusToTargetPoint(_focusPosition + distance * -_dir);
                 // 旋转摄像机
                 transform.rotation = Quaternion.LookRotation(_dir);
                 
@@ -293,6 +298,9 @@ public class CameraController : MonoBehaviour
                 _dir = Quaternion.AngleAxis(_rightAngle, Vector3.right) * Vector3.forward;
                 // 计算摄像头绕聚焦点左右旋转后聚焦点到摄像机的方向向量
                 _dir = Quaternion.AngleAxis(_upAngle, Vector3.up) * _dir;
+                _dirXoz = Quaternion.AngleAxis(_upAngle, Vector3.up) * Vector3.forward;
+                _dir = _dir.normalized;
+                
                 // 设置左右旋转后摄像机的位置
                 transform.position =
                     CheckFocusToTargetPoint(_focusPosition + distance * thirdPersonFurtherRatio * -_dir);
@@ -306,11 +314,18 @@ public class CameraController : MonoBehaviour
     }
     
     // 更新玩家旋转目标角度(第一人称直接跟随摄像机旋转，第三人称有过程旋转)
-    void UpdatePlayerTargetAngle()
+    private void UpdatePlayerTargetAngle()
     {
         switch (nowView)
         {
             case E_CameraView.FirstPerson:
+                if (_isRotating)
+                {
+                    StopCoroutine(_rotateCoroutine);
+                    _rotateCoroutine = null;
+                    _isRotating = false;
+                }
+                
                 // 旋转角色，根据鼠标左右移动旋转
                 player.rotation = Quaternion.Euler(0, _upAngle, 0);
                 _targetRotation = player.rotation;
@@ -319,74 +334,89 @@ public class CameraController : MonoBehaviour
                 // 让玩家移动状态机为不为空时(及非编辑器模式下)||Idle状态下当前摄像机朝向和人物朝向的两向量夹角大于某一角度时人物旋转至摄像机朝向
                 if (!(_playerMovementStateMachine is null) && _playerMovementStateMachine.GetNowStateString() == "Idle")
                 {
-                    if (CheckPlayerWithCameraAngleInXoz())
+                    if (CheckPlayerAndCameraAngleInXoz())
                     {
-                        // 通过一定时间旋转成摄像机的角度
+                        // 将人物在Xoz平面的旋转角度通过一定时间旋转成摄像机的角度
                         _startRotation = player.rotation.normalized;
-                        _targetRotation = (player.rotation * Quaternion.Euler(0, _upAngle - player.rotation.eulerAngles.y, 0)).normalized;
+                        _targetRotation = Quaternion.LookRotation(_dirXoz);
                         _rotateTimer = 0f;
-                        StartToTargetRotation();
+
+                        if (!_isRotating)
+                        {
+                            _rotateCoroutine = StartCoroutine(RotatePlayerToTargetQuaternion());
+                        }
                     }
                 }
                 // 其他状态保持当前摄像机朝向与人物朝向一致，并且将玩家的旋转目标四元数设置为当前玩家旋转四元数，以防止玩家在结束当前状态回到Idle状态后继续旋转发生抽搐
                 else
                 {
-                    // 直接将玩家的绕y轴旋转的欧拉角信息同步成摄像机的旋转信息
-                    player.rotation *= Quaternion.Euler(0, _upAngle - player.rotation.eulerAngles.y, 0);
+                    if (_isRotating)
+                    {
+                        StopCoroutine(_rotateCoroutine);
+                        _rotateCoroutine = null;
+                        _isRotating = false;
+                    }
                     
-                    // 将目标四元数设置为当前玩家旋转四元数
-                    _targetRotation = player.rotation;
+                    // 直接将玩家的绕y轴旋转的欧拉角信息同步成摄像机的旋转信息
+                    player.rotation = Quaternion.LookRotation(_dirXoz);
                 }
                 break;
             case E_CameraView.ThirdPersonFurther:
                 // 让玩家移动状态机为不为空时(及非编辑器模式下)||Idle状态下当前摄像机朝向和人物朝向的两向量夹角大于某一角度时人物旋转至摄像机朝向
                 if (!(_playerMovementStateMachine is null) && _playerMovementStateMachine.GetNowStateString() == "Idle")
                 {
-                    if (CheckPlayerWithCameraAngleInXoz())
+                    if (CheckPlayerAndCameraAngleInXoz())
                     {
-                        // 通过一定时间旋转成摄像机的角度
+                        // 将人物在Xoz平面的旋转角度通过一定时间旋转成摄像机的角度
                         _startRotation = player.rotation.normalized;
-                        _targetRotation = (player.rotation * Quaternion.Euler(0, _upAngle - player.rotation.eulerAngles.y, 0)).normalized;
+                        _targetRotation = Quaternion.LookRotation(_dirXoz);
                         _rotateTimer = 0f;
-                        StartToTargetRotation();
-                    }
-                    // 其他状态保持当前摄像机朝向与人物朝向一致，并且将玩家的旋转目标四元数设置为当前玩家旋转四元数，以防止玩家在结束当前状态回到Idle状态后继续旋转发生抽搐
-                    else
-                    {
-                        // 直接将玩家的绕y轴旋转的欧拉角信息同步成摄像机的旋转信息
-                        player.rotation *= Quaternion.Euler(0, _upAngle - player.rotation.eulerAngles.y, 0);
-                        
-                        // 将目标四元数设置为当前玩家旋转四元数
-                        _targetRotation = player.rotation;
+
+                        if (!_isRotating)
+                        {
+                            _rotateCoroutine = StartCoroutine(RotatePlayerToTargetQuaternion());
+                        }
                     }
                 }
-                // 当前玩家旋转不是目标旋转时产生旋转(下面代码限制_rotateTimer / rotateTime为0~0.99是因为会报错,报错是因为四元数插值出现问题，上述代码可能在两端都有一个（0，0，0，0）四元数)
+                // 其他状态保持当前摄像机朝向与人物朝向一致，并且将玩家的旋转目标四元数设置为当前玩家旋转四元数，以防止玩家在结束当前状态回到Idle状态后继续旋转发生抽搐
+                else
+                {
+                    if (_isRotating)
+                    {
+                        StopCoroutine(_rotateCoroutine);
+                        _rotateCoroutine = null;
+                        _isRotating = false;
+                    }
+                    
+                    // 直接将玩家的绕y轴旋转的欧拉角信息同步成摄像机的旋转信息
+                    player.rotation = Quaternion.LookRotation(_dirXoz);
+                }
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
     }
     
-    // 检查人物Forward向量在Xoz平面与摄像机Forward向量的夹角是否小于最大夹角
-    bool CheckPlayerWithCameraAngleInXoz()
+    // 检查人物Forward向量在Xoz平面与摄像机Forward向量的夹角是否大于最大夹角
+    private bool CheckPlayerAndCameraAngleInXoz()
     {
         _playerForwardXoz = new Vector3(player.forward.x, 0, player.forward.z);
         _cameraForwardXoz = new Vector3(transform.forward.x, 0, transform.forward.z);
         _xozAngle = Vector3.Angle(_playerForwardXoz, _cameraForwardXoz);
-        return _xozAngle >= thirdPersonViewCameraWithPlayerMaxAngle || _xozAngle <= -thirdPersonViewCameraWithPlayerMaxAngle;
+        return _xozAngle > thirdPersonViewCameraWithPlayerMaxAngle || _xozAngle < -thirdPersonViewCameraWithPlayerMaxAngle;
     }
     
     // 玩家四元数向目标四元数旋转
-    void StartToTargetRotation()
+    private IEnumerator RotatePlayerToTargetQuaternion()
     {
-        if (_rotateTimer < rotateTime)
+        _isRotating = true;
+        while (_rotateTimer <= rotateTime)
         {
             _rotateTimer += Time.deltaTime;
             player.rotation = Quaternion.Lerp(_startRotation, _targetRotation, _rotateTimer / rotateTime);
+            yield return null;
         }
-        else
-        {
-            player.rotation = _targetRotation;
-        }
+
+        _isRotating = false;
     }
 }

@@ -15,6 +15,8 @@ public class InfoManager : MonoBehaviour
     [Header("地面阻力")] public float groundDrag;
     [Header("空气阻力")] public float airDrag;
     [Header("玩家最高高度")] public float maxHigh = 100f;
+    [Header("影响摄像机遮挡的图层")] public List<LayerMask> layersCameraCheck;
+    public LayerMask layerCameraCheck;
     [Header("用来检测是否在地面的射线检测的图层")] public List<LayerMask> layersGroundCheck;
     public LayerMask layerGroundCheck;
     [Header("用来检测墙壁的射线检测的图层")] public List<LayerMask> layersWallCheck;
@@ -30,6 +32,11 @@ public class InfoManager : MonoBehaviour
         if (_instance is null)
         {
             _instance = this;
+        }
+
+        for (_count = 0; _count < layersCameraCheck.Count; _count++)
+        {
+            layerCameraCheck |= layersCameraCheck[_count];
         }
         
         for (_count = 0; _count < layersGroundCheck.Count; _count++)
