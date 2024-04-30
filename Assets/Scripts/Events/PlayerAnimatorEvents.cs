@@ -15,4 +15,9 @@ public class PlayerAnimatorEvents : MonoBehaviour
     {
         movementStateMachine.ExitRollState();
     }
+
+    public void InitGrappleHookTurnParameters()
+    {
+        movementStateMachine.InitGrappleHookTurnParameters();
+    }
 }

@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Searcher;
 using UnityEngine;
 
 public class Climb : BaseState
@@ -66,8 +65,8 @@ public class Climb : BaseState
 
     public override void UpdatePhysic()
     {
-        {        if (_isGiveClimbForce)
-
+        if (_isGiveClimbForce)
+        {        
             _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.climbForce * _movementStateMachine.direction);
         }
 
@@ -122,6 +121,8 @@ public class Climb : BaseState
             _movementStateMachine.MoveInputInfo.VerticalInput == 1)
         {
             _isLeftClimbStateByUp = true;
+            _movementStateMachine.playerAnimator.SetBool(
+                _movementStateMachine.DicAnimatorIndexes["IsLeftClimbStateByUp"], true);
         }
         
         // 向左或右移动离开墙壁切换为下落状态
@@ -235,6 +236,8 @@ public class Climb : BaseState
         _leftClimbStateTimer = 0;
 
         _isLeftClimbStateByUp = false;
+        _movementStateMachine.playerAnimator.SetBool(
+            _movementStateMachine.DicAnimatorIndexes["IsLeftClimbStateByUp"], false);
         _isGiveForwardVelocity = false;
         _isGiveClimbForce = true;
         _isFixedLeftClimbStateByUpParameters = false;

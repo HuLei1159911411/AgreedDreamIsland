@@ -1,12 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
-using UnityEngine.UIElements;
 
 public enum E_State
 {
@@ -51,8 +47,8 @@ public class PlayerMovementStateMachine : StateMachine
     // 组件
     // 动画状态机
     public Animator playerAnimator;
-    public Transform head;
-    public Transform foot;
+    public Transform headRaycastEmissionTransform;
+    public Transform footRaycastEmissionTransform;
     [HideInInspector] public Transform playerTransform;
     [HideInInspector] public Rigidbody playerRigidbody;
     // 正常状态下的碰撞盒
@@ -98,6 +94,12 @@ public class PlayerMovementStateMachine : StateMachine
     // 钩锁状态
     [HideInInspector] public Grapple GrappleState;
 
+    #endregion
+    
+    #region Event
+
+    public event Func<bool> whenOnCollisionEnter;
+    
     #endregion
 
     #region PublicGettableParamaters
@@ -176,7 +178,6 @@ public class PlayerMovementStateMachine : StateMachine
     [Header("玩家及场景参数")] // 以后考虑是不是要换到别的脚本里面去
     // 玩家高度
     public float playerHeight = 2f;
-
     // 允许玩家运动的最大斜面角度
     public float maxSlopeAngle = 45f;
 
@@ -328,6 +329,10 @@ public class PlayerMovementStateMachine : StateMachine
     public float grapplingHookRopeMoveVelocityRatio = 1f;
     // 钩锁移动时移动控制力的大小
     public float grapplingForce = 10f;
+    // 钩锁最大速度大小
+    public float grappleSpeed = 20f;
+    // 钩锁自动寻找勾中点方向
+    public Vector3 autoHookCheckPointSphereDirection = new Vector3(1, 1, 1);
     #endregion
 
     #endregion
@@ -395,6 +400,8 @@ public class PlayerMovementStateMachine : StateMachine
     private Vector3 _rightAutoHookCheckPointSphereDirection;
     // 临时计数器
     private int _count;
+    // 用来存储事件列表中所有委托的数组
+    private Delegate[] allDelegates;
 
     #endregion
 
@@ -504,6 +511,24 @@ public class PlayerMovementStateMachine : StateMachine
         base.FixedUpdate();
     }
 
+    public void OnCollisionEnter(Collision other)
+    {
+        if (!(whenOnCollisionEnter is null))
+        {
+            // 当返回值为true时代表不需要再去执行该委托，在事件中移除该委托
+            allDelegates = whenOnCollisionEnter.GetInvocationList();
+            for (_count = 0; _count < allDelegates.Length; _count++)
+            {
+                if((bool)allDelegates[_count].DynamicInvoke())
+                {
+                    whenOnCollisionEnter -= (Func<bool>)allDelegates[_count];
+                }
+            }
+            allDelegates = null;
+            // Debug.Log("CheckIsMovedToHookCheckPoint");
+        }
+    }
+
     public override bool ChangeState(BaseState newState)
     {
         if (!IsHighMatchCondition(_currentState.state, newState.state))
@@ -548,13 +573,13 @@ public class PlayerMovementStateMachine : StateMachine
             (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)), Color.yellow);
 
         // 头顶前方
-        Debug.DrawLine(head.position,
-            head.position + head.forward * (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)),
+        Debug.DrawLine(headRaycastEmissionTransform.position,
+            headRaycastEmissionTransform.position + headRaycastEmissionTransform.forward * (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)),
             Color.green);
 
         // 脚前方
-        Debug.DrawLine(foot.position,
-            foot.position + foot.forward * (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)),
+        Debug.DrawLine(footRaycastEmissionTransform.position,
+            footRaycastEmissionTransform.position + footRaycastEmissionTransform.forward * (wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f)),
             Color.green);
 
         // 方向
@@ -876,11 +901,11 @@ public class PlayerMovementStateMachine : StateMachine
             InfoManager.Instance.layerWallCheck);
 
         // 在头上向前发射射线检测是否存在墙壁
-        hasWallOnHeadForward = Physics.Raycast(head.position, head.forward, out _forwardHeadRaycastHit,
+        hasWallOnHeadForward = Physics.Raycast(headRaycastEmissionTransform.position, headRaycastEmissionTransform.forward, out _forwardHeadRaycastHit,
             wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f), InfoManager.Instance.layerWallCheck);
 
         // 在脚前方向前发射射线检测是否存在墙壁
-        hasWallOnFootForward = Physics.Raycast(foot.position, foot.forward, out _forwardFootRaycastHit,
+        hasWallOnFootForward = Physics.Raycast(footRaycastEmissionTransform.position, footRaycastEmissionTransform.forward, out _forwardFootRaycastHit,
             wallCheckDistance * Mathf.Tan(climbMaxAngle * Mathf.PI / 180f), InfoManager.Instance.layerWallCheck);
 
         // 脚前面有墙
@@ -936,9 +961,13 @@ public class PlayerMovementStateMachine : StateMachine
         {
             // 更新查找射线方向
             _leftAutoHookCheckPointSphereDirection =
-                (playerTransform.forward + playerTransform.up + -playerTransform.right).normalized;
+                (playerTransform.forward * autoHookCheckPointSphereDirection.x +
+                 playerTransform.up * autoHookCheckPointSphereDirection.y +
+                 -playerTransform.right * autoHookCheckPointSphereDirection.z).normalized;
             _rightAutoHookCheckPointSphereDirection =
-                (playerTransform.forward + playerTransform.up + playerTransform.right).normalized;
+                (playerTransform.forward * autoHookCheckPointSphereDirection.x +
+                 playerTransform.up * autoHookCheckPointSphereDirection.y +
+                 playerTransform.right * autoHookCheckPointSphereDirection.z).normalized;
 
             // 左钩锁发射器不是发射过去的过程中和勾中了的锁定状态和回收状态，未左钩锁发射器自动寻找勾中点
             if (!leftGrapplingHook.isDrawHookAndRope)
@@ -1289,7 +1318,7 @@ public class PlayerMovementStateMachine : StateMachine
     // 获取最后一帧脚前方有墙壁时从脚到墙壁的方向
     public Vector3 GetDirectionFootToWall()
     {
-        return (_lastForwardFootRaycastHit.point - foot.transform.position).normalized;
+        return (_lastForwardFootRaycastHit.point - footRaycastEmissionTransform.transform.position).normalized;
     }
 
     // 检测人物上下空间高度是否满足目标状态的collider的切换
@@ -1405,6 +1434,7 @@ public class PlayerMovementStateMachine : StateMachine
     // 监听钩锁发射与回收
     private void ListenGrapplingHookShoot()
     {
+        // 收回钩锁
         if (MoveInputInfo.AimInput)
         {
             if (leftGrapplingHook.IsGrapplingHookLocked())
@@ -1466,7 +1496,6 @@ public class PlayerMovementStateMachine : StateMachine
     // 初始化弹簧组件
     public void InitPlayerSpringJoint(int index)
     {
-        Debug.Log(index == 0 ? "Left" : "Right");
         springJoints[index].maxDistance = float.PositiveInfinity;
         springJoints[index].minDistance = 0f;
     }
@@ -1481,5 +1510,10 @@ public class PlayerMovementStateMachine : StateMachine
     public void ExitRollState()
     {
         RollState.ExitRollState();
+    }
+
+    public void InitGrappleHookTurnParameters()
+    {
+        GrappleState.InitGrappleHookTurnParameters();
     }
 }

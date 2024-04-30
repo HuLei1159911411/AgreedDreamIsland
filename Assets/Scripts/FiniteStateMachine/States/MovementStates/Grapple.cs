@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Grapple : BaseState
@@ -17,8 +19,16 @@ public class Grapple : BaseState
     // 在为速度赋值时临时用来保存计算结果的变量
     private Vector3 _calculateVelocity;
 
+    // 是否正在飞向目标点
     public bool IsMoveToLeftHookCheckPoint;
     public bool IsMoveToRightHookCheckPoint;
+    // 是否正在进行钩锁回收的转动动作
+    public bool IsGrappleHookRetractLeft;
+    public bool IsGrappleHookRetractRight;
+    // 监听是否离开过地面
+    public bool isLeftGround;
+    // 需要添加到状态机中在发生碰撞时需要调用的函数
+    private Func<bool> _whenCollisionEnterFunc;
     
     public Grapple(StateMachine stateMachine) : base(E_State.Grapple, stateMachine)
     {
@@ -26,55 +36,132 @@ public class Grapple : BaseState
         {
             _movementStateMachine = stateMachine as PlayerMovementStateMachine;
         }
+
+        _whenCollisionEnterFunc = CheckIsMovedToHookCheckPoint;
     }
 
     public override void Enter()
     {
         base.Enter();
-
+        isLeftGround = false;
+        _movementStateMachine.whenOnCollisionEnter += _whenCollisionEnterFunc;
+        
+        _movementStateMachine.playerAnimator.SetTrigger(_movementStateMachine.DicAnimatorIndexes["ToGrapple"]);
         _gravity = Mathf.Abs(Physics.gravity.y);
         SetVelocity();
+        
+        // 防止进行钩锁自动进行旋转
+        if (IsGrappleHookRetractLeft || IsGrappleHookRetractRight)
+        {
+            InitGrappleHookTurnParameters();
+        }
+        
+        // 设置状态机最大速度为钩锁的最大速度
+        _movementStateMachine.nowMoveSpeed = _movementStateMachine.grappleSpeed;
     }
 
     public override void Exit()
     {
         base.Exit();
-        
+
+        _movementStateMachine.whenOnCollisionEnter -= _whenCollisionEnterFunc;
     }
 
     public override void UpdateLogic()
     {
         base.UpdateLogic();
 
-        if (_movementStateMachine.leftGrapplingHook.isRetractingRope)
+        if (!isLeftGround && !_movementStateMachine.isOnGround)
         {
+            isLeftGround = true;
+        }
+        
+        // 两个绳索同时处于收回状态(监听钩锁是否是收回状态驱动去做转身动作)
+        if (_movementStateMachine.leftGrapplingHook.isRetractingRope && _movementStateMachine.rightGrapplingHook.isRetractingRope)
+        {
+            // 提前结束移动到勾中点的状态
             IsMoveToLeftHookCheckPoint = false;
-        }
-
-        if (_movementStateMachine.rightGrapplingHook.isRetractingRope)
-        {
             IsMoveToRightHookCheckPoint = false;
+
+            // 当人物当前没在地面时播放旋转动画
+            if (!_movementStateMachine.isOnGround)
+            {
+                if (!IsGrappleHookRetractLeft && !IsGrappleHookRetractRight)
+                {
+                    IsGrappleHookRetractRight = true;
+                    IsGrappleHookRetractLeft = true;
+                    _movementStateMachine.playerAnimator.SetBool(_movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractBoth"], true);
+                }
+                else
+                {
+                    if (!IsGrappleHookRetractLeft)
+                    {
+                        IsGrappleHookRetractLeft = true;
+                        _movementStateMachine.playerAnimator.SetBool(_movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractLeft"], true);
+                    }
+                    if (!IsGrappleHookRetractRight)
+                    {
+                        IsGrappleHookRetractRight = true;
+                        _movementStateMachine.playerAnimator.SetBool(_movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractRight"], true);
+                    }
+                }
+            }
+        }
+        // 单个钩锁处于回收状态
+        else
+        {
+            if (_movementStateMachine.leftGrapplingHook.isRetractingRope && !IsGrappleHookRetractLeft)
+            {
+                IsMoveToLeftHookCheckPoint = false;
+
+                if (!_movementStateMachine.isOnGround)
+                {
+                    if (IsGrappleHookRetractRight)
+                    {
+                        IsGrappleHookRetractRight = false;
+                        _movementStateMachine.playerAnimator.SetBool(
+                            _movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractRight"], false);
+                    }
+
+                    IsGrappleHookRetractLeft = true;
+                    _movementStateMachine.playerAnimator.SetBool(
+                        _movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractLeft"], true);
+                }
+            }
+
+            if (_movementStateMachine.rightGrapplingHook.isRetractingRope && !IsGrappleHookRetractRight)
+            {
+                IsMoveToRightHookCheckPoint = false;
+
+                if (!_movementStateMachine.isOnGround)
+                {
+                    if (IsGrappleHookRetractLeft)
+                    {
+                        IsGrappleHookRetractLeft = false;
+                        _movementStateMachine.playerAnimator.SetBool(
+                            _movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractLeft"], false);
+                    }
+
+                    IsGrappleHookRetractRight = true;
+                    _movementStateMachine.playerAnimator.SetBool(
+                        _movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractRight"], true);
+                }
+            }
         }
 
-        if (_movementStateMachine.MoveInputInfo.VerticalInput != 0)
+        if (ListenStateChange())
         {
-            _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.playerTransform.forward *
-                                                           (_movementStateMachine.MoveInputInfo.VerticalInput *
-                                                            Time.deltaTime));
+            return;
         }
 
-        if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0)
-        {
-            _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.playerTransform.right *
-                                                           (_movementStateMachine.MoveInputInfo.HorizontalInput *
-                                                           Time.deltaTime));
-        }
+        ListenInputMove();
     }
 
     public override void UpdatePhysic()
     {
         base.UpdatePhysic();
         
+        _movementStateMachine.ClampXozVelocity();
     }
 
     // 计算从钩锁起始点到目标点所需提供速度的大小
@@ -99,6 +186,7 @@ public class Grapple : BaseState
         return _velocityY + _velocityXZ * _movementStateMachine.grapplingHookRopeMoveVelocityRatio;
     }
 
+    // 设置钩锁拉人时的速度
     public void SetVelocity()
     {
         _movementStateMachine.playerRigidbody.velocity = Vector3.zero;
@@ -177,5 +265,88 @@ public class Grapple : BaseState
                 IsMoveToRightHookCheckPoint = true;
             }
         }
+    }
+    
+    // 监听状态切换
+    private bool ListenStateChange()
+    {
+        if (!IsMoveToLeftHookCheckPoint && !IsMoveToRightHookCheckPoint && !IsGrappleHookRetractLeft && !IsGrappleHookRetractRight)
+        {
+            if (_movementStateMachine.isOnGround)
+            {
+                if (_movementStateMachine.leftGrapplingHook.isDrawHookAndRope)
+                {
+                    _movementStateMachine.leftGrapplingHook.RetractRope();
+                }
+
+                if (_movementStateMachine.rightGrapplingHook.isDrawHookAndRope)
+                {
+                    _movementStateMachine.rightGrapplingHook.RetractRope();
+                }
+                
+                if (_movementStateMachine.isFastToRun)
+                {
+                    return _movementStateMachine.ChangeState(_movementStateMachine.RunState);
+                }
+                else
+                {
+                    return _movementStateMachine.ChangeState(_movementStateMachine.WalkState);
+                }
+            }
+            else
+            {
+                return _movementStateMachine.ChangeState(_movementStateMachine.FallState);
+            }
+        }
+        return false;
+    }
+    
+    // 监听输入控制移动
+    private void ListenInputMove()
+    {
+        // 在钩锁状态下移动加力控制
+        if (_movementStateMachine.MoveInputInfo.VerticalInput != 0)
+        {
+            _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.playerTransform.forward *
+                                                           (_movementStateMachine.MoveInputInfo.VerticalInput *
+                                                            Time.deltaTime));
+        }
+
+        if (_movementStateMachine.MoveInputInfo.HorizontalInput != 0)
+        {
+            _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.playerTransform.right *
+                                                           (_movementStateMachine.MoveInputInfo.HorizontalInput *
+                                                            Time.deltaTime));
+        }
+    }
+    
+    // 当碰撞发生时调用的函数，当返回值为true时在事件中移除该委托
+    private bool CheckIsMovedToHookCheckPoint()
+    {
+        if (_movementStateMachine.GrappleState.isLeftGround)
+        {
+            if (IsMoveToLeftHookCheckPoint)
+            {
+                IsMoveToLeftHookCheckPoint = false;
+            }
+
+            if (IsMoveToRightHookCheckPoint)
+            {
+                IsMoveToRightHookCheckPoint = false;
+            }
+        }
+        
+        return false;
+    }
+    
+    // 动画事件---------------------
+    // 初始化在钩锁过程中进行钩锁拉过去进行旋转动作的控制参数
+    public void InitGrappleHookTurnParameters()
+    {
+        IsGrappleHookRetractLeft = false;
+        IsGrappleHookRetractRight = false;
+        _movementStateMachine.playerAnimator.SetBool(_movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractLeft"], false);
+        _movementStateMachine.playerAnimator.SetBool(_movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractRight"], false);
+        _movementStateMachine.playerAnimator.SetBool(_movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractBoth"], false);
     }
 }
