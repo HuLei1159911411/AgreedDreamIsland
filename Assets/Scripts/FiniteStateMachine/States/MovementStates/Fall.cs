@@ -71,7 +71,7 @@ public class Fall : BaseState
         }
 
         // 快速下落
-        if (_isReleaseSquatInput && _movementStateMachine.MoveInputInfo.SquatInput)
+        if (_isReleaseSquatInput && _movementStateMachine.MoveInputInfo.SquatInput && preState.state != E_State.Grapple)
         {
             _isFastFall = true;
         }

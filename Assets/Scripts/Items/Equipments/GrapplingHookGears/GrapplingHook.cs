@@ -7,6 +7,8 @@ using UnityEngine.Serialization;
 
 public class GrapplingHook : MonoBehaviour
 {
+    // 钩锁装置
+    public GrapplingHookGears grapplingHookGears;
     // 发射点
     public Transform hookShootPoint;
     // 勾爪模型
@@ -31,35 +33,33 @@ public class GrapplingHook : MonoBehaviour
     private Vector3 _targetPoint;
     // 勾爪运动协程
     private Coroutine _moveCoroutine;
+    // 协程yield return 变量
+    private WaitForFixedUpdate _waitForFixedUpdate;
     // 钩锁勾中时间计时器
     private float _timer;
     // 临时保存计算绳索距离的变量
     private float _distance;
     // 保存当前勾爪所对应的springJoint节点
-    private SpringJoint _springJoint;
+    public SpringJoint springJoint;
 
-    private void Awake()
+    private void OnEnable()
     {
         _rope = GetComponent<LineRenderer>();
 
         isCompletedMove = true;
         isDrawHookAndRope = false;
         isRetractingRope = false;
+        _waitForFixedUpdate = new WaitForFixedUpdate();
 
         HideGrapplingHook();
     }
-
-    private void Start()
-    {
-        _springJoint = PlayerMovementStateMachine.Instance.springJoints[isLeft ? 0 : 1];
-    }
-
+    
     private void Update()
     {
         if (isDrawHookAndRope && _timer < 1f)
         {
             _distance = Vector3.Distance(hookShootPoint.position, hookFather.position);
-            if (_distance > PlayerMovementStateMachine.Instance.grapplingHookRopeDestroyLength)
+            if (_distance > grapplingHookGears.grapplingHookRopeDestroyLength)
             {
                 _timer += Time.deltaTime;
                 if (_timer >= 1f)
@@ -109,22 +109,14 @@ public class GrapplingHook : MonoBehaviour
 
     public void RetractRope()
     {
-        if (isRetractingRope || !isDrawHookAndRope)
+        // 在发射中，或正在回收中，或者并没有进行绘制钩锁绳索不进行操作
+        if (!isCompletedMove || isRetractingRope || !isDrawHookAndRope)
         {
             return;
         }
 
-        if (isDrawHookAndRope && isCompletedMove)
-        {
-            PlayerMovementStateMachine.Instance.InitPlayerSpringJoint(isLeft ? 0 : 1);
-        }
-
-        if (!isCompletedMove)
-        {
-            // 在发射中直接不允许回收
-            return;
-        }
-
+        grapplingHookGears.InitPlayerSpringJoint(isLeft ? 0 : 1);
+        
         isRetractingRope = true;
         _targetPoint = hookShootPoint.position;
         _moveCoroutine = StartCoroutine(ToTargetPoint());
@@ -146,7 +138,7 @@ public class GrapplingHook : MonoBehaviour
                 hookFather.position = Vector3.Lerp(hookFather.position, _targetPoint, hookMoveSpeed);
             }
 
-            yield return null;
+            yield return _waitForFixedUpdate;
         }
 
         if (isRetractingRope)
@@ -156,9 +148,9 @@ public class GrapplingHook : MonoBehaviour
         }
         else
         {
-            _springJoint.connectedAnchor = _targetPoint;
-            _springJoint.maxDistance = PlayerMovementStateMachine.Instance.grapplingHookMaxLength;
-            _springJoint.minDistance = PlayerMovementStateMachine.Instance.grapplingHookMinLength;
+            springJoint.connectedAnchor = _targetPoint;
+            springJoint.maxDistance = grapplingHookGears.grapplingHookMaxLength;
+            springJoint.minDistance = grapplingHookGears.grapplingHookMinLength;
             _timer = 0;
         }
 
@@ -166,11 +158,11 @@ public class GrapplingHook : MonoBehaviour
         isCompletedMove = true;
     }
 
-    private void HideGrapplingHook()
+    public void HideGrapplingHook()
     {
         hookFather.position = hookShootPoint.position;
         hook.gameObject.SetActive(false);
-
+        
         _rope.SetPosition(0, hookShootPoint.position);
         _rope.SetPosition(1, hookShootPoint.position);
         _rope.enabled = false;

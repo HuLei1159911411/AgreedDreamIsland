@@ -26,9 +26,11 @@ public class Grapple : BaseState
     public bool IsGrappleHookRetractLeft;
     public bool IsGrappleHookRetractRight;
     // 监听是否离开过地面
-    public bool isLeftGround;
+    public bool IsLeftGround;
     // 需要添加到状态机中在发生碰撞时需要调用的函数
     private Func<bool> _whenCollisionEnterFunc;
+    // 钩锁装置(在装置使用时会将自行找到该状态并对该值赋值)
+    public GrapplingHookGears grapplingHookGears;
     
     public Grapple(StateMachine stateMachine) : base(E_State.Grapple, stateMachine)
     {
@@ -43,8 +45,8 @@ public class Grapple : BaseState
     public override void Enter()
     {
         base.Enter();
-        isLeftGround = false;
-        _movementStateMachine.whenOnCollisionEnter += _whenCollisionEnterFunc;
+        IsLeftGround = false;
+        _movementStateMachine.WhenOnCollisionEnter += _whenCollisionEnterFunc;
         
         _movementStateMachine.playerAnimator.SetTrigger(_movementStateMachine.DicAnimatorIndexes["ToGrapple"]);
         _gravity = Mathf.Abs(Physics.gravity.y);
@@ -64,20 +66,20 @@ public class Grapple : BaseState
     {
         base.Exit();
 
-        _movementStateMachine.whenOnCollisionEnter -= _whenCollisionEnterFunc;
+        _movementStateMachine.WhenOnCollisionEnter -= _whenCollisionEnterFunc;
     }
 
     public override void UpdateLogic()
     {
         base.UpdateLogic();
 
-        if (!isLeftGround && !_movementStateMachine.isOnGround)
+        if (!IsLeftGround && !_movementStateMachine.isOnGround)
         {
-            isLeftGround = true;
+            IsLeftGround = true;
         }
         
         // 两个绳索同时处于收回状态(监听钩锁是否是收回状态驱动去做转身动作)
-        if (_movementStateMachine.leftGrapplingHook.isRetractingRope && _movementStateMachine.rightGrapplingHook.isRetractingRope)
+        if (grapplingHookGears.grapplingHookLeft.isRetractingRope && grapplingHookGears.grapplingHookRight.isRetractingRope)
         {
             // 提前结束移动到勾中点的状态
             IsMoveToLeftHookCheckPoint = false;
@@ -110,38 +112,25 @@ public class Grapple : BaseState
         // 单个钩锁处于回收状态
         else
         {
-            if (_movementStateMachine.leftGrapplingHook.isRetractingRope && !IsGrappleHookRetractLeft)
+            if (grapplingHookGears.grapplingHookLeft.isRetractingRope && !IsGrappleHookRetractLeft)
             {
                 IsMoveToLeftHookCheckPoint = false;
 
-                if (!_movementStateMachine.isOnGround)
+                // 当正在地上或正在进行相反方向的旋转时不进行旋转
+                if (!_movementStateMachine.isOnGround && !IsGrappleHookRetractRight)
                 {
-                    if (IsGrappleHookRetractRight)
-                    {
-                        IsGrappleHookRetractRight = false;
-                        _movementStateMachine.playerAnimator.SetBool(
-                            _movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractRight"], false);
-                    }
-
                     IsGrappleHookRetractLeft = true;
                     _movementStateMachine.playerAnimator.SetBool(
                         _movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractLeft"], true);
                 }
             }
 
-            if (_movementStateMachine.rightGrapplingHook.isRetractingRope && !IsGrappleHookRetractRight)
+            if (grapplingHookGears.grapplingHookRight.isRetractingRope && !IsGrappleHookRetractRight)
             {
                 IsMoveToRightHookCheckPoint = false;
 
-                if (!_movementStateMachine.isOnGround)
+                if (!_movementStateMachine.isOnGround && !IsGrappleHookRetractLeft)
                 {
-                    if (IsGrappleHookRetractLeft)
-                    {
-                        IsGrappleHookRetractLeft = false;
-                        _movementStateMachine.playerAnimator.SetBool(
-                            _movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractLeft"], false);
-                    }
-
                     IsGrappleHookRetractRight = true;
                     _movementStateMachine.playerAnimator.SetBool(
                         _movementStateMachine.DicAnimatorIndexes["IsGrappleHookRetractRight"], true);
@@ -192,15 +181,15 @@ public class Grapple : BaseState
         _movementStateMachine.playerRigidbody.velocity = Vector3.zero;
 
         // 两个钩锁
-        if (_movementStateMachine.leftGrapplingHook.IsGrapplingHookLocked() &&
+        if (grapplingHookGears.grapplingHookLeft.IsGrapplingHookLocked() &&
             !IsMoveToLeftHookCheckPoint &&
-            _movementStateMachine.rightGrapplingHook.IsGrapplingHookLocked() &&
+            grapplingHookGears.grapplingHookRight.IsGrapplingHookLocked() &&
             !IsMoveToRightHookCheckPoint)
         {
             _movementStateMachine.playerRigidbody.velocity += CalculateJumpVelocity(
                 _movementStateMachine.playerTransform.position,
-                (_movementStateMachine.leftGrapplingHook.TargetPoint +
-                 _movementStateMachine.rightGrapplingHook.TargetPoint) * 0.5f,
+                (grapplingHookGears.grapplingHookLeft.TargetPoint +
+                 grapplingHookGears.grapplingHookRight.TargetPoint) * 0.5f,
                 _movementStateMachine.grapplingHighestPointRelativeHigh);
             
             /*
@@ -245,22 +234,22 @@ public class Grapple : BaseState
         // 单个钩锁
         else
         {
-            if (_movementStateMachine.leftGrapplingHook.IsGrapplingHookLocked() &&
+            if (grapplingHookGears.grapplingHookLeft.IsGrapplingHookLocked() &&
                 !IsMoveToLeftHookCheckPoint)
             {
                 _movementStateMachine.playerRigidbody.velocity += CalculateJumpVelocity(
-                    _movementStateMachine.leftGrapplingHook.hookShootPoint.position,
-                    _movementStateMachine.leftGrapplingHook.TargetPoint,
+                    grapplingHookGears.grapplingHookLeft.hookShootPoint.position,
+                    grapplingHookGears.grapplingHookLeft.TargetPoint,
                     _movementStateMachine.grapplingHighestPointRelativeHigh);
                 IsMoveToLeftHookCheckPoint = true;
             }
 
-            if (_movementStateMachine.rightGrapplingHook.IsGrapplingHookLocked() &&
+            if (grapplingHookGears.grapplingHookRight.IsGrapplingHookLocked() &&
                 !IsMoveToRightHookCheckPoint)
             {
                 _movementStateMachine.playerRigidbody.velocity += CalculateJumpVelocity(
-                    _movementStateMachine.leftGrapplingHook.hookShootPoint.position, 
-                    _movementStateMachine.rightGrapplingHook.TargetPoint,
+                    grapplingHookGears.grapplingHookLeft.hookShootPoint.position, 
+                    grapplingHookGears.grapplingHookRight.TargetPoint,
                     _movementStateMachine.grapplingHighestPointRelativeHigh);
                 IsMoveToRightHookCheckPoint = true;
             }
@@ -274,14 +263,14 @@ public class Grapple : BaseState
         {
             if (_movementStateMachine.isOnGround)
             {
-                if (_movementStateMachine.leftGrapplingHook.isDrawHookAndRope)
+                if (grapplingHookGears.grapplingHookLeft.isDrawHookAndRope)
                 {
-                    _movementStateMachine.leftGrapplingHook.RetractRope();
+                    grapplingHookGears.grapplingHookLeft.RetractRope();
                 }
 
-                if (_movementStateMachine.rightGrapplingHook.isDrawHookAndRope)
+                if (grapplingHookGears.grapplingHookRight.isDrawHookAndRope)
                 {
-                    _movementStateMachine.rightGrapplingHook.RetractRope();
+                    grapplingHookGears.grapplingHookRight.RetractRope();
                 }
                 
                 if (_movementStateMachine.isFastToRun)
@@ -309,6 +298,7 @@ public class Grapple : BaseState
         {
             _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.playerTransform.forward *
                                                            (_movementStateMachine.MoveInputInfo.VerticalInput *
+                                                            _movementStateMachine.grapplingForce *
                                                             Time.deltaTime));
         }
 
@@ -316,6 +306,7 @@ public class Grapple : BaseState
         {
             _movementStateMachine.playerRigidbody.AddForce(_movementStateMachine.playerTransform.right *
                                                            (_movementStateMachine.MoveInputInfo.HorizontalInput *
+                                                            _movementStateMachine.grapplingForce *
                                                             Time.deltaTime));
         }
     }
@@ -323,7 +314,7 @@ public class Grapple : BaseState
     // 当碰撞发生时调用的函数，当返回值为true时在事件中移除该委托
     private bool CheckIsMovedToHookCheckPoint()
     {
-        if (_movementStateMachine.GrappleState.isLeftGround)
+        if (_movementStateMachine.GrappleState.IsLeftGround)
         {
             if (IsMoveToLeftHookCheckPoint)
             {
@@ -333,6 +324,11 @@ public class Grapple : BaseState
             if (IsMoveToRightHookCheckPoint)
             {
                 IsMoveToRightHookCheckPoint = false;
+            }
+
+            if (IsGrappleHookRetractLeft || IsGrappleHookRetractRight)
+            {
+                InitGrappleHookTurnParameters();
             }
         }
         

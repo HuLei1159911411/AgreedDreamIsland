@@ -18,6 +18,7 @@ public enum E_InputBehavior
     HookShootRight,
     Fire,
     Aim,
+    Interact,
 }
 public class InputManager : MonoBehaviour
 {
@@ -59,6 +60,7 @@ public class InputManager : MonoBehaviour
             { E_InputBehavior.HookShootRight, KeyCode.E },
             { E_InputBehavior.Fire, KeyCode.Mouse0 },
             { E_InputBehavior.Aim , KeyCode.Mouse1 },
+            { E_InputBehavior.Interact , KeyCode.F },
         };
     }
 }
