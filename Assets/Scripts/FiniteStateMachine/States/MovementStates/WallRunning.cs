@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using UnityEngine;
+using Vector3 = UnityEngine.Vector3;
 
 public class WallRunning : BaseState
 {
@@ -34,6 +36,8 @@ public class WallRunning : BaseState
         {
             _timer = 0;
         }
+
+        CheckCameraFocusTargetPointIsReverse();
         
         CloseGravity();
     }
@@ -43,11 +47,22 @@ public class WallRunning : BaseState
         base.Exit();
 
         _movementStateMachine.playerRigidbody.useGravity = true;
+
+        CheckCameraFocusTargetPointIsDefault();
     }
 
     public override void UpdateLogic()
     {
         base.UpdateLogic();
+
+        if (_movementStateMachine.hasWallOnRight)
+        {
+            CheckCameraFocusTargetPointIsReverse();
+        }
+        else
+        {
+            CheckCameraFocusTargetPointIsDefault();
+        }
 
         if (ListenInputToChangeState())
         {
@@ -135,5 +150,45 @@ public class WallRunning : BaseState
         // 清空Y轴速度
         _movementStateMachine.playerRigidbody.velocity = new Vector3(_movementStateMachine.playerRigidbody.velocity.x,
             0, _movementStateMachine.playerRigidbody.velocity.z);
+    }
+
+    private void CheckCameraFocusTargetPointIsDefault()
+    {
+        if (CameraController.Instance.thirdPersonFocusWithPlayerOffset != CameraController.Instance.focusDefaultOffset)
+        {
+            if (CameraController.Instance.focusTargetOffset != CameraController.Instance.focusDefaultOffset)
+            {
+                CameraController.Instance.focusTargetOffset = CameraController.Instance.focusDefaultOffset;
+                if (!CameraController.Instance.isMoveCameraFocusOffset)
+                {
+                    CameraController.Instance.StartMoveFocusOffsetToTarget();
+                }
+                else
+                {
+                    CameraController.Instance.StopMoveFocusOffsetToTarget();
+                    CameraController.Instance.StartMoveFocusOffsetToTarget();
+                }
+            }
+        }
+    }
+
+    private void CheckCameraFocusTargetPointIsReverse()
+    {
+        if (_movementStateMachine.hasWallOnRight && CameraController.Instance.thirdPersonFocusWithPlayerOffset != CameraController.Instance.reverseFocusOffset)
+        {
+            if (CameraController.Instance.focusTargetOffset != CameraController.Instance.reverseFocusOffset)
+            {
+                CameraController.Instance.focusTargetOffset = CameraController.Instance.reverseFocusOffset;
+                if (!CameraController.Instance.isMoveCameraFocusOffset)
+                {
+                    CameraController.Instance.StartMoveFocusOffsetToTarget();
+                }
+                else
+                {
+                    CameraController.Instance.StopMoveFocusOffsetToTarget();
+                    CameraController.Instance.StartMoveFocusOffsetToTarget();
+                }
+            }
+        }
     }
 }

@@ -91,6 +91,20 @@ public class CameraController : MonoBehaviour
     // 协程yield return变量
     private WaitForFixedUpdate _waitForFixedUpdate;
     #endregion
+    
+    // 摄像机聚焦点默认偏移
+    public Vector3 focusDefaultOffset;
+    // 摄像机目标偏移
+    public Vector3 focusTargetOffset;
+    // 摄像机反方向偏移
+    public Vector3 reverseFocusOffset;
+    // 是否进行偏移
+    public bool isMoveCameraFocusOffset;
+    // 对聚焦点进行移动偏移的协程
+    public Coroutine FocusMoveCoroutine;
+    [Range(0f,1f)]
+    // 聚焦点移动的速度
+    public float focusMoveSpeed;
     private void Awake()
     {
         if (_instance is null)
@@ -99,6 +113,7 @@ public class CameraController : MonoBehaviour
         }
 
         _waitForFixedUpdate = new WaitForFixedUpdate();
+
     }
 
     private void Start()
@@ -112,11 +127,6 @@ public class CameraController : MonoBehaviour
     }
 
     private void Update()
-    {
-        
-    }
-
-    private void LateUpdate()
     {
         ListenCameraBehaviorInput();
     }
@@ -149,6 +159,9 @@ public class CameraController : MonoBehaviour
         _playerTargetRotation = playerTransform.rotation;
         _targetPosition = transform.position;
         _targetRotation = transform.rotation;
+        
+        focusDefaultOffset = thirdPersonFocusWithPlayerOffset;
+        reverseFocusOffset = new Vector3(-focusDefaultOffset.x, focusDefaultOffset.y, focusDefaultOffset.z);
     }
 
     // 监听与摄像机有关行为输入
@@ -473,5 +486,28 @@ public class CameraController : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
+    
+    // 移动聚焦点到目标位置
+    private IEnumerator MoveFocusOffsetToTarget()
+    {
+        isMoveCameraFocusOffset = true;
+        while (Mathf.Abs(thirdPersonFocusWithPlayerOffset.x - focusTargetOffset.x) > 0.01f)
+        {
+            thirdPersonFocusWithPlayerOffset = Vector3.Lerp(thirdPersonFocusWithPlayerOffset, focusTargetOffset,focusMoveSpeed);
+            yield return _waitForFixedUpdate;
+        }
+        thirdPersonFocusWithPlayerOffset = focusTargetOffset;
+        isMoveCameraFocusOffset = false;
+    }
+    // 开始移动聚焦点协程
+    public void StartMoveFocusOffsetToTarget()
+    {
+        FocusMoveCoroutine = StartCoroutine(MoveFocusOffsetToTarget());
+    }
+    // 停止移动聚焦点协程
+    public void StopMoveFocusOffsetToTarget()
+    {
+        StopCoroutine(FocusMoveCoroutine);
     }
 }

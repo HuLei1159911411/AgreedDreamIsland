@@ -17534,6 +17534,11 @@ MonoBehaviour:
   isFreezePlayerRotation: 0
   playerIsRotating: 0
   cameraIsMovingAndRotating: 0
+  focusDefaultOffset: {x: 0, y: 0, z: 0}
+  focusTargetOffset: {x: 0, y: 0, z: 0}
+  reverseFocusOffset: {x: 0, y: 0, z: 0}
+  isMoveCameraFocusOffset: 0
+  focusMoveSpeed: 0.2
 --- !u!1 &2298368026606092998
 GameObject:
   m_ObjectHideFlags: 0
