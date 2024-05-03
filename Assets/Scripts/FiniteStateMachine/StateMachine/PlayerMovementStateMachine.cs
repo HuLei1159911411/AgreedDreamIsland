@@ -32,6 +32,7 @@ public struct MoveInputInformation
     public bool RunInput;
     public bool SquatInput;
     public bool SlidingInput;
+    public bool RollInput;
 }
 
 public class PlayerMovementStateMachine : StateMachine
@@ -330,7 +331,7 @@ public class PlayerMovementStateMachine : StateMachine
     private float _horizontalInputForAnimator;
     // 上一次从角色脚部向前发射的射线能够集中墙壁的射线的击中信息
     private RaycastHit _lastForwardFootRaycastHit;
-    // 向上发射射线用于检测玩家上方距离高度的射线的集中信息
+    // 向上发射射线用于检测玩家上方距离高度的射线的击中信息
     private RaycastHit _upHighRaycastHit;
     // 向上发射射线用于检测玩家上方距离内是否存在地面层的对象
     private bool _hasGroundInDistance;
@@ -581,6 +582,7 @@ public class PlayerMovementStateMachine : StateMachine
         MoveInputInfo.RunInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Run]);
         MoveInputInfo.SquatInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Squat]);
         MoveInputInfo.SlidingInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Sliding]);
+        MoveInputInfo.RollInput = Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.Roll]);
     }
 
     // 更新MoveInputInfo中VerticalInput与HorizontalInput的值
@@ -1187,6 +1189,12 @@ public class PlayerMovementStateMachine : StateMachine
         }
 
         return true;
+    }
+    
+    // 获取当前角色向下发射最大距离的射线击中位置
+    public Vector3 GetGroundPoint()
+    {
+        return isOnGround ? _downRaycastHit.point : _downMaxRaycastHit.point;
     }
     
 

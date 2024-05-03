@@ -70,7 +70,7 @@ public class Idle : BaseState
             return;
         }
         // 摁跑步键
-        if (_movementStateMachine.MoveInputInfo.RunInput && _coolTimeTimer > 0.1f)
+        if (_movementStateMachine.MoveInputInfo.RollInput && _coolTimeTimer > 0.1f)
         {
             stateMachine.ChangeState(_movementStateMachine.RollState);
             return;

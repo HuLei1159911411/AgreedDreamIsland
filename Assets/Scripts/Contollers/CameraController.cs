@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public enum E_CameraView
 {
@@ -42,6 +43,10 @@ public class CameraController : MonoBehaviour
     public bool isFreezeCameraPositionAndRotation;
     // 是否冻结玩家旋转
     public bool isFreezePlayerRotation;
+    // 当前人物是否在旋转至目标角度
+    public bool playerIsRotating;
+    // 当前摄像机是否在移动至目标点并且旋转至目标角度
+    public bool cameraIsMovingAndRotating;
     
     // 摄像机跟踪目标Transform组件
     private Transform _targetTransform;
@@ -73,22 +78,16 @@ public class CameraController : MonoBehaviour
     #region Coroutine
     // 控制人物旋转至目标角度协程
     private Coroutine _playerRotateCoroutine;
-    // 当前人物是否在旋转至目标角度
-    private bool _playerIsRotating;
     // 玩家目标绕Y轴旋转四元数
     private Quaternion _playerTargetRotation;
-
     // 用来临时保存计算每帧目标移动位置的变量
     private Vector3 _calculateTargetPosition;
     // 摄像机移动旋转协程
     private Coroutine _cameraMoveAndRotateCoroutine;
-    // 当前摄像机是否在移动至目标点并且旋转至目标角度
-    private bool _cameraIsMovingAndRotating;
     // 摄像机目标移动位置
     private Vector3 _targetPosition;
     // 摄像机目标旋转
     private Quaternion _targetRotation;
-    
     // 协程yield return变量
     private WaitForFixedUpdate _waitForFixedUpdate;
     #endregion
@@ -421,7 +420,7 @@ public class CameraController : MonoBehaviour
     // 玩家四元数向目标四元数旋转
     private IEnumerator PlayerRotateToTargetQuaternion()
     {
-        _playerIsRotating = true;
+        playerIsRotating = true;
         while (!isFreezePlayerRotation)
         {
             _targetTransform.rotation = Quaternion.Lerp(_targetTransform.rotation, _playerTargetRotation, playerRotateSpeed).normalized;
@@ -432,7 +431,7 @@ public class CameraController : MonoBehaviour
     // 摄像机向目标位置移动和旋转
     private IEnumerator CameraMoveAndRotateToTarget()
     {
-        _cameraIsMovingAndRotating = true;
+        cameraIsMovingAndRotating = true;
         while (!isFreezeCameraPositionAndRotation)
         {
             transform.position = Vector3.Lerp(transform.position, _targetPosition, cameraFollowSpeed);

@@ -89,7 +89,7 @@ public class Sliding : BaseState
         }
         
         // 加速结束后摁奔跑键进入翻滚状态
-        if (_movementStateMachine.MoveInputInfo.RunInput)
+        if (_movementStateMachine.MoveInputInfo.RollInput)
         {
             return _movementStateMachine.ChangeState(_movementStateMachine.RollState);
         }

@@ -21,10 +21,10 @@ public class GrapplingHookCheckPointController : MonoBehaviour
     private void Update()
     {
         if (!(EquipmentsController.Instance is null) && 
-            EquipmentsController.Instance.nowMovementEquipmentIndex != -1 &&
-            EquipmentsController.Instance.nowMovementEquipment.equipmentName == E_EquipmentName.GrapplingHookGears)
+            EquipmentsController.Instance.nowEquipmentsIndexes[(int)E_EquipmentType.MovementEquipment] != -1 &&
+            EquipmentsController.Instance.nowEquipments[(int)E_EquipmentType.MovementEquipment].equipmentName == E_EquipmentName.GrapplingHookGears)
         {
-            _grapplingHookGears = EquipmentsController.Instance.nowMovementEquipment as GrapplingHookGears;
+            _grapplingHookGears = EquipmentsController.Instance.nowEquipments[(int)E_EquipmentType.MovementEquipment] as GrapplingHookGears;
             if (_grapplingHookGears.hasHookCheckPoint)
             {
                 midCheckPoint.position = _grapplingHookGears.hookCheckPoint;

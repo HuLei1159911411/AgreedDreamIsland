@@ -34,13 +34,12 @@ public class EquipmentsController : MonoBehaviour
     
     // 装备栏
     public List<List<Equipment>> listEquipments;
-    
-    // 移动装备栏大小
-    public int movementEquipmentMaxCount = 1;
-    // 当前的移动装备
-    public Equipment nowMovementEquipment;
-    // 当前移动装备的在所有移动装备中的索引值(-1为未进行装备)
-    public int nowMovementEquipmentIndex;
+    // 格装备最大数量
+    public List<int> listEquipmentTypesMaxCounts;
+    // 所有的当前装备
+    public Equipment[] nowEquipments;
+    // 所有的当前装备在其装备栏中的索引值
+    public int[] nowEquipmentsIndexes;
     
     // 计数用临时变量
     private int _count;
@@ -55,8 +54,14 @@ public class EquipmentsController : MonoBehaviour
         {
             { new List<Equipment>() }
         };
+
+        nowEquipments = new Equipment[Enum.GetValues(typeof(E_EquipmentType)).Length];
+        nowEquipmentsIndexes = new int[Enum.GetValues(typeof(E_EquipmentType)).Length];
+        for (_count = 0; _count < nowEquipmentsIndexes.Length; _count++)
+        {
+            nowEquipmentsIndexes[_count] = -1;
+        }
         
-        nowMovementEquipmentIndex = -1;
         playerTransform = transform;
     }
 
@@ -71,9 +76,9 @@ public class EquipmentsController : MonoBehaviour
     public void ListenEquipmentsUse()
     {
         UpdateEquipmentUseInputInformation();
-        if (nowMovementEquipmentIndex > -1)
+        if (nowEquipmentsIndexes[(int)E_EquipmentType.MovementEquipment] > -1)
         {
-            nowMovementEquipment.ListenEquipmentUse();
+            nowEquipments[(int)E_EquipmentType.MovementEquipment].ListenEquipmentUse();
         }
     }
     
@@ -81,9 +86,9 @@ public class EquipmentsController : MonoBehaviour
     public void UpdateEquipmentUseInputInformation()
     {
         equipmentUseInputInfo.HookShootLeftInput =
-            Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.HookShootLeft]);
+            Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.HookShootLeft]);
         equipmentUseInputInfo.HookShootRightInput =
-            Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.HookShootRight]);
+            Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.HookShootRight]);
         equipmentUseInputInfo.FireInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Fire]);
         equipmentUseInputInfo.AimInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Aim]);
     }
@@ -91,61 +96,49 @@ public class EquipmentsController : MonoBehaviour
     // 添加装备
     public bool AddEquipment(Equipment equipment)
     {
-        switch (equipment.equipmentType)
+        // 判断是否这种装备是否装满了
+        if (!CheckEquipmentIsFull(equipment.equipmentType))
         {
-            case E_EquipmentType.MovementEquipment:
-                if (listEquipments[(int)equipment.equipmentType].Count < movementEquipmentMaxCount)
-                {
-                    listEquipments[(int)E_EquipmentType.MovementEquipment].Add(equipment);
-                    // 在当前类型装备还没有装备时，添加装备自动装备该装备
-                    if (nowMovementEquipmentIndex == -1)
-                    {
-                        ChangeEquipment(equipment.equipmentType, listEquipments.Count - 1);
-                    }
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            default:
-                throw new ArgumentOutOfRangeException();
+            listEquipments[(int)equipment.equipmentType].Add(equipment);
+            
+            // 在当前类型装备还没有装备时，添加装备后自动装备该装备
+            if (nowEquipmentsIndexes[(int)equipment.equipmentType] == -1)
+            {
+                ChangeEquipment(equipment.equipmentType, listEquipments.Count - 1);
+            }
+
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
     
     // 扔下装备
     public void DiscardEquipment(E_EquipmentType equipmentType, int equipmentIndex)
     {
-        switch (equipmentType)
+        // 当前装备正在装备中
+        if (nowEquipmentsIndexes[(int)equipmentType] == equipmentIndex)
         {
-            case E_EquipmentType.MovementEquipment:
-                RemoveEquipment(equipmentType, equipmentIndex);
-                listEquipments[(int)equipmentType][equipmentIndex].DiscardItem();
-                listEquipments[(int)equipmentType][equipmentIndex].controller = null;
-                listEquipments[(int)equipmentType].RemoveAt(equipmentIndex);
-                
-                ChangeEquipment(equipmentType, listEquipments[(int)equipmentType].Count - 1);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(equipmentType), equipmentType, null);
+            RemoveEquipment(equipmentType);
         }
+        listEquipments[(int)equipmentType][equipmentIndex].DiscardItem();
+        listEquipments[(int)equipmentType][equipmentIndex].controller = null;
+        listEquipments[(int)equipmentType].RemoveAt(equipmentIndex);
     }
     
-    // 卸下装备
-    public bool RemoveEquipment(E_EquipmentType equipmentType, int equipmentIndex)
+    // 卸下装备(取消装备)
+    public bool RemoveEquipment(E_EquipmentType equipmentType)
     {
-        switch (equipmentType)
-        {
-            case E_EquipmentType.MovementEquipment:
-                listEquipments[(int)equipmentType][equipmentIndex].RemoveEquipment();
-                nowMovementEquipmentIndex = -1;
-                return true;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        nowEquipments[(int)equipmentType].RemoveEquipment();
+                
+        nowEquipments[(int)equipmentType] = null;
+        nowEquipmentsIndexes[(int)equipmentType] = -1;
+        return true;
     }
     
-    // 切换装备
+    // 在已有装备中切换装备
     public void ChangeEquipment(E_EquipmentType equipmentType, int equipmentIndex)
     {
         if (equipmentIndex == -1)
@@ -153,22 +146,21 @@ public class EquipmentsController : MonoBehaviour
             return;
         }
         
-        switch (equipmentType)
+        // 当前装备了装备进行切换装备先将当前装备卸下
+        if (nowEquipmentsIndexes[(int)equipmentType] != -1)
         {
-            case E_EquipmentType.MovementEquipment:
-                
-                // 当前装备了装备进行切换装备先将当前装备卸下
-                if (nowMovementEquipmentIndex != -1)
-                {
-                    nowMovementEquipment.RemoveEquipment();
-                }
-                
-                nowMovementEquipment = listEquipments[(int)equipmentType][equipmentIndex];
-                nowMovementEquipment.WearEquipment();
-                nowMovementEquipmentIndex = equipmentIndex;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(equipmentType), equipmentType, null);
+            RemoveEquipment(equipmentType);
         }
+
+        nowEquipments[(int)equipmentType] = listEquipments[(int)equipmentType][equipmentIndex];
+        nowEquipments[(int)equipmentType].WearEquipment();
+        nowEquipmentsIndexes[(int)equipmentType] = equipmentIndex;
+        
+    }
+    
+    // 判断该类型装备是否已满
+    public bool CheckEquipmentIsFull(E_EquipmentType equipmentType)
+    {
+        return listEquipments[(int)equipmentType].Count == listEquipmentTypesMaxCounts[(int)equipmentType];
     }
 }

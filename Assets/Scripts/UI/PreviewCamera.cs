@@ -28,7 +28,7 @@ public class PreviewCamera : MonoBehaviour
         }
     }
 
-    
+   /* 
 #if UNITY_EDITOR
     // 若需保证Editor下一直调用Update、OnGUI这些函数加入下面的函数，强制在OnDrawGizmos()中调用场景刷新的API，不需要的时候注释OnDrawGizmos()
     void OnDrawGizmos()
@@ -42,7 +42,7 @@ public class PreviewCamera : MonoBehaviour
         }
     }
 #endif
-    
+    */
 
     void PreviewCameraPerspective(E_CameraView view)
     {

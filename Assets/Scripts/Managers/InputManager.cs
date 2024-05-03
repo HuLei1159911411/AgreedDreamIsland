@@ -14,11 +14,15 @@ public enum E_InputBehavior
     ChangeView,
     Squat,
     Sliding,
+    Roll,
     HookShootLeft,
     HookShootRight,
     Fire,
     Aim,
     Interact,
+    FirstWeapon,
+    SecondWeapon,
+    Replace,
 }
 public class InputManager : MonoBehaviour
 {
@@ -56,11 +60,15 @@ public class InputManager : MonoBehaviour
             { E_InputBehavior.ChangeView, KeyCode.V },
             { E_InputBehavior.Squat, KeyCode.LeftControl },
             { E_InputBehavior.Sliding, KeyCode.LeftControl },
+            { E_InputBehavior.Roll , KeyCode.LeftShift },
             { E_InputBehavior.HookShootLeft, KeyCode.Q },
             { E_InputBehavior.HookShootRight, KeyCode.E },
             { E_InputBehavior.Fire, KeyCode.Mouse0 },
             { E_InputBehavior.Aim , KeyCode.Mouse1 },
             { E_InputBehavior.Interact , KeyCode.F },
+            { E_InputBehavior.FirstWeapon, KeyCode.Alpha1},
+            { E_InputBehavior.SecondWeapon, KeyCode.Alpha2},
+            { E_InputBehavior.Replace, KeyCode.Alpha3 },
         };
     }
 }
