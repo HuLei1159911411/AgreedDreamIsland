@@ -17,7 +17,8 @@ public abstract class Equipment : Item
     public EquipmentsController controller;
     public E_EquipmentName equipmentName;
     public E_EquipmentType equipmentType;
-
+    public bool isInUse;
+    
     public Equipment()
     {
         itemType = E_ItemType.Equipment;

@@ -58,5 +58,11 @@ public class GrapplingHookCheckPointController : MonoBehaviour
                 rightCheckPoint.gameObject.SetActive(false);
             }
         }
+        else
+        {
+            midCheckPoint.gameObject.SetActive(false);
+            leftCheckPoint.gameObject.SetActive(false);
+            rightCheckPoint.gameObject.SetActive(false);
+        }
     }
 }

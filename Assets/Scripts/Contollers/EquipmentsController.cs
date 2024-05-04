@@ -78,6 +78,12 @@ public class EquipmentsController : MonoBehaviour
     // 监听装备使用
     public void ListenEquipmentsUse()
     {
+        // 监听装备切换
+        if (ListenEquipmentsChange())
+        {
+            return;
+        }
+        
         UpdateEquipmentUseInputInformation();
 
         for (_count = 0; _count < nowEquipmentsIndexes.Length; _count++)
@@ -201,6 +207,10 @@ public class EquipmentsController : MonoBehaviour
     // 在已有装备中切换装备
     public void ChangeEquipment(E_EquipmentType equipmentType, int equipmentIndex)
     {
+        if (equipmentIndex == nowEquipmentsIndexes[(int)equipmentType])
+        {
+            return;
+        }
         
         if (equipmentIndex == -1)
         {
@@ -241,5 +251,69 @@ public class EquipmentsController : MonoBehaviour
         }
         
         return listEquipments[(int)equipmentType].Count == listEquipmentTypesMaxCounts[(int)equipmentType];
+    }
+    
+    // 监听装备切换
+    public bool ListenEquipmentsChange()
+    {
+        // 当前一号武器栏有装备并且当前装备没在使用或没装备装备
+        if (listEquipments[(int)E_EquipmentType.Weapon].Count >= 1 &&
+            listEquipments[(int)E_EquipmentType.Weapon][0] != null &&
+            Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.FirstWeapon]))
+        {
+            if(nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] == -1)
+            {
+                ChangeEquipment(E_EquipmentType.Weapon, 0);
+                return true;
+            }
+            // 当期装备了装备(这里不能直接使用ChangeEquipment，因为ChangeEquipment在装备了装备的情况下切换装备会将装备了的装备与需要装备的装备在列表中的位置进行互换而不是更换装备的装备)
+            if(nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] != -1 &&
+                !nowEquipments[(int)E_EquipmentType.Weapon].isInUse)
+            {
+                nowEquipments[(int)E_EquipmentType.Weapon].RemoveEquipment();
+                nowEquipments[(int)E_EquipmentType.Weapon] = listEquipments[(int)E_EquipmentType.Weapon][0];
+                nowEquipments[(int)E_EquipmentType.Weapon].WearEquipment();
+                nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] = 0;
+                weaponsBagPanel.SetNowWeaponCell(0);
+                return true;
+            }
+        }
+
+        // 当前二号武器栏有装备并且当前装备没在使用或没装备装备
+        if (listEquipments[(int)E_EquipmentType.Weapon].Count >= 2 &&
+            listEquipments[(int)E_EquipmentType.Weapon][1] != null &&
+            Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.SecondWeapon]) &&
+            (nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] == -1 || 
+             (nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] != -1 &&
+              !nowEquipments[(int)E_EquipmentType.Weapon].isInUse)))
+        {
+            if(nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] == -1)
+            {
+                ChangeEquipment(E_EquipmentType.Weapon, 1);
+                return true;
+            }
+            // 当期装备了装备(这里不能直接使用ChangeEquipment，因为ChangeEquipment在装备了装备的情况下切换装备会将装备了的装备与需要装备的装备在列表中的位置进行互换而不是更换装备的装备)
+            if(nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] != -1 &&
+               !nowEquipments[(int)E_EquipmentType.Weapon].isInUse)
+            {
+                nowEquipments[(int)E_EquipmentType.Weapon].RemoveEquipment();
+                nowEquipments[(int)E_EquipmentType.Weapon] = listEquipments[(int)E_EquipmentType.Weapon][1];
+                nowEquipments[(int)E_EquipmentType.Weapon].WearEquipment();
+                nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] = 1;
+                weaponsBagPanel.SetNowWeaponCell(1);
+                return true;
+            }
+        }
+
+        // 当前装备了武器并且当前装备没在使用
+        if (nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] != -1 &&
+            !nowEquipments[(int)E_EquipmentType.Weapon].isInUse &&
+            Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.CancelWeapon]))
+        {
+            RemoveEquipment(E_EquipmentType.Weapon);
+            return true;
+        }
+
+        return false;
     }
 }

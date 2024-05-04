@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
-using UnityEditor.Searcher;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -199,6 +198,12 @@ public class GrapplingHookGears : Equipment
 
         // 监听钩锁发射控制
         ListenGrapplingHookShoot();
+        
+        // 更新是否正在使用信息
+        isInUse = grapplingHookLeft.IsGrapplingHookLocked() || grapplingHookRight.IsGrapplingHookLocked() ||
+                  !grapplingHookLeft.isCompletedMove || !grapplingHookRight.isCompletedMove ||
+                  _grappleState.IsMoveToLeftHookCheckPoint || _grappleState.IsMoveToRightHookCheckPoint ||
+                  _grappleState.IsGrappleHookRetractLeft || _grappleState.IsGrappleHookRetractRight;
     }
     
     

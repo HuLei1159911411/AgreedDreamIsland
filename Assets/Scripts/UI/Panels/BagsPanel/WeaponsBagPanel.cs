@@ -98,7 +98,7 @@ public class WeaponsBagPanel : Panel
         _existentWeaponColor.a = _absentWeaponColor.a;
         _selectedWeaponColor = Color.white;
         _existentWeaponColor.a = 188f / 255f;
-        _selectedWeaponLocalScale = new Vector3(1.1f, 1.1f, 1.1f);
+        _selectedWeaponLocalScale = new Vector3(1.03f, 1.03f, 1.03f);
 
         _weaponCellsCount = listBagWeaponCells.Count + listAlwaysShowWeaponCells.Count;
     }

@@ -34,23 +34,10 @@ public class InteractController : MonoBehaviour
 
     void Update()
     {
-        bool isNotNull = nowInteractiveObjectCollider is not null;
         if (nowInteractiveObjectCollider != null)
         {
-            if (_nowInteractiveObject == null && nowInteractiveObjectCollider != null)
-            {
-                _nowInteractiveObject = nowInteractiveObjectCollider.transform.GetComponent<InteractiveObject>();
-            }
-
             if (!(interactTipPanel is null))
             {
-                if (!interactTipPanel.isShow)
-                {
-                    // 设置UI页面
-                    interactTipPanel.SetInteractInteractPanel(_nowInteractiveObject);
-                    interactTipPanel.ShowPanel();
-                }
-
                 // 监听交互界面交互结果
                 if (interactTipPanel.ListenInteract())
                 {
@@ -77,6 +64,16 @@ public class InteractController : MonoBehaviour
                 if (other.CompareTag(interactiveObjectsTags[_count]))
                 {
                     nowInteractiveObjectCollider = other;
+                    _nowInteractiveObject = nowInteractiveObjectCollider.transform.GetComponent<InteractiveObject>();
+                    if (!(interactTipPanel is null))
+                    {
+                        if (!interactTipPanel.isShow)
+                        {
+                            // 设置UI页面
+                            interactTipPanel.SetInteractInteractPanel(_nowInteractiveObject);
+                            interactTipPanel.ShowPanel();
+                        }
+                    }
                 }
             }
         }
@@ -94,6 +91,16 @@ public class InteractController : MonoBehaviour
                     if (other.CompareTag(interactiveObjectsTags[_count]))
                     {
                         nowInteractiveObjectCollider = other;
+                        _nowInteractiveObject = nowInteractiveObjectCollider.transform.GetComponent<InteractiveObject>();
+                        if (!(interactTipPanel is null))
+                        {
+                            if (!interactTipPanel.isShow)
+                            {
+                                // 设置UI页面
+                                interactTipPanel.SetInteractInteractPanel(_nowInteractiveObject);
+                                interactTipPanel.ShowPanel();
+                            }
+                        }
                         _coolDownTimer = 0f;
                     }
                 }
