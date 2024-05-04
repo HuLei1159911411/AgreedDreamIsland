@@ -33,7 +33,7 @@ public class EquipmentOperatorPanel : OperatorPanel
             
             listOperatorObjects[0].operatorIconTransform.gameObject.SetActive(true);
             listOperatorObjects[0].operatorIconImage.enabled = false;
-            listOperatorObjects[0].operatorIconText.text = "已达到最大装备数量";
+            listOperatorObjects[0].operatorIconText.text = "已达最大装备数量";
             
             listOperatorObjects[0].operatorText.enabled = false;
         }

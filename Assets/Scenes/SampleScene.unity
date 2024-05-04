@@ -3132,7 +3132,7 @@ MonoBehaviour:
     operatorIconText: {fileID: 1740286497}
     operatorText: {fileID: 1385899432}
     isLongPress: 1
-    longPressTime: 2
+    longPressTime: 1
 --- !u!1 &1127826096
 GameObject:
   m_ObjectHideFlags: 0

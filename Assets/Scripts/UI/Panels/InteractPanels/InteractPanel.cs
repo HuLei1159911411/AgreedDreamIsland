@@ -65,6 +65,13 @@ public class InteractPanel : Panel
     // 监听输入
     public bool ListenInteract()
     {
-        return nowOperatorPanel.ListenInteractOperators();
+        if (nowOperatorPanel.ListenInteractOperators())
+        {
+            PlayerMovementStateMachine.Instance.playerAnimator.SetTrigger(
+                PlayerMovementStateMachine.Instance.DicAnimatorIndexes["ToPick"]);
+            return true;
+        }
+
+        return false;
     }
 }

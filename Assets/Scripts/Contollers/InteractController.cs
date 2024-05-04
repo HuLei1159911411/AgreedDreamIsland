@@ -66,14 +66,13 @@ public class InteractController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (nowInteractiveObjectCollider is null)
+        if (nowInteractiveObjectCollider == null)
         {
             for (_count = 0; _count < interactiveObjectsTags.Count; _count++)
             {
                 if (other.CompareTag(interactiveObjectsTags[_count]))
                 {
                     nowInteractiveObjectCollider = other;
-                    return;
                 }
             }
         }
@@ -81,7 +80,10 @@ public class InteractController : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        ClearNowInteractiveObject();
+        if (other == nowInteractiveObjectCollider)
+        {
+            ClearNowInteractiveObject();
+        }
     }
 
     private void ClearNowInteractiveObject()

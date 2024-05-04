@@ -105,8 +105,8 @@ public class Jump : BaseState
             // 清空速度
             _movementStateMachine.playerRigidbody.velocity = Vector3.zero;
             _movementStateMachine.playerRigidbody.AddForce(
-                Mathf.Sqrt(_movementStateMachine.jumpHigh * (Physics.gravity.y) * (-2)) *
-                _movementStateMachine.playerRigidbody.mass * (Vector3.up + _movementStateMachine.GetWallNormal()).normalized,
+                Mathf.Sqrt((_movementStateMachine.jumpHigh * (Physics.gravity.y) * (-2)) *
+                _movementStateMachine.playerRigidbody.mass + 2f) * (Vector3.up + _movementStateMachine.GetWallNormal()).normalized,
                 ForceMode.Impulse);
         }
         else
