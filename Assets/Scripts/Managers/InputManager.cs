@@ -23,6 +23,7 @@ public enum E_InputBehavior
     FirstWeapon,
     SecondWeapon,
     Replace,
+    OpenBag,
 }
 public class InputManager : MonoBehaviour
 {
@@ -69,6 +70,7 @@ public class InputManager : MonoBehaviour
             { E_InputBehavior.FirstWeapon, KeyCode.Alpha1},
             { E_InputBehavior.SecondWeapon, KeyCode.Alpha2},
             { E_InputBehavior.Replace, KeyCode.Alpha3 },
+            { E_InputBehavior.OpenBag, KeyCode.Tab},
         };
     }
 }

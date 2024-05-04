@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -7,8 +8,10 @@ using UnityEngine.Serialization;
 public enum E_EquipmentName
 {
     GrapplingHookGears,
+    Rod,
 }
 
+[Serializable]
 public abstract class Equipment : Item
 {
     public EquipmentsController controller;

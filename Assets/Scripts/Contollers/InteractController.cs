@@ -12,13 +12,15 @@ public class InteractController : MonoBehaviour
     
     public Collider interactCollider;
     public List<string> interactiveObjectsTags;
-    public InteractPanel interactPanel;
+    public InteractTipPanel interactTipPanel;
 
     private int _count;
     // 当前可交互游戏对象碰撞盒
     public Collider nowInteractiveObjectCollider;
     // 当前可交互对象
     private InteractiveObject _nowInteractiveObject;
+    // 拾取冷却计时器
+    private float _coolDownTimer;
 
     private void Awake()
     {
@@ -26,6 +28,8 @@ public class InteractController : MonoBehaviour
         {
             _instance = this;
         }
+
+        _coolDownTimer = 0f;
     }
 
     void Update()
@@ -38,17 +42,17 @@ public class InteractController : MonoBehaviour
                 _nowInteractiveObject = nowInteractiveObjectCollider.transform.GetComponent<InteractiveObject>();
             }
 
-            if (!(interactPanel is null))
+            if (!(interactTipPanel is null))
             {
-                if (!interactPanel.isShow)
+                if (!interactTipPanel.isShow)
                 {
                     // 设置UI页面
-                    interactPanel.SetInteractInteractPanel(_nowInteractiveObject);
-                    interactPanel.ShowPanel();
+                    interactTipPanel.SetInteractInteractPanel(_nowInteractiveObject);
+                    interactTipPanel.ShowPanel();
                 }
 
                 // 监听交互界面交互结果
-                if (interactPanel.ListenInteract())
+                if (interactTipPanel.ListenInteract())
                 {
                     nowInteractiveObjectCollider.enabled = false;
                     ClearNowInteractiveObject();
@@ -57,9 +61,9 @@ public class InteractController : MonoBehaviour
         }
         else
         {
-            if (interactPanel is not null && interactPanel.isShow)
+            if (interactTipPanel is not null && interactTipPanel.isShow)
             {
-                interactPanel.ClosePanel();
+                interactTipPanel.ClosePanel();
             }
         }
     }
@@ -78,6 +82,25 @@ public class InteractController : MonoBehaviour
         }
     }
 
+    private void OnTriggerStay(Collider other)
+    {
+        if (_nowInteractiveObject == null)
+        {
+            _coolDownTimer += Time.fixedTime;
+            if (_coolDownTimer > 0.1f)
+            {
+                for (_count = 0; _count < interactiveObjectsTags.Count; _count++)
+                {
+                    if (other.CompareTag(interactiveObjectsTags[_count]))
+                    {
+                        nowInteractiveObjectCollider = other;
+                        _coolDownTimer = 0f;
+                    }
+                }
+            }
+        }
+    }
+
     private void OnTriggerExit(Collider other)
     {
         if (other == nowInteractiveObjectCollider)
@@ -88,7 +111,7 @@ public class InteractController : MonoBehaviour
 
     private void ClearNowInteractiveObject()
     {
-        interactPanel.ClosePanel();
+        interactTipPanel.ClosePanel();
         _nowInteractiveObject = null;
         nowInteractiveObjectCollider = null;
     }

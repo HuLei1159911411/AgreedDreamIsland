@@ -10,7 +10,7 @@ public class EquipmentOperatorPanel : OperatorPanel
     public override void ShowPanel()
     {
         base.ShowPanel();
-        this.gameObject.SetActive(true);
+        transform.gameObject.SetActive(true);
         interactiveObjectName.gameObject.SetActive(true);
         backgroundImage.gameObject.SetActive(true);
     }
@@ -76,8 +76,9 @@ public class EquipmentOperatorPanel : OperatorPanel
 
     public override bool ListenInteractOperators()
     {
-        // 当前只能拾取摁下交互键
+        // 当前只能拾取摁下交互键(当前类型装备并不存在)
         if (!EquipmentsController.Instance.CheckEquipmentIsFull(_nowEquipment.equipmentType) &&
+            EquipmentsController.Instance.listEquipments[(int)_nowEquipment.equipmentType].Count == 0 &&
             Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.Interact]))
         {
             return _nowEquipment.PickUpItem();
@@ -96,14 +97,28 @@ public class EquipmentOperatorPanel : OperatorPanel
         // 时间到了替换
         if (_nowLongPressTime >= listOperatorObjects[1].longPressTime)
         {
-            EquipmentsController.Instance.DiscardEquipment(_nowEquipment.equipmentType,
-                EquipmentsController.Instance.nowEquipmentsIndexes[(int)_nowEquipment.equipmentType]);
-            _nowEquipment.PickUpItem();
+            // 当前类型装备已经满了
+            if (EquipmentsController.Instance.CheckEquipmentIsFull(_nowEquipment.equipmentType))
+            {
+                EquipmentsController.Instance.DiscardEquipment(_nowEquipment.equipmentType,
+                    EquipmentsController.Instance.nowEquipmentsIndexes[(int)_nowEquipment.equipmentType]);
+                _nowEquipment.PickUpItem();
+            }
+            // 当前类型装备没满
+            else
+            {
+                // 捡起来再切换为新捡起来的装备
+                _nowEquipment.PickUpItem();
+                // 新捡起来的装备位置在当前类型装备列表中最后一个
+                EquipmentsController.Instance.ChangeEquipment(_nowEquipment.equipmentType,
+                    EquipmentsController.Instance.listEquipments[(int)_nowEquipment.equipmentType].Count - 1);
+            }
+            
             _nowLongPressTime = 0f;
             return true;
         }
         
-        // 时间没到松开尝试
+        // 时间没到松开尝试捡起
         if (Input.GetKeyUp(InputManager.Instance.DicBehavior[E_InputBehavior.Interact]))
         {
             listOperatorObjects[1].operatorIconImage.fillAmount = 1f;

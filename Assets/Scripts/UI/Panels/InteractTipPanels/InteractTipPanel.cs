@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-public class InteractPanel : Panel
+public class InteractTipPanel : Panel
 {
     public OperatorPanel nowOperatorPanel;
 
@@ -13,7 +13,7 @@ public class InteractPanel : Panel
 
     public void Start()
     {
-        InteractController.Instance.interactPanel = this;
+        InteractController.Instance.interactTipPanel = this;
         ClosePanel();
     }
 

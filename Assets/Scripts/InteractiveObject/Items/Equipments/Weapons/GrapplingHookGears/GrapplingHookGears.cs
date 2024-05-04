@@ -77,9 +77,8 @@ public class GrapplingHookGears : Equipment
     private Grapple _grappleState;
     private void Awake()
     {
-        strName = "立体机动装置";
         equipmentName = E_EquipmentName.GrapplingHookGears;
-        equipmentType = E_EquipmentType.MovementEquipment;
+        equipmentType = E_EquipmentType.Weapon;
         itemCollider = GetComponent<Collider>();
 
         _grapplingHookGearLeftOnItemPositionOffset = grapplingHookGearLeftModelTransform.localPosition;
@@ -101,13 +100,15 @@ public class GrapplingHookGears : Equipment
             // 这个必须防止此处否则在下面AddEquipment中会调用ChangeEquipment又导致调用WearEquipment，而在WearEquipment中会调用该值报空
             _grappleState = controller.playerMovementStateMachine.GrappleState;
             
+            grapplingHookGearLeftModelTransform.gameObject.SetActive(false);
+            grapplingHookGearRightModelTransform.gameObject.SetActive(false);
+            
             if(!(controller.AddEquipment(this)))
             {
+                grapplingHookGearLeftModelTransform.gameObject.SetActive(true);
+                grapplingHookGearRightModelTransform.gameObject.SetActive(true);
                 return false;
             }
-            
-            grapplingHookGearLeftModelTransform.gameObject.SetActive(true);
-            grapplingHookGearRightModelTransform.gameObject.SetActive(true);
         }
         else
         {
@@ -179,7 +180,7 @@ public class GrapplingHookGears : Equipment
         
         grapplingHookGearLeftModelTransform.gameObject.SetActive(true);
         grapplingHookGearRightModelTransform.gameObject.SetActive(true);
-
+        
         return true;
     }
 
