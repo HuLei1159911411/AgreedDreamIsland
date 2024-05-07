@@ -8,19 +8,26 @@ public class InfoManager : MonoBehaviour
     private static InfoManager _instance;
     public static InfoManager Instance => _instance;
 
-    [Header("地面图层")] public LayerMask layerGround;
-    [Header("可以滑行的墙图层")] public LayerMask layerWall;
-    [Header("地面阻力")] public float groundDrag;
-    [Header("空气阻力")] public float airDrag;
-    [Header("玩家最高高度")] public float maxHigh = 100f;
-    [Header("影响摄像机遮挡的图层")] public List<LayerMask> layersCameraCheck;
-    public LayerMask layerCameraCheck;
-    [Header("用来检测是否在地面的射线检测的图层")] public List<LayerMask> layersGroundCheck;
-    public LayerMask layerGroundCheck;
-    [Header("用来检测墙壁的射线检测的图层")] public List<LayerMask> layersWallCheck;
-    public LayerMask layerWallCheck;
-    [Header("用来检测可供钩锁勾住的勾中点的图层")] public List<LayerMask> layersGrapplingHookCheck;
-    public LayerMask layerGrapplingHookCheck; 
+    [Header("图层信息")]
+    [Tooltip("地面图层")] public LayerMask layerGround;
+    [Tooltip("墙壁图层")] public LayerMask layerWall;
+    [Tooltip("影响摄像机遮挡的图层")] public List<LayerMask> layersCameraCheck;
+    [HideInInspector] public LayerMask layerCameraCheck;
+    [Tooltip("用来检测是否在地面的射线检测的图层")] public List<LayerMask> layersGroundCheck;
+    [HideInInspector] public LayerMask layerGroundCheck;
+    [Tooltip("用来检测墙壁的射线检测的图层")] public List<LayerMask> layersWallCheck;
+    [HideInInspector] public LayerMask layerWallCheck;
+    [Tooltip("用来检测可供钩锁勾住的勾中点的图层")] public List<LayerMask> layersGrapplingHookCheck;
+    [HideInInspector] public LayerMask layerGrapplingHookCheck; 
+    
+    [Header("数据信息")]
+    [Tooltip("地面阻力")] public float groundDrag;
+    [Tooltip("空气阻力")] public float airDrag;
+    [Tooltip("玩家最高高度")] public float maxHigh = 100f;
+    
+    [Header("设置信息")]
+    [Tooltip("是否在攻击时锁定方向")] public bool isLockAttackDirection;
+    [Tooltip("是否在攻击时自动锁定敌人")] public bool isAutoLockEnemy;
     
     // 遍历用参数
     private int _count;

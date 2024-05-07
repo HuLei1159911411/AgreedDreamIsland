@@ -15,7 +15,6 @@ public class GrapplingHookGears : Equipment
     public Vector3 grapplingHookGearRightOnEquipPositionOffset;
     private Vector3 _grapplingHookGearRightOnItemPositionOffset;
     private Quaternion _grapplingHookGearRightOnItemRotationOffset;
-    [HideInInspector] public Transform grapplingHookGearModelFatherTransform;
     
     public GrapplingHook grapplingHookLeft;
     public GrapplingHook grapplingHookRight;
@@ -59,11 +58,11 @@ public class GrapplingHookGears : Equipment
     // 钩锁自动断开长度
     [HideInInspector] public float grapplingHookRopeDestroyLength;
     // 从摄像机坐标向摄像机面朝向向量方向发射用来检测是否存在可供钩锁勾中的图层的射线的击中信息(先射线检测若是不存在击中点则使用球形检测)
-    private RaycastHit _cameraForwardRaycastHit;
+    public RaycastHit CameraForwardRaycastHit;
     // 左钩锁向从摄像机发射射线击中点发射的射线的击中信息
-    private RaycastHit _leftHookRaycastHit;
+    public RaycastHit LeftHookRaycastHit;
     // 右钩锁向从摄像机发射射线击中点发射的射线的击中信息
-    private RaycastHit _rightHookRaycastHit;
+    public RaycastHit RightHookRaycastHit;
     // 用来计算钩锁发射器距离勾中点距离
     private float _grapplingHookDistance;
     // 从左边立体机动装置射出球形射线检测的方向
@@ -74,6 +73,8 @@ public class GrapplingHookGears : Equipment
     private int _count;
     // 钩锁状态引用
     private Grapple _grappleState;
+    // 是否更改过模型的父节点
+    private bool _isChangeModelFatherTransform;
     private void Awake()
     {
         equipmentName = E_EquipmentName.GrapplingHookGears;
@@ -86,8 +87,10 @@ public class GrapplingHookGears : Equipment
         _grapplingHookGearRightOnItemRotationOffset = grapplingHookGearRightModelTransform.rotation;
 
         springJoints = new SpringJoint[2];
-        
-        grapplingHookGearModelFatherTransform = transform;
+
+        _isChangeModelFatherTransform = false;
+        isInEquip = false;
+        isInUse = false;
     }
 
     public override bool PickUpItem()
@@ -141,7 +144,7 @@ public class GrapplingHookGears : Equipment
         grapplingHookGearRightModelTransform.localPosition = _grapplingHookGearRightOnItemPositionOffset;
         grapplingHookGearRightModelTransform.localRotation = _grapplingHookGearRightOnItemRotationOffset;
         
-        grapplingHookGearModelFatherTransform = transform;
+        _isChangeModelFatherTransform = false;
         
         RemoveSpringJointComponent();
         
@@ -153,15 +156,9 @@ public class GrapplingHookGears : Equipment
         return base.DiscardItem();
     }
 
-    public override bool UseItem()
-    {
-        
-        return true;
-    }
-
     public override bool WearEquipment()
     {
-        if (grapplingHookGearModelFatherTransform == transform)
+        if (!_isChangeModelFatherTransform)
         {
             // 设置左右两个立体机动装置模型Transform父节点及位置
             grapplingHookGearLeftModelTransform.SetParent(controller.grapplingHookGearsFatherTransform);
@@ -171,14 +168,16 @@ public class GrapplingHookGears : Equipment
             grapplingHookGearRightModelTransform.SetParent(controller.grapplingHookGearsFatherTransform);
             grapplingHookGearRightModelTransform.localRotation = Quaternion.identity;
             grapplingHookGearRightModelTransform.localPosition = grapplingHookGearRightOnEquipPositionOffset;
-            
-            grapplingHookGearModelFatherTransform = controller.grapplingHookGearsFatherTransform;
+
+            _isChangeModelFatherTransform = true;
         }
         
         _grappleState.grapplingHookGears = this;
         
         grapplingHookGearLeftModelTransform.gameObject.SetActive(true);
         grapplingHookGearRightModelTransform.gameObject.SetActive(true);
+
+        isInEquip = true;
         
         return true;
     }
@@ -188,6 +187,8 @@ public class GrapplingHookGears : Equipment
         grapplingHookGearLeftModelTransform.gameObject.SetActive(false);
         grapplingHookGearRightModelTransform.gameObject.SetActive(false);
 
+        isInEquip = false;
+        
         return true;
     }
 
@@ -214,6 +215,8 @@ public class GrapplingHookGears : Equipment
         if (grapplingHookLeft.isDrawHookAndRope && grapplingHookRight.isDrawHookAndRope)
         {
             hasHookCheckPoint = false;
+            hasAutoLeftGrapplingHookCheckPoint = false;
+            hasAutoRightGrapplingHookCheckPoint = false;
             return;
         }
 
@@ -221,7 +224,7 @@ public class GrapplingHookGears : Equipment
         hasHookCheckPoint = Physics.Raycast(
             CameraController.Instance.transform.position,
             CameraController.Instance.transform.forward,
-            out _cameraForwardRaycastHit,
+            out CameraForwardRaycastHit,
             maxHookCheckDistance,
             InfoManager.Instance.layerGrapplingHookCheck);
 
@@ -232,7 +235,7 @@ public class GrapplingHookGears : Equipment
                 CameraController.Instance.transform.position,
                 cameraHookCheckPointSphereCastRadius,
                 CameraController.Instance.transform.forward,
-                out _cameraForwardRaycastHit,
+                out CameraForwardRaycastHit,
                 maxHookCheckDistance - cameraHookCheckPointSphereCastRadius,
                 InfoManager.Instance.layerGrapplingHookCheck);
         }
@@ -262,13 +265,13 @@ public class GrapplingHookGears : Equipment
                     grapplingHookLeft.hookShootPoint.position,
                     autoHookCheckPointSphereCastRadius,
                     _leftAutoHookCheckPointSphereDirection,
-                    out _leftHookRaycastHit,
+                    out LeftHookRaycastHit,
                     maxHookCheckDistance - autoHookCheckPointSphereCastRadius,
                     InfoManager.Instance.layerGrapplingHookCheck);
 
                 if (hasAutoLeftGrapplingHookCheckPoint)
                 {
-                    leftGrapplingHookCastHitHookCheckPoint = _leftHookRaycastHit.point;
+                    leftGrapplingHookCastHitHookCheckPoint = LeftHookRaycastHit.point;
                 }
                 
                 // 画画
@@ -288,13 +291,13 @@ public class GrapplingHookGears : Equipment
                     grapplingHookRight.hookShootPoint.position,
                     autoHookCheckPointSphereCastRadius,
                     _rightAutoHookCheckPointSphereDirection,
-                    out _rightHookRaycastHit,
+                    out RightHookRaycastHit,
                     maxHookCheckDistance - autoHookCheckPointSphereCastRadius,
                     InfoManager.Instance.layerGrapplingHookCheck);
 
                 if (hasAutoRightGrapplingHookCheckPoint)
                 {
-                    rightGrapplingHookCastHitHookCheckPoint = _rightHookRaycastHit.point;
+                    rightGrapplingHookCastHitHookCheckPoint = RightHookRaycastHit.point;
                 }
                 
                 // 画画
@@ -309,7 +312,7 @@ public class GrapplingHookGears : Equipment
         }
         else
         {
-            hookCheckPoint = _cameraForwardRaycastHit.point;
+            hookCheckPoint = CameraForwardRaycastHit.point;
             hasAutoLeftGrapplingHookCheckPoint = false;
             hasAutoRightGrapplingHookCheckPoint = false;
         }
@@ -327,39 +330,39 @@ public class GrapplingHookGears : Equipment
         if (isLeft)
         {
             _grapplingHookDistance =
-                Vector3.Distance(grapplingHookLeft.hookShootPoint.position, _cameraForwardRaycastHit.point);
+                Vector3.Distance(grapplingHookLeft.hookShootPoint.position, CameraForwardRaycastHit.point);
             if (Physics.Raycast(grapplingHookLeft.hookShootPoint.position,
-                    _cameraForwardRaycastHit.point - grapplingHookLeft.hookShootPoint.position,
-                    out _leftHookRaycastHit,
+                    CameraForwardRaycastHit.point - grapplingHookLeft.hookShootPoint.position,
+                    out LeftHookRaycastHit,
                     _grapplingHookDistance,
                     InfoManager.Instance.layerGrapplingHookCheck
                 ))
             {
-                hookCheckPoint = _leftHookRaycastHit.point;
+                hookCheckPoint = LeftHookRaycastHit.point;
             }
 
             // 画画
             Debug.DrawLine(grapplingHookLeft.hookShootPoint.position,
-                _cameraForwardRaycastHit.point,
+                CameraForwardRaycastHit.point,
                 Color.cyan);
         }
         else
         {
             _grapplingHookDistance =
-                Vector3.Distance(grapplingHookRight.hookShootPoint.position, _cameraForwardRaycastHit.point);
+                Vector3.Distance(grapplingHookRight.hookShootPoint.position, CameraForwardRaycastHit.point);
             if (Physics.Raycast(grapplingHookRight.hookShootPoint.position,
-                    _cameraForwardRaycastHit.point - grapplingHookRight.hookShootPoint.position,
-                    out _rightHookRaycastHit,
+                    CameraForwardRaycastHit.point - grapplingHookRight.hookShootPoint.position,
+                    out RightHookRaycastHit,
                     _grapplingHookDistance,
                     InfoManager.Instance.layerGrapplingHookCheck
                 ))
             {
-                hookCheckPoint = _rightHookRaycastHit.point;
+                hookCheckPoint = RightHookRaycastHit.point;
             }
 
             // 画画
             Debug.DrawLine(grapplingHookRight.hookShootPoint.position,
-                _cameraForwardRaycastHit.point,
+                CameraForwardRaycastHit.point,
                 Color.cyan);
         }
     }

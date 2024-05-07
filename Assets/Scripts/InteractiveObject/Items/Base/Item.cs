@@ -11,7 +11,8 @@ public enum E_ItemType
 public class Item : InteractiveObject
 {
     public E_ItemType itemType;
-    public Collider itemCollider;
+    
+    [HideInInspector] public Collider itemCollider;
 
     public virtual bool PickUpItem()
     {

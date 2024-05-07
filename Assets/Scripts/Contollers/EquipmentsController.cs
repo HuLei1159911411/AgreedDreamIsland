@@ -23,12 +23,19 @@ public class EquipmentsController : MonoBehaviour
     
     // 玩家行为树状态机
     [HideInInspector] public PlayerMovementStateMachine playerMovementStateMachine;
+    // 玩家动画状态机
+    [HideInInspector] public Animator playerAnimator;
     // 玩家Transform
     [HideInInspector] public Transform playerTransform;
     // 玩家脚部Transform
     [HideInInspector] public Transform playerFootTransform;
     // 玩家钩锁装备父节点位置
     public Transform grapplingHookGearsFatherTransform;
+    // 玩家武器装备父节点位置
+    public Transform weaponOnRightHandFatherTransform;
+    // 玩家武器未装备父节点位置
+    public Transform weaponOnBackFatherTransform;
+    
     // 装备控制输入信息
     public EquipmentUseInputInformation equipmentUseInputInfo;
     
@@ -70,6 +77,7 @@ public class EquipmentsController : MonoBehaviour
     private void Start()
     {
         playerMovementStateMachine = PlayerMovementStateMachine.Instance;
+        playerAnimator = playerMovementStateMachine.playerAnimator;
         playerFootTransform = playerMovementStateMachine.footRaycastEmissionTransform;
         // 在状态机Update结尾执行事件中注册监听装备使用的委托
         playerMovementStateMachine.WhenUpdateLast += ListenEquipmentsUse;
@@ -315,5 +323,46 @@ public class EquipmentsController : MonoBehaviour
         }
 
         return false;
+    }
+
+    // 动画事件-----
+    public void HoldWeapon()
+    {
+        if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
+        {
+            (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).HoldWeapon();
+        }
+    }
+
+    public void ReleaseWeapon()
+    {
+        if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
+        {
+            (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).ReleaseWeapon();
+        }
+    }
+
+    public void OpenCheckWeaponIsHit(int isAllowRotate)
+    {
+        if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
+        {
+            (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).OpenCheckWeaponIsHit(isAllowRotate);
+        }
+    }
+
+    public void CloseCheckWeaponIsHit()
+    {
+        if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
+        {
+            (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).CloseCheckWeaponIsHit();
+        }
+    }
+
+    public void ResetIsContinueAttack(float time)
+    {
+        if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
+        {
+            (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).ResetIsContinueAttack(time);
+        }
     }
 }

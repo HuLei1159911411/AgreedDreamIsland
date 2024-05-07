@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 22fae1483db32cf44a98fa36b445c46b
+guid: 5be3948bc64de40429bf2e2ba2eb3ac0
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable:
@@ -437,7 +437,7 @@ ModelImporter:
     second: root
   - first:
       74: 7400000
-    second: Crouch_Walk_FR
+    second: Crouch_Walk_FL
   - first:
       95: 9500000
     second: //RootNode
@@ -463,18 +463,17 @@ ModelImporter:
     animationImportWarnings: "\nClip 'Scene' has import animation warnings that might
       lower retargeting quality:\nNote: Activate translation DOF on avatar to improve
       retargeting quality.\n\t'middle_01_l' has translation animation that will be
-      discarded.\n\t'middle_02_l' has scale animation that will be discarded.\n\t'ring_01_l'
-      has translation animation that will be discarded.\n\t'ring_02_l' has scale
-      animation that will be discarded.\n\t'pinky_01_l' has translation animation
-      that will be discarded.\n\t'middle_01_r' has translation animation that will
-      be discarded.\n\t'middle_01_r' has scale animation that will be discarded.\n\t'middle_02_r'
-      has scale animation that will be discarded.\n\t'middle_03_r' has scale animation
-      that will be discarded.\n\t'ring_01_r' has translation animation that will
-      be discarded.\n\t'ring_01_r' has scale animation that will be discarded.\n\t'ring_03_r'
-      has scale animation that will be discarded.\n\t'pinky_01_r' has translation
-      animation that will be discarded.\n\t'pinky_03_r' has translation animation
-      that will be discarded.\n\t'neck_02' is inbetween humanoid transforms and has
-      rotation animation that will be discarded.\n\t'thigh_l' has scale animation
+      discarded.\n\t'middle_02_l' has scale animation that will be discarded.\n\t'middle_03_l'
+      has scale animation that will be discarded.\n\t'ring_01_l' has translation
+      animation that will be discarded.\n\t'ring_02_l' has scale animation that will
+      be discarded.\n\t'ring_03_l' has scale animation that will be discarded.\n\t'pinky_01_l'
+      has translation animation that will be discarded.\n\t'middle_01_r' has translation
+      animation that will be discarded.\n\t'middle_02_r' has scale animation that
+      will be discarded.\n\t'middle_03_r' has scale animation that will be discarded.\n\t'ring_01_r'
+      has translation animation that will be discarded.\n\t'ring_02_r' has scale
+      animation that will be discarded.\n\t'ring_03_r' has scale animation that will
+      be discarded.\n\t'pinky_01_r' has translation animation that will be discarded.\n\t'pinky_03_r'
+      has translation animation that will be discarded.\n\t'thigh_l' has scale animation
       that will be discarded.\n\t'calf_l' has scale animation that will be discarded.\n\t'foot_l'
       has scale animation that will be discarded.\n\t'thigh_r' has scale animation
       that will be discarded.\n\t'calf_r' has scale animation that will be discarded.\n\t'foot_r'
@@ -492,7 +491,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Crouch_Walk_FR
+      name: Crouch_Walk_FL
       takeName: Scene
       internalID: 7400000
       firstFrame: 0
@@ -508,7 +507,7 @@ ModelImporter:
       loopBlendOrientation: 1
       loopBlendPositionY: 1
       loopBlendPositionXZ: 0
-      keepOriginalOrientation: 1
+      keepOriginalOrientation: 0
       keepOriginalPositionY: 1
       keepOriginalPositionXZ: 1
       heightFromFeet: 0

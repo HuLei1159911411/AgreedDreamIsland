@@ -14,11 +14,12 @@ public enum E_EquipmentName
 [Serializable]
 public abstract class Equipment : Item
 {
-    public EquipmentsController controller;
     public E_EquipmentName equipmentName;
     public E_EquipmentType equipmentType;
     public bool isInUse;
+    public bool isInEquip;
     
+    public EquipmentsController controller;
     public Equipment()
     {
         itemType = E_ItemType.Equipment;

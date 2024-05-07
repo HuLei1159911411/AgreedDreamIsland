@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -40,9 +41,9 @@ public class CameraController : MonoBehaviour
     // 第三人称摄像机旋转速度
     public float cameraRotateSpeed = 0.1f;
     // 是否冻结摄像机旋转和移动
-    public bool isFreezeCameraPositionAndRotation;
+    public bool isStopCameraPositionAndRotation;
     // 是否冻结玩家旋转
-    public bool isFreezePlayerRotation;
+    public bool isStopPlayerRotation;
     // 当前人物是否在旋转至目标角度
     public bool playerIsRotating;
     // 当前摄像机是否在移动至目标点并且旋转至目标角度
@@ -90,21 +91,39 @@ public class CameraController : MonoBehaviour
     private Quaternion _targetRotation;
     // 协程yield return变量
     private WaitForFixedUpdate _waitForFixedUpdate;
-    #endregion
     
     // 摄像机聚焦点默认偏移
-    public Vector3 focusDefaultOffset;
+    [HideInInspector] public Vector3 focusDefaultOffset;
     // 摄像机目标偏移
-    public Vector3 focusTargetOffset;
+    [HideInInspector] public Vector3 focusTargetOffset;
     // 摄像机反方向偏移
-    public Vector3 reverseFocusOffset;
+    [HideInInspector] public Vector3 reverseFocusOffset;
     // 是否进行偏移
-    public bool isMoveCameraFocusOffset;
+    [HideInInspector] public bool isMoveCameraFocusOffset;
     // 对聚焦点进行移动偏移的协程
-    public Coroutine FocusMoveCoroutine;
+    private Coroutine _focusMoveCoroutine;
+    
+    // 摄像机第三人称下坐标与聚焦点的默认偏移量
+    private Vector3 _thirdPersonFocusWithPlayerDefaultOffset;
+    // 摄像机第三人称下坐标与聚焦点的变化目标偏移量
+    private Vector3 _thirdPersonFocusWithPlayerTargetOffset;
+    // 摄像机第三人称下坐标与聚焦点偏移量是否在进行变化
+    private bool _isChangeThirdPersonFocusWithPlayerOffset;
+    // 摄像机第三人称下坐标与聚焦点偏移量变化协程
+    private Coroutine _changeThirdPersonFocusWithPlayerOffsetCoroutine;
+    
+    #endregion
+    
     [Range(0f,1f)]
     // 聚焦点移动的速度
-    public float focusMoveSpeed;
+    public float focusMoveRate;
+
+    [Range(0f, 1f)]
+    // 第三人称摄像机与聚焦点的偏移量的变化速度
+    public float thirdPersonFocusWithPlayerOffsetChangeRate;
+    
+    // 不同的状态下第三人称摄像机偏移量与默认状态下的值的差值列表(下标为对应状态枚举),X越大越偏右,Y越小越偏上,Z越大越远
+    public List<Vector3> listThirdPersonViewFocusOffsetChangeOffset;
     private void Awake()
     {
         if (_instance is null)
@@ -113,7 +132,7 @@ public class CameraController : MonoBehaviour
         }
 
         _waitForFixedUpdate = new WaitForFixedUpdate();
-
+        _thirdPersonFocusWithPlayerDefaultOffset = thirdPersonFocusWithPlayerOffset;
     }
 
     private void Start()
@@ -153,8 +172,8 @@ public class CameraController : MonoBehaviour
         nowView = E_CameraView.ThirdPerson;
         _targetTransform = playerTransform;
 
-        isFreezeCameraPositionAndRotation = false;
-        isFreezePlayerRotation = false;
+        isStopCameraPositionAndRotation = false;
+        isStopPlayerRotation = false;
         
         _playerTargetRotation = playerTransform.rotation;
         _targetPosition = transform.position;
@@ -434,18 +453,19 @@ public class CameraController : MonoBehaviour
     private IEnumerator PlayerRotateToTargetQuaternion()
     {
         playerIsRotating = true;
-        while (!isFreezePlayerRotation)
+        while (!isStopPlayerRotation)
         {
             _targetTransform.rotation = Quaternion.Lerp(_targetTransform.rotation, _playerTargetRotation, playerRotateSpeed).normalized;
             yield return _waitForFixedUpdate;
         }
+
     }
     
     // 摄像机向目标位置移动和旋转
     private IEnumerator CameraMoveAndRotateToTarget()
     {
         cameraIsMovingAndRotating = true;
-        while (!isFreezeCameraPositionAndRotation)
+        while (!isStopCameraPositionAndRotation)
         {
             transform.position = Vector3.Lerp(transform.position, _targetPosition, cameraFollowSpeed);
             transform.rotation = Quaternion.Lerp(transform.rotation, _targetRotation, cameraRotateSpeed).normalized;
@@ -494,7 +514,8 @@ public class CameraController : MonoBehaviour
         isMoveCameraFocusOffset = true;
         while (Mathf.Abs(thirdPersonFocusWithPlayerOffset.x - focusTargetOffset.x) > 0.01f)
         {
-            thirdPersonFocusWithPlayerOffset = Vector3.Lerp(thirdPersonFocusWithPlayerOffset, focusTargetOffset,focusMoveSpeed);
+            thirdPersonFocusWithPlayerOffset =
+                Vector3.Lerp(thirdPersonFocusWithPlayerOffset, focusTargetOffset, focusMoveRate);
             yield return _waitForFixedUpdate;
         }
         thirdPersonFocusWithPlayerOffset = focusTargetOffset;
@@ -503,11 +524,47 @@ public class CameraController : MonoBehaviour
     // 开始移动聚焦点协程
     public void StartMoveFocusOffsetToTarget()
     {
-        FocusMoveCoroutine = StartCoroutine(MoveFocusOffsetToTarget());
+        _focusMoveCoroutine = StartCoroutine(MoveFocusOffsetToTarget());
     }
     // 停止移动聚焦点协程
     public void StopMoveFocusOffsetToTarget()
     {
-        StopCoroutine(FocusMoveCoroutine);
+        StopCoroutine(_focusMoveCoroutine);
+    }
+    
+    // 设置并移动第三人称下摄像机与聚焦点之间的偏移量的值为目标值
+    public void SetThirdPersonFocusWithPlayerOffsetToTarget(E_State nowState)
+    {
+        _thirdPersonFocusWithPlayerTargetOffset = listThirdPersonViewFocusOffsetChangeOffset[(int)nowState] + _thirdPersonFocusWithPlayerDefaultOffset;
+        if (!_isChangeThirdPersonFocusWithPlayerOffset)
+        {
+            _changeThirdPersonFocusWithPlayerOffsetCoroutine =
+                StartCoroutine(ChangeThirdPersonFocusWithPlayerOffsetToTarget());
+        }
+    }
+    // 重置第三人称下摄像机与聚焦点之间的偏移量的值为目标值
+    public void ResetThirdPersonFocusWithPlayerOffsetToDefault()
+    {
+        _thirdPersonFocusWithPlayerTargetOffset = _thirdPersonFocusWithPlayerDefaultOffset;
+        if (!_isChangeThirdPersonFocusWithPlayerOffset)
+        {
+            _changeThirdPersonFocusWithPlayerOffsetCoroutine =
+                StartCoroutine(ChangeThirdPersonFocusWithPlayerOffsetToTarget());
+        }
+    }
+    // 改变第三人称下摄像机与聚焦点的偏移量的值的协程
+    private IEnumerator ChangeThirdPersonFocusWithPlayerOffsetToTarget()
+    {
+        _isChangeThirdPersonFocusWithPlayerOffset = true;
+        
+        while (Vector3.Distance(thirdPersonFocusWithPlayerOffset, _thirdPersonFocusWithPlayerTargetOffset) > 0.01f)
+        {
+            thirdPersonFocusWithPlayerOffset = Vector3.Lerp(thirdPersonFocusWithPlayerOffset,
+                _thirdPersonFocusWithPlayerTargetOffset, thirdPersonFocusWithPlayerOffsetChangeRate);
+            yield return _waitForFixedUpdate;
+        }
+
+        thirdPersonFocusWithPlayerOffset = _thirdPersonFocusWithPlayerTargetOffset;
+        _isChangeThirdPersonFocusWithPlayerOffset = false;
     }
 }

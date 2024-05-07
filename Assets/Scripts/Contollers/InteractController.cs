@@ -29,7 +29,7 @@ public class InteractController : MonoBehaviour
             _instance = this;
         }
 
-        _coolDownTimer = 0f;
+        _coolDownTimer = 0.5f;
     }
 
     void Update()
@@ -59,20 +59,29 @@ public class InteractController : MonoBehaviour
     {
         if (nowInteractiveObjectCollider == null)
         {
-            for (_count = 0; _count < interactiveObjectsTags.Count; _count++)
+            if (_coolDownTimer < 0.5f)
             {
-                if (other.CompareTag(interactiveObjectsTags[_count]))
+                _coolDownTimer += Time.fixedDeltaTime;
+            }
+            
+            if (_coolDownTimer >= 0.5f)
+            {
+                for (_count = 0; _count < interactiveObjectsTags.Count; _count++)
                 {
-                    nowInteractiveObjectCollider = other;
-                    _nowInteractiveObject = nowInteractiveObjectCollider.transform.GetComponent<InteractiveObject>();
-                    if (!(interactTipPanel is null))
+                    if (other.CompareTag(interactiveObjectsTags[_count]))
                     {
-                        if (!interactTipPanel.isShow)
+                        nowInteractiveObjectCollider = other;
+                        _nowInteractiveObject = nowInteractiveObjectCollider.transform.GetComponent<InteractiveObject>();
+                        if (!(interactTipPanel is null))
                         {
-                            // 设置UI页面
-                            interactTipPanel.SetInteractInteractPanel(_nowInteractiveObject);
-                            interactTipPanel.ShowPanel();
+                            if (!interactTipPanel.isShow)
+                            {
+                                // 设置UI页面
+                                interactTipPanel.SetInteractInteractPanel(_nowInteractiveObject);
+                                interactTipPanel.ShowPanel();
+                            }
                         }
+                        _coolDownTimer = 0f;
                     }
                 }
             }
@@ -83,8 +92,12 @@ public class InteractController : MonoBehaviour
     {
         if (_nowInteractiveObject == null)
         {
-            _coolDownTimer += Time.fixedTime;
-            if (_coolDownTimer > 0.1f)
+            if (_coolDownTimer < 0.5f)
+            {
+                _coolDownTimer += Time.fixedDeltaTime;
+            }
+            
+            if (_coolDownTimer >= 0.5f)
             {
                 for (_count = 0; _count < interactiveObjectsTags.Count; _count++)
                 {

@@ -167,10 +167,14 @@ public class TestPanel : MonoBehaviour
             case "Grapple":
                 nowState.text = "钩锁";
                 break;
+            case "Fight":
+                nowState.text = "战斗";
+                break;
             case "Null":
                 nowState.text = "初始化";
                 break;
             default:
+                Debug.Log(_playerState);
                 throw new ArgumentOutOfRangeException();
         }
     }

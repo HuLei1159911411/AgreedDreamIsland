@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -18,6 +19,7 @@ public enum E_State
     Climb = 8,
     Roll = 9,
     Grapple = 10,
+    Fight = 11,
 }
 
 public struct MoveInputInformation
@@ -55,6 +57,8 @@ public class PlayerMovementStateMachine : StateMachine
     public CapsuleCollider squatCollider;
     // 滑铲状态下的碰撞盒
     public CapsuleCollider slidingCollider;
+    // 人物模型状态机去同步的位置点
+    public Transform playerModelRootSyncPointTransform;
     
     #endregion
 
@@ -85,6 +89,8 @@ public class PlayerMovementStateMachine : StateMachine
     [HideInInspector] public Roll RollState;
     // 钩锁状态
     [HideInInspector] public Grapple GrappleState;
+    // 战斗状态
+    [HideInInspector] public Fight FightState;
 
     #endregion
     
@@ -145,7 +151,9 @@ public class PlayerMovementStateMachine : StateMachine
     public bool IsTryToChangeState => _isTryToChangeState;
     // 尝试去切换的状态
     public BaseState TryToState => _tryToState;
-
+    // 当前是否是移动状态动画
+    public bool isMove;
+    
     #endregion
 
     #region PublicSettablePlayerAndSceneParamaters
@@ -347,12 +355,20 @@ public class PlayerMovementStateMachine : StateMachine
     private Vector3 _squatCenterOffset;
     // BaseCollider中心点与其gameObject对象的Transform组件中心点的偏移量
     private Vector3 _baseCenterOffset;
-
     // 临时计数器
     private int _count;
     // 用来存储事件列表中所有委托的数组
     private Delegate[] _allDelegates;
-
+    // 人物模型位置同步状态机位置时用来计算的坐标
+    private Vector3 _calPlayerModelPosition;
+    // 战斗状态并可旋转时旋转人物root同步至playerTransform的Rotation的协程
+    private Coroutine _rotateRootToRootTargetCoroutine;
+    // Root旋转的目标Rotation
+    private Quaternion _rootTargetRotation;
+    // 是否正在旋转至目标Rotation
+    private bool _isRotateRootToTarget;
+    // 旋转人物Root协程yield return变量
+    private WaitForFixedUpdate _waitForFixedUpdate;
     #endregion
 
     private void Awake()
@@ -374,6 +390,7 @@ public class PlayerMovementStateMachine : StateMachine
         ClimbState = new Climb(this);
         RollState = new Roll(this);
         GrappleState = new Grapple(this);
+        FightState = new Fight(this);
 
         // 获取组件
         playerTransform = transform;
@@ -428,6 +445,35 @@ public class PlayerMovementStateMachine : StateMachine
     // 重写父类FixUpdate函数在玩家处于斜面上时给予玩家手动重力
     protected override void FixedUpdate()
     {
+        // 将人物模型分离出来当运动时人物坐标旋转由状态机控制，攻击时由动画状态机控制状态机位置同步人物模型位置
+        if (isMove)
+        {
+            _calPlayerModelPosition = playerTransform.position + _baseCenterOffset;
+            _calPlayerModelPosition.y -= baseCollider.height * 0.5f;
+            playerAnimator.transform.position = _calPlayerModelPosition;
+            playerAnimator.transform.rotation = transform.rotation;
+        }
+        else
+        {
+            if (!InfoManager.Instance.isLockAttackDirection)
+            {
+                _rootTargetRotation = transform.rotation;
+                if (!_isRotateRootToTarget)
+                {
+                    _rotateRootToRootTargetCoroutine = StartCoroutine(RootRotateToRootTargetRotation());
+                }
+            }
+            
+            _calPlayerModelPosition = playerModelRootSyncPointTransform.position;
+            _calPlayerModelPosition.y =
+                baseCollider.transform.position.y + _baseCenterOffset.y - baseCollider.height * 0.5f;
+            playerAnimator.transform.position = _calPlayerModelPosition;
+            _calPlayerModelPosition = playerTransform.position;
+            _calPlayerModelPosition.x = playerModelRootSyncPointTransform.position.x;
+            _calPlayerModelPosition.z = playerModelRootSyncPointTransform.position.z;
+            playerTransform.position = _calPlayerModelPosition;
+        }
+        
         // 除了滑墙和攀爬重力全部在这里管理
         if (isOnSlope)
         {
@@ -473,7 +519,7 @@ public class PlayerMovementStateMachine : StateMachine
 
     public override bool ChangeState(BaseState newState)
     {
-        if (!IsHighMatchCondition(_currentState.state, newState.state))
+        if (_currentState.preState != null && !IsHighMatchCondition(_currentState.state, newState.state))
         {
             _isTryToChangeState = true;
             _tryToState = newState;
@@ -489,8 +535,25 @@ public class PlayerMovementStateMachine : StateMachine
             base.ChangeState(newState);
             SetColliderByCurrentState();
 
+            // 差值移动摄像机的偏移位置达到更好的视觉效果
+            if (CameraController.Instance is not null)
+            {
+                CameraController.Instance.SetThirdPersonFocusWithPlayerOffsetToTarget(newState.state);
+            }
+            
             playerAnimator.SetInteger(DicAnimatorIndexes["ToState"], (int)newState.state);
             playerAnimator.SetBool(DicAnimatorIndexes["isFastToRun"], isFastToRun);
+
+            switch (newState.state)
+            {
+                case E_State.Fight:
+                    isMove = false;
+                    break;
+                default:
+                    isMove = true;
+                    break;
+            }
+            
             return true;
         }
     }
@@ -561,6 +624,8 @@ public class PlayerMovementStateMachine : StateMachine
         _baseCenterOffset = new Vector3(baseCollider.center.x * baseCollider.transform.localScale.x,
             baseCollider.center.y * baseCollider.transform.localScale.y,
             baseCollider.center.z * baseCollider.transform.localScale.z);
+
+        _waitForFixedUpdate = new WaitForFixedUpdate();
     }
 
 
@@ -882,33 +947,7 @@ public class PlayerMovementStateMachine : StateMachine
     // 获取对应状态枚举的字符串状态名
     public string GetStateString(E_State state)
     {
-        switch (state)
-        {
-            case E_State.Idle:
-                return "Idle";
-            case E_State.Walk:
-                return "Walk";
-            case E_State.Run:
-                return "Run";
-            case E_State.Squat:
-                return "Squat";
-            case E_State.Jump:
-                return "Jump";
-            case E_State.Fall:
-                return "Fall";
-            case E_State.Sliding:
-                return "Sliding";
-            case E_State.WallRunning:
-                return "WallRunning";
-            case E_State.Climb:
-                return "Climb";
-            case E_State.Roll:
-                return "Roll";
-            case E_State.Grapple:
-                return "Grapple";
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        return Enum.GetName(typeof(E_State), state);
     }
 
     // 限制玩家水平速度值在当前最大速度内
@@ -1197,6 +1236,19 @@ public class PlayerMovementStateMachine : StateMachine
         return isOnGround ? _downRaycastHit.point : _downMaxRaycastHit.point;
     }
     
+    // 玩家Root四元数向目标四元数旋转
+    private IEnumerator RootRotateToRootTargetRotation()
+    {
+        _isRotateRootToTarget = true;
+        while (!isMove && !InfoManager.Instance.isLockAttackDirection)
+        {
+            playerAnimator.transform.rotation = Quaternion.Lerp(playerModelRootSyncPointTransform.rotation,
+                _rootTargetRotation, CameraController.Instance.playerRotateSpeed).normalized;
+            yield return _waitForFixedUpdate;
+        }
+
+        _isRotateRootToTarget = false;
+    }
 
     // 动画事件----------------------
     // 从Climb状态切换为Fall状态
