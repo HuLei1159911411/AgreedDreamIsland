@@ -504,7 +504,7 @@ public class PlayerMovementStateMachine : StateMachine
                     break;
             }
         }
-        else if (_currentState.state != E_State.WallRunning && _currentState.state != E_State.Climb)
+        else if (_currentState != null && _currentState.state != E_State.WallRunning && _currentState.state != E_State.Climb)
         {
             playerRigidbody.useGravity = true;
         }
