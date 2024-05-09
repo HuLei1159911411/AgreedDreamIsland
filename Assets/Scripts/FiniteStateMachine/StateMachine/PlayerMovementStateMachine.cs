@@ -20,6 +20,8 @@ public enum E_State
     Roll = 9,
     Grapple = 10,
     Fight = 11,
+    Hit = 12,
+    Death = 13,
 }
 
 public struct MoveInputInformation
@@ -51,6 +53,8 @@ public class PlayerMovementStateMachine : StateMachine
     public Transform footRaycastEmissionTransform;
     [HideInInspector] public Transform playerTransform;
     [HideInInspector] public Rigidbody playerRigidbody;
+    // 碰撞盒父节点
+    public Transform colliders;
     // 正常状态下的碰撞盒
     public CapsuleCollider baseCollider;
     // 下蹲状态下的碰撞盒
@@ -59,7 +63,8 @@ public class PlayerMovementStateMachine : StateMachine
     public CapsuleCollider slidingCollider;
     // 人物模型状态机去同步的位置点
     public Transform playerModelRootSyncPointTransform;
-    
+    // 交互碰撞盒
+    public Transform interactBox;
     #endregion
 
     #region StateObjects
@@ -91,6 +96,10 @@ public class PlayerMovementStateMachine : StateMachine
     [HideInInspector] public Grapple GrappleState;
     // 战斗状态
     [HideInInspector] public Fight FightState;
+    // 受击状态
+    [HideInInspector] public Hit HitState;
+    // 死亡状态
+    [HideInInspector] public Death DeathState;
 
     #endregion
     
@@ -391,6 +400,8 @@ public class PlayerMovementStateMachine : StateMachine
         RollState = new Roll(this);
         GrappleState = new Grapple(this);
         FightState = new Fight(this);
+        HitState = new Hit(this);
+        DeathState = new Death(this);
 
         // 获取组件
         playerTransform = transform;
@@ -464,13 +475,15 @@ public class PlayerMovementStateMachine : StateMachine
                 }
             }
             
-            _calPlayerModelPosition = playerModelRootSyncPointTransform.position;
-            _calPlayerModelPosition.y =
-                baseCollider.transform.position.y + _baseCenterOffset.y - baseCollider.height * 0.5f;
+            _calPlayerModelPosition = playerAnimator.transform.position;
+            _calPlayerModelPosition.y = transform.position.y + _baseCenterOffset.y - baseCollider.height * 0.5f;
+                // baseCollider.transform.position.y + _baseCenterOffset.y - baseCollider.height * 0.5f;
             playerAnimator.transform.position = _calPlayerModelPosition;
+            
             _calPlayerModelPosition = playerTransform.position;
             _calPlayerModelPosition.x = playerModelRootSyncPointTransform.position.x;
             _calPlayerModelPosition.z = playerModelRootSyncPointTransform.position.z;
+            // _calPlayerModelPosition.y += baseCollider.height * 0.5f + +_baseCenterOffset.y;
             playerTransform.position = _calPlayerModelPosition;
         }
         
@@ -521,8 +534,12 @@ public class PlayerMovementStateMachine : StateMachine
     {
         if (_currentState.preState != null && !IsHighMatchCondition(_currentState.state, newState.state))
         {
-            _isTryToChangeState = true;
-            _tryToState = newState;
+            if (newState.state != E_State.Fight)
+            {
+                _isTryToChangeState = true;
+                _tryToState = newState;
+            }
+            
             return false;
         }
         else
@@ -547,10 +564,12 @@ public class PlayerMovementStateMachine : StateMachine
             switch (newState.state)
             {
                 case E_State.Fight:
+                    playerAnimator.applyRootMotion = true;
                     isMove = false;
                     break;
                 default:
                     isMove = true;
+                    playerAnimator.applyRootMotion = false;
                     break;
             }
             
@@ -1265,5 +1284,15 @@ public class PlayerMovementStateMachine : StateMachine
     public void InitGrappleHookTurnParameters()
     {
         GrappleState.InitGrappleHookTurnParameters();
+    }
+    
+    public void SetNowFightState(int fightState)
+    {
+        FightState.SetNowFightState(fightState);
+    }
+
+    public void ExitHitState()
+    {
+        HitState.ExitHitState();
     }
 }

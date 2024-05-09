@@ -272,14 +272,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac9af81b13a9e6a48859d5943488fb25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 0}
+  interactController: {fileID: 0}
+  type: 0
+  strName: 
+  itemType: 0
+  itemCollider: {fileID: 0}
   equipmentName: 0
   equipmentType: 0
+  isInUse: 0
+  isInEquip: 0
+  controller: {fileID: 0}
   grapplingHookGearLeftModelTransform: {fileID: 7607377698541436097}
   grapplingHookGearLeftOnEquipPositionOffset: {x: -0.25, y: 0, z: 0.1}
   grapplingHookGearRightModelTransform: {fileID: 3354619246025261745}
   grapplingHookGearRightOnEquipPositionOffset: {x: 0.25, y: 0, z: 0.1}
-  grapplingHookGearModelFatherTransform: {fileID: 0}
   grapplingHookLeft: {fileID: 2430407305656356989}
   grapplingHookRight: {fileID: 7451332288884665616}
   maxHookCheckDistance: 18

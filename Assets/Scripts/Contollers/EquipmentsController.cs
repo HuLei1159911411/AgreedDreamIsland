@@ -25,6 +25,8 @@ public class EquipmentsController : MonoBehaviour
     [HideInInspector] public PlayerMovementStateMachine playerMovementStateMachine;
     // 玩家动画状态机
     [HideInInspector] public Animator playerAnimator;
+    // 玩家角色管理
+    [HideInInspector] public PlayerCharacter playerCharacter;
     // 玩家Transform
     [HideInInspector] public Transform playerTransform;
     // 玩家脚部Transform
@@ -72,6 +74,7 @@ public class EquipmentsController : MonoBehaviour
         }
         
         playerTransform = transform;
+        playerCharacter = GetComponent<PlayerCharacter>();
     }
 
     private void Start()
@@ -111,8 +114,8 @@ public class EquipmentsController : MonoBehaviour
             Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.HookShootLeft]);
         equipmentUseInputInfo.HookShootRightInput =
             Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.HookShootRight]);
-        equipmentUseInputInfo.FireInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Fire]);
-        equipmentUseInputInfo.AimInput = Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.Aim]);
+        equipmentUseInputInfo.FireInput = Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.Fire]);
+        equipmentUseInputInfo.AimInput = Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.Aim]);
     }
 
     // 添加装备
@@ -334,11 +337,11 @@ public class EquipmentsController : MonoBehaviour
         }
     }
 
-    public void ReleaseWeapon()
+    public void ReleaseWeapon(float time)
     {
         if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
         {
-            (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).ReleaseWeapon();
+            (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).ReleaseWeapon(time);
         }
     }
 
@@ -349,7 +352,6 @@ public class EquipmentsController : MonoBehaviour
             (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).OpenCheckWeaponIsHit(isAllowRotate);
         }
     }
-
     public void CloseCheckWeaponIsHit()
     {
         if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
@@ -363,6 +365,54 @@ public class EquipmentsController : MonoBehaviour
         if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
         {
             (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).ResetIsContinueAttack(time);
+        }
+    }
+
+    public void StartDefense()
+    {
+        if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
+        {
+            (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).StartDefense();
+        }
+    }
+
+    public void EndDefense()
+    {
+        if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
+        {
+            (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).EndDefense();
+        }
+    }
+
+    public void StartTakeWeaponAnimation()
+    {
+        if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
+        {
+            (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).StartTakeWeaponAnimation();
+        }
+    }
+
+    public void EndTakeWeaponAnimation()
+    {
+        if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
+        {
+            (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).EndTakeWeaponAnimation();
+        }
+    }
+
+    public void StartUnTakeWeaponAnimation()
+    {
+        if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
+        {
+            (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).StartUnTakeWeaponAnimation();
+        }
+    }
+
+    public void EndUnTakeWeaponAnimation()
+    {
+        if (nowEquipments[(int)E_EquipmentType.Weapon] is Weapon)
+        {
+            (nowEquipments[(int)E_EquipmentType.Weapon] as Weapon).EndUnTakeWeaponAnimation();
         }
     }
 }

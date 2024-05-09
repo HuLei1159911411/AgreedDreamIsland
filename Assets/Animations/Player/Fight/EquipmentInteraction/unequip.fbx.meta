@@ -63,8 +63,22 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.49804926
+      - time: 0
+        functionName: StartUnTakeWeaponAnimation
+        data: 
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.5052286
         functionName: ReleaseWeapon
+        data: 
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0.5665
+        intParameter: 0
+        messageOptions: 0
+      - time: 1
+        functionName: EndUnTakeWeaponAnimation
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0

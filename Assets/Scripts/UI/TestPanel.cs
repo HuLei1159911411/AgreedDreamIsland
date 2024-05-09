@@ -17,6 +17,7 @@ public class TestPanel : MonoBehaviour
     public Text nowMaxSpeed;
     public Text nowWallState;
     public Text nowHigh;
+    public Text nowFightState;
     
     private E_CameraView _cameraView;
     private string _playerState;
@@ -32,6 +33,7 @@ public class TestPanel : MonoBehaviour
     private float _xoySpeed;
     // 玩家当前最大速度
     private float _nowMaxSpeed;
+    private E_FightState _nowFightState;
     private void Start()
     {
         _cameraView = mainCamera.nowView;
@@ -71,7 +73,24 @@ public class TestPanel : MonoBehaviour
         if (_playerState != playerMovementStateMachine.GetNowStateString())
         {
             _playerState = playerMovementStateMachine.GetNowStateString();
+            if (_playerState == "Fight")
+            {
+                _nowFightState = playerMovementStateMachine.FightState.nowFightState;
+                UpdateFightState();
+                nowFightState.gameObject.SetActive(true);
+            }
+            else if (nowFightState.gameObject.activeSelf)
+            {
+                nowFightState.gameObject.SetActive(false);
+            }
+            
             UpdatePlayerStateText();
+        }
+
+        if (_playerState == "Fight" && _nowFightState != playerMovementStateMachine.FightState.nowFightState)
+        {
+            _nowFightState = playerMovementStateMachine.FightState.nowFightState;
+            UpdateFightState();
         }
 
         if (_playerIsOnGround != playerMovementStateMachine.isOnGround || _playerIsOnSlope != playerMovementStateMachine.isOnSlope)
@@ -170,6 +189,12 @@ public class TestPanel : MonoBehaviour
             case "Fight":
                 nowState.text = "战斗";
                 break;
+            case "Hit":
+                nowState.text = "受击";
+                break;
+            case "Death":
+                nowState.text = "死亡";
+                break;
             case "Null":
                 nowState.text = "初始化";
                 break;
@@ -214,5 +239,29 @@ public class TestPanel : MonoBehaviour
     void UpdateNowHigh()
     {
         nowHigh.text = "当前高度: " + _nowHigh;
+    }
+
+    void UpdateFightState()
+    {
+        switch (_nowFightState)
+        {
+            case E_FightState.NotFight:
+                nowFightState.text = "无";
+                break;
+            case E_FightState.Attack:
+                nowFightState.text = "普通攻击";
+                break;
+            case E_FightState.StrongAttack:
+                nowFightState.text = "特殊攻击";
+                break;
+            case E_FightState.Defense:
+                nowFightState.text = "防御";
+                break;
+            case E_FightState.Dodge:
+                nowFightState.text = "闪避";
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 }

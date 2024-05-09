@@ -140,11 +140,18 @@ MonoBehaviour:
   isInEquip: 0
   controller: {fileID: 0}
   weaponName: 0
+  weaponDamage: 1
   listWeaponCanHitObjectTag: []
   weaponModelTransform: {fileID: 4366253475796430006}
-  weaponModelOnBackPositionOffset: {x: 0.061, y: 0.213, z: -0.237}
-  weaponModelOnBackRotationOffset: {x: 0.04804678, y: -0.0010185158, z: -0.25112426,
-    w: 0.96676123}
+  weaponModelOnBackPositionOffset: {x: -0.05106504, y: 0.3159868, z: -0.3063551}
+  weaponModelOnBackRotationOffset: {x: -0.24265295, y: 0.02473434, z: 0.50784415,
+    w: -0.8261973}
+  isDefensing: 0
+  isSuccessfulDefense: 0
+  extendTimeEasyToDefense: 0.3
+  extendTime: 0
+  isContinueAttack: 0
+  nowAttackAnimationTime: 0
 --- !u!136 &4027761470320966453
 CapsuleCollider:
   m_ObjectHideFlags: 0

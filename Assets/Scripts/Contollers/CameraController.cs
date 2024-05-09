@@ -140,9 +140,6 @@ public class CameraController : MonoBehaviour
         playerTransform = PlayerMovementStateMachine.Instance.transform;
         
         Init();
-
-        _cameraMoveAndRotateCoroutine = StartCoroutine(CameraMoveAndRotateToTarget());
-        _playerRotateCoroutine = StartCoroutine(PlayerRotateToTargetQuaternion());
     }
 
     private void Update()
@@ -164,6 +161,19 @@ public class CameraController : MonoBehaviour
         UpdateCameraPositionAndRotationImmediately();
         
         _targetTransform = playerTransform;
+
+        if (_cameraMoveAndRotateCoroutine != null)
+        {
+            StopCoroutine(_cameraMoveAndRotateCoroutine);
+        }
+
+        if (_playerRotateCoroutine != null)
+        {
+            StopCoroutine(_playerRotateCoroutine);
+        }
+        
+        _cameraMoveAndRotateCoroutine = StartCoroutine(CameraMoveAndRotateToTarget());
+        _playerRotateCoroutine = StartCoroutine(PlayerRotateToTargetQuaternion());
     }
     
     // 初始化参数

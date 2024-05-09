@@ -315,7 +315,7 @@ PrefabInstance:
     - target: {fileID: 4418364709667447951, guid: 2e57217d4d35cea459d693f76beff1bc,
         type: 3}
       propertyPath: m_Name
-      value: GrapplingHookGears (2)
+      value: GrapplingHookGears_3
       objectReference: {fileID: 0}
     - target: {fileID: 4746135838078656465, guid: 2e57217d4d35cea459d693f76beff1bc,
         type: 3}
@@ -715,7 +715,7 @@ Transform:
   m_GameObject: {fileID: 262915635}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1568,15 +1568,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 4366253475796430006, guid: 6933dfc9c8f34634c983c73f93eb7d4c,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5616260312486597009, guid: 6933dfc9c8f34634c983c73f93eb7d4c,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.6
+      value: -5.6
       objectReference: {fileID: 0}
     - target: {fileID: 5616260312486597009, guid: 6933dfc9c8f34634c983c73f93eb7d4c,
         type: 3}
@@ -2526,6 +2521,85 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 664081906}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &691244510
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 691244511}
+  - component: {fileID: 691244513}
+  - component: {fileID: 691244512}
+  m_Layer: 5
+  m_Name: NowFightState
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &691244511
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 691244510}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3697052779582836296}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -200, y: 0}
+  m_SizeDelta: {x: 180, y: 100}
+  m_Pivot: {x: 1, y: 1}
+--- !u!114 &691244512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 691244510}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_FontSize: 30
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 3
+    m_MaxSize: 40
+    m_Alignment: 5
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 0
+    m_VerticalOverflow: 0
+    m_LineSpacing: 1
+  m_Text: "\u666E\u901A\u653B\u51FB"
+--- !u!222 &691244513
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 691244510}
+  m_CullTransparentMesh: 1
 --- !u!1 &727246466
 GameObject:
   m_ObjectHideFlags: 0
@@ -17571,7 +17645,7 @@ PrefabInstance:
     - target: {fileID: 4418364709667447951, guid: 2e57217d4d35cea459d693f76beff1bc,
         type: 3}
       propertyPath: m_Name
-      value: GrapplingHookGears (4)
+      value: GrapplingHookGears_5
       objectReference: {fileID: 0}
     - target: {fileID: 4746135838078656465, guid: 2e57217d4d35cea459d693f76beff1bc,
         type: 3}
@@ -17669,7 +17743,7 @@ PrefabInstance:
     - target: {fileID: 5616260312486597009, guid: 6933dfc9c8f34634c983c73f93eb7d4c,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.6
+      value: -4.6
       objectReference: {fileID: 0}
     - target: {fileID: 5616260312486597009, guid: 6933dfc9c8f34634c983c73f93eb7d4c,
         type: 3}
@@ -18751,7 +18825,7 @@ PrefabInstance:
     - target: {fileID: 4418364709667447951, guid: 2e57217d4d35cea459d693f76beff1bc,
         type: 3}
       propertyPath: m_Name
-      value: GrapplingHookGears (5)
+      value: GrapplingHookGears_6
       objectReference: {fileID: 0}
     - target: {fileID: 4746135838078656465, guid: 2e57217d4d35cea459d693f76beff1bc,
         type: 3}
@@ -18854,7 +18928,7 @@ PrefabInstance:
     - target: {fileID: 4418364709667447951, guid: 2e57217d4d35cea459d693f76beff1bc,
         type: 3}
       propertyPath: m_Name
-      value: GrapplingHookGears (3)
+      value: GrapplingHookGears_4
       objectReference: {fileID: 0}
     - target: {fileID: 4746135838078656465, guid: 2e57217d4d35cea459d693f76beff1bc,
         type: 3}
@@ -19624,6 +19698,8 @@ MonoBehaviour:
   - {x: 0, y: 0, z: -0.8}
   - {x: 0, y: 0.6, z: -1.2}
   - {x: 0, y: 0.5, z: -1}
+  - {x: 0, y: 0.5, z: -1}
+  - {x: 0, y: 0.5, z: -1}
 --- !u!1 &2298368026606092998
 GameObject:
   m_ObjectHideFlags: 0
@@ -19853,13 +19929,14 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 691244511}
   m_Father: {fileID: 5732103102212250795}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -20, y: 0}
-  m_SizeDelta: {x: 300, y: 100}
+  m_SizeDelta: {x: 200, y: 100}
   m_Pivot: {x: 1, y: 1}
 --- !u!1 &3732771340031268408
 GameObject:
@@ -20135,10 +20212,12 @@ MonoBehaviour:
   footRaycastEmissionTransform: {fileID: 1616831613825246335}
   playerTransform: {fileID: 3285266403196042617}
   playerRigidbody: {fileID: 382156276563125343}
+  colliders: {fileID: 403916576982684971}
   baseCollider: {fileID: 8017472586038044649}
   squatCollider: {fileID: 6150501639132999440}
   slidingCollider: {fileID: 8337932006546342038}
   playerModelRootSyncPointTransform: {fileID: 1927787090}
+  interactBox: {fileID: 1276636981}
   inputValueRate: 0.02
   isQuickZeroing: 0
   quickZeroingRate: 5
@@ -20318,6 +20397,7 @@ MonoBehaviour:
   nowMaxSpeed: {fileID: 6490506620996183952}
   nowWallState: {fileID: 5643024873827776999}
   nowHigh: {fileID: 4959207914713938750}
+  nowFightState: {fileID: 691244512}
 --- !u!114 &5434524167658956896
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20612,7 +20692,7 @@ PrefabInstance:
     - target: {fileID: 4418364709667447951, guid: 2e57217d4d35cea459d693f76beff1bc,
         type: 3}
       propertyPath: m_Name
-      value: GrapplingHookGears
+      value: GrapplingHookGears_1
       objectReference: {fileID: 0}
     - target: {fileID: 4746135838078656465, guid: 2e57217d4d35cea459d693f76beff1bc,
         type: 3}
@@ -21075,6 +21155,7 @@ GameObject:
   - component: {fileID: 382156276563125343}
   - component: {fileID: 4847231320812709688}
   - component: {fileID: 8284621767906792474}
+  - component: {fileID: 8284621767906792475}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -21096,6 +21177,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerMovementStateMachine: {fileID: 0}
   playerAnimator: {fileID: 0}
+  playerCharacter: {fileID: 0}
   playerTransform: {fileID: 0}
   playerFootTransform: {fileID: 0}
   grapplingHookGearsFatherTransform: {fileID: 916628798}
@@ -21105,6 +21187,20 @@ MonoBehaviour:
   nowEquipments: []
   nowEquipmentsIndexes: 
   weaponsBagPanel: {fileID: 0}
+--- !u!114 &8284621767906792475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8284621767906792473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f08fa763bf90e946bbe8daa4642d1e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hp: 10
+  nowWeapon: {fileID: 0}
 --- !u!136 &8337932006546342038
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -21285,8 +21381,8 @@ SceneRoots:
   - {fileID: 3285266403196042617}
   - {fileID: 6539795319947918871}
   - {fileID: 1228914370}
-  - {fileID: 2079977799}
   - {fileID: 131066382}
+  - {fileID: 2079977799}
   - {fileID: 1642270112}
   - {fileID: 2064496355}
   - {fileID: 2589729630676013915}
