@@ -465,7 +465,7 @@ public class CameraController : MonoBehaviour
         playerIsRotating = true;
         while (!isStopPlayerRotation)
         {
-            _targetTransform.rotation = Quaternion.Lerp(_targetTransform.rotation, _playerTargetRotation, playerRotateSpeed).normalized;
+            _targetTransform.rotation = Quaternion.Slerp(_targetTransform.rotation, _playerTargetRotation, playerRotateSpeed).normalized;
             yield return _waitForFixedUpdate;
         }
 
@@ -478,7 +478,7 @@ public class CameraController : MonoBehaviour
         while (!isStopCameraPositionAndRotation)
         {
             transform.position = Vector3.Lerp(transform.position, _targetPosition, cameraFollowSpeed);
-            transform.rotation = Quaternion.Lerp(transform.rotation, _targetRotation, cameraRotateSpeed).normalized;
+            transform.rotation = Quaternion.Slerp(transform.rotation, _targetRotation, cameraRotateSpeed).normalized;
             yield return _waitForFixedUpdate;
         }
     }

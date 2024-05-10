@@ -18,7 +18,9 @@ public class InfoManager : MonoBehaviour
     [Tooltip("用来检测墙壁的射线检测的图层")] public List<LayerMask> layersWallCheck;
     [HideInInspector] public LayerMask layerWallCheck;
     [Tooltip("用来检测可供钩锁勾住的勾中点的图层")] public List<LayerMask> layersGrapplingHookCheck;
-    [HideInInspector] public LayerMask layerGrapplingHookCheck; 
+    [HideInInspector] public LayerMask layerGrapplingHookCheck;
+    [Tooltip("用来检测是否存在可阻挡怪物视线的图层")] public List<LayerMask> layersMonsterSightCheck;
+    [HideInInspector] public LayerMask layerMonsterSightCheck;
     
     [Header("数据信息")]
     [Tooltip("地面阻力")] public float groundDrag;
@@ -57,6 +59,11 @@ public class InfoManager : MonoBehaviour
         for (_count = 0; _count < layersGrapplingHookCheck.Count; _count++)
         {
             layerGrapplingHookCheck |= layersGrapplingHookCheck[_count];
+        }
+
+        for (_count = 0; _count < layersMonsterSightCheck.Count; _count++)
+        {
+            layerMonsterSightCheck |= layersMonsterSightCheck[_count];
         }
     }
 }

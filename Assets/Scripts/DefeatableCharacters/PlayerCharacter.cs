@@ -22,6 +22,8 @@ public class PlayerCharacter : DefeatableCharacter
         if (counterattack != null && nowWeapon.isDefensing && !isStrongAttack)
         {
             nowWeapon.isSuccessfulDefense = true;
+            PlayerMovementStateMachine.Instance.playerAnimator.SetBool(
+                PlayerMovementStateMachine.Instance.DicAnimatorIndexes["IsSuccessfulDefense"], true);
             counterattack.Counterattack(0.1f,
                 PlayerMovementStateMachine.Instance.baseCollider.ClosestPoint(hitPosition));
             return true;
@@ -31,7 +33,7 @@ public class PlayerCharacter : DefeatableCharacter
         if (counterattack != null && PlayerMovementStateMachine.Instance.CurrentState.state == E_State.Fight &&
             PlayerMovementStateMachine.Instance.FightState.nowFightState == E_FightState.Attack && !isStrongAttack)
         {
-            PlayerMovementStateMachine.Instance.HitState.hitPosition = hitPosition;
+            PlayerMovementStateMachine.Instance.HitState.HitPosition = hitPosition;
             PlayerMovementStateMachine.Instance.ChangeState(PlayerMovementStateMachine.Instance.HitState);
             counterattack.Counterattack(0.1f,
                 PlayerMovementStateMachine.Instance.baseCollider.ClosestPoint(hitPosition));
@@ -39,7 +41,7 @@ public class PlayerCharacter : DefeatableCharacter
             return true;
         }
 
-        PlayerMovementStateMachine.Instance.HitState.hitPosition = hitPosition;
+        PlayerMovementStateMachine.Instance.HitState.HitPosition = hitPosition;
         PlayerMovementStateMachine.Instance.ChangeState(PlayerMovementStateMachine.Instance.HitState);
         return base.Hit(damage, hitPosition, counterattack, isStrongAttack);
     }

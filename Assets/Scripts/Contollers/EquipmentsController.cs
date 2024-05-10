@@ -181,7 +181,7 @@ public class EquipmentsController : MonoBehaviour
             RemoveEquipment(equipmentType);
         }
         
-        listEquipments[(int)equipmentType][equipmentIndex].DiscardItem();
+        listEquipments[(int)equipmentType][equipmentIndex].DiscardItem(playerTransform.position);
         listEquipments[(int)equipmentType][equipmentIndex].controller = null;
         
         // 如果是前两格的扔下

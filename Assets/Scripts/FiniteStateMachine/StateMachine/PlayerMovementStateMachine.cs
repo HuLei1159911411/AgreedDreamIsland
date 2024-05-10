@@ -22,6 +22,13 @@ public enum E_State
     Fight = 11,
     Hit = 12,
     Death = 13,
+    // 以下为Monster独有
+    Dodge = 14,
+    Defense = 15,
+    Attack = 16,
+    StrongAttack = 17,
+    SeePlayer = 18,
+    Turn = 19,
 }
 
 public struct MoveInputInformation
@@ -386,29 +393,10 @@ public class PlayerMovementStateMachine : StateMachine
         {
             _instance = this;
         }
-        
-        // 初始化状态
-        IdleState = new Idle(this);
-        WalkState = new Walk(this);
-        JumpState = new Jump(this);
-        FallState = new Fall(this);
-        RunState = new Run(this);
-        SquatState = new Squat(this);
-        SlidingState = new Sliding(this);
-        WallRunningState = new WallRunning(this);
-        ClimbState = new Climb(this);
-        RollState = new Roll(this);
-        GrappleState = new Grapple(this);
-        FightState = new Fight(this);
-        HitState = new Hit(this);
-        DeathState = new Death(this);
 
-        // 获取组件
-        playerTransform = transform;
-        playerRigidbody = GetComponent<Rigidbody>();
-        
-        // 初始化参数
-        InitParameters();
+        AwakeInitParameters();
+        // 初始化
+        Init();
     }
 
     // 重写父类Update函数统一进行一些数据更新
@@ -615,24 +603,47 @@ public class PlayerMovementStateMachine : StateMachine
         return IdleState;
     }
 
-    // 初始化参数
-    private void InitParameters()
+    // 手动初始化
+    public void Init()
     {
-        nowMoveSpeed = 0;
-
+        // 初始化参数
+        InitParameters();
+        
+        // 设置碰撞盒
+        InitCollider();
+    }
+    
+    // Awake初始化参数
+    private void AwakeInitParameters()
+    {
+        // 初始化状态
+        IdleState = new Idle(this);
+        WalkState = new Walk(this);
+        JumpState = new Jump(this);
+        FallState = new Fall(this);
+        RunState = new Run(this);
+        SquatState = new Squat(this);
+        SlidingState = new Sliding(this);
+        WallRunningState = new WallRunning(this);
+        ClimbState = new Climb(this);
+        RollState = new Roll(this);
+        GrappleState = new Grapple(this);
+        FightState = new Fight(this);
+        HitState = new Hit(this);
+        DeathState = new Death(this);
+        
+        // 获取组件
+        playerTransform = transform;
+        playerRigidbody = GetComponent<Rigidbody>();
+        
         _animatorControllerParameters = playerAnimator.parameters;
-
         // 初始化Animator参数名与Hash对照表
         DicAnimatorIndexes = new Dictionary<string, int>();
         for (_count = 0; _count < _animatorControllerParameters.Length; _count++)
         {
             DicAnimatorIndexes.Add(_animatorControllerParameters[_count].name, _animatorControllerParameters[_count].nameHash);
         }
-
-        // 设置碰撞盒
-        InitCollider();
-        _isTryToChangeState = false;
-
+        
         // 计算碰撞盒中心点坐标的偏移量
         _slidingCenterOffset = new Vector3(slidingCollider.center.x * slidingCollider.transform.localScale.x,
             slidingCollider.center.y * slidingCollider.transform.localScale.y,
@@ -643,8 +654,16 @@ public class PlayerMovementStateMachine : StateMachine
         _baseCenterOffset = new Vector3(baseCollider.center.x * baseCollider.transform.localScale.x,
             baseCollider.center.y * baseCollider.transform.localScale.y,
             baseCollider.center.z * baseCollider.transform.localScale.z);
-
+        
         _waitForFixedUpdate = new WaitForFixedUpdate();
+    }
+    
+    // 初始化参数
+    private void InitParameters()
+    {
+        nowMoveSpeed = 0;
+        
+        _isTryToChangeState = false;
     }
 
 
@@ -1128,6 +1147,7 @@ public class PlayerMovementStateMachine : StateMachine
     // 初始化碰撞盒
     private void InitCollider()
     {
+        colliders.gameObject.SetActive(true);
         baseCollider.gameObject.SetActive(true);
         squatCollider.gameObject.SetActive(false);
         slidingCollider.gameObject.SetActive(false);
@@ -1261,7 +1281,7 @@ public class PlayerMovementStateMachine : StateMachine
         _isRotateRootToTarget = true;
         while (!isMove && !InfoManager.Instance.isLockAttackDirection)
         {
-            playerAnimator.transform.rotation = Quaternion.Lerp(playerModelRootSyncPointTransform.rotation,
+            playerAnimator.transform.rotation = Quaternion.Slerp(playerModelRootSyncPointTransform.rotation,
                 _rootTargetRotation, CameraController.Instance.playerRotateSpeed).normalized;
             yield return _waitForFixedUpdate;
         }
