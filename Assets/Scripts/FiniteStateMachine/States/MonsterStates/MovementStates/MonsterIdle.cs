@@ -20,6 +20,11 @@ public class MonsterIdle : MonsterState
 
     public override void UpdatePhysic()
     {
+        if (_monsterStateMachine.CheckPlayerDistanceAndAngleReadyToFight())
+        {
+            return;
+        }
+        
         IdleTimer += Time.fixedDeltaTime;
 
         if (IdleTimer >= _monsterStateMachine.maxIdleTime)
@@ -33,11 +38,11 @@ public class MonsterIdle : MonsterState
                     case 0 :
                         break;
                     case 1 :
-                        _monsterStateMachine.nowTarget = _monsterStateMachine.RandomGetPatrolPoint();
+                        _monsterStateMachine.RandomSetPatrolPointToTarget();
                         _monsterStateMachine.ChangeState(_monsterStateMachine.WalkState);
                         break;
                     case 2 :
-                        _monsterStateMachine.nowTarget = _monsterStateMachine.RandomGetPatrolPoint();
+                        _monsterStateMachine.RandomSetPatrolPointToTarget();
                         _monsterStateMachine.ChangeState(_monsterStateMachine.RunState);
                         break;
                 }

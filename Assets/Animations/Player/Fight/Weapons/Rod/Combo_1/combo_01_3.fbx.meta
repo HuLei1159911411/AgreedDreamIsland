@@ -70,6 +70,13 @@ ModelImporter:
         floatParameter: 2.333
         intParameter: 0
         messageOptions: 0
+      - time: 0
+        functionName: SetNowFightState
+        data: 
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 1
+        messageOptions: 0
       - time: 0.14042225
         functionName: OpenCheckWeaponIsHit
         data: 
@@ -83,13 +90,6 @@ ModelImporter:
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
-        messageOptions: 0
-      - time: 0
-        functionName: SetNowFightState
-        data: 
-        objectReferenceParameter: {instanceID: 0}
-        floatParameter: 0
-        intParameter: 1
         messageOptions: 0
       transformMask: []
       maskType: 3

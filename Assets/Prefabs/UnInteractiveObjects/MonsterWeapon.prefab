@@ -990,6 +990,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   monsterStateMachine: {fileID: 0}
+  monsterCharacter: {fileID: 0}
   monsterWeaponEquipLocalPosition: {x: -0.103, y: 0.005, z: -0.129}
   monsterWeaponEquipLocalRotation: {x: -0.09516828, y: 0.07334482, z: -0.55548406,
     w: -0.8228007}
@@ -1008,6 +1009,11 @@ MonoBehaviour:
   canSetWeaponTypeSickle: 1
   nowWeaponType: 0
   nowWeaponIndex: 0
+  weaponDamage: 0
+  nowCollider: {fileID: 0}
+  isHit: 0
+  listCanHitObjectTags:
+  - Player
 --- !u!136 &2034877117723375474
 CapsuleCollider:
   m_ObjectHideFlags: 0

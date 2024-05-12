@@ -29,7 +29,7 @@ public class Weapon : Equipment, ICounterattack
     // 武器伤害
     public float weaponDamage;
 
-    public List<string> listWeaponCanHitObjectTag; 
+    public List<string> listWeaponCanHitObjectTags; 
     
     public Transform weaponModelTransform;
     
@@ -60,7 +60,7 @@ public class Weapon : Equipment, ICounterattack
     // 是否改变过父节点
     private bool _isChangeModelFatherTransform;
     // 是否准备好了去攻击
-    private bool _isReadyToFight;
+    public bool isReadyToFight;
     // 攻击击中检测用变量
     private bool _isHit;
     // 计数用变量
@@ -70,9 +70,17 @@ public class Weapon : Equipment, ICounterattack
     // 是否继续攻击
     public bool isContinueAttack;
     // 动画播放时间计时器
-    private float _timer;
+    public float timer;
+    // 动画播放时长计时器是否需要清零
+    public bool timerIsToZero;
     // 当前攻击动画时长
     public float nowAttackAnimationTime;
+    // 当前是否正在攻击
+    public bool isAttacking;
+    // 是否握住武器
+    public bool isHoldWeapon;
+    // 是否已经卸载武器
+    public bool isReleaseWeapon;
 
     private PlayerCharacter _playerCharacter;
     private void Awake()
@@ -86,11 +94,11 @@ public class Weapon : Equipment, ICounterattack
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!_isHit)
+        if (!_isHit && isInUse)
         {
-            for (_count = 0; _count < listWeaponCanHitObjectTag.Count; _count++)
+            for (_count = 0; _count < listWeaponCanHitObjectTags.Count; _count++)
             {
-                if (other.CompareTag((listWeaponCanHitObjectTag[_count])))
+                if (other.CompareTag((listWeaponCanHitObjectTags[_count])))
                 {
                     _isHit = other.transform.GetComponent<DefeatableCharacter>().Hit(weaponDamage,
                         itemCollider.ClosestPoint(other.transform.position), this,
@@ -99,7 +107,7 @@ public class Weapon : Equipment, ICounterattack
                     if (_isHit)
                     {
                         controller.playerAnimator.speed = 0f;
-                        Invoke(nameof(ResetAnimatorSpeed), 0.2f);
+                        Invoke(nameof(ResetAnimatorSpeed), 0.1f);
                     }
                     break;
                 }
@@ -186,6 +194,8 @@ public class Weapon : Equipment, ICounterattack
 
     public override void ListenEquipmentUse()
     {
+        controller.playerAnimator.SetBool(controller.playerMovementStateMachine.DicAnimatorIndexes["WeaponIsInUse"], isInUse);
+        
         // 把武器装备到手上
         if (!isInUse &&
             (controller.equipmentUseInputInfo.FireInput || controller.equipmentUseInputInfo.AimInput) &&
@@ -203,7 +213,7 @@ public class Weapon : Equipment, ICounterattack
         }
 
         // 武器已经拿到手上后摁开火键或瞄准键攻击
-        if (_isReadyToFight && 
+        if (isReadyToFight &&
             (controller.equipmentUseInputInfo.FireInput || controller.equipmentUseInputInfo.AimInput))
         {
             if (!controller.playerMovementStateMachine.ChangeState(_fightState))
@@ -211,7 +221,7 @@ public class Weapon : Equipment, ICounterattack
                 return;
             }
             
-            _isReadyToFight = false;
+            isReadyToFight = false;
             controller.playerAnimator.SetTrigger(controller.playerMovementStateMachine.DicAnimatorIndexes["ReadyToFight"]);
 
             extendTime = 0f;
@@ -228,18 +238,26 @@ public class Weapon : Equipment, ICounterattack
             return;
         }
 
-        if (nowAttackAnimationTime > float.Epsilon)
+        if (timerIsToZero)
         {
-            _timer += Time.deltaTime * controller.playerMovementStateMachine.playerAnimator.speed;
+            timer = 0f;
+            timerIsToZero = false;
         }
+        else if (nowAttackAnimationTime > float.Epsilon &&
+                 controller.playerMovementStateMachine.CurrentState.state != E_State.Hit)
+        {
+            timer += Time.deltaTime * controller.playerMovementStateMachine.playerAnimator.speed;
+        }
+
 
         // 检测是否继续进行攻击
         if (!isContinueAttack && 
+            !isPlayUnTakeWeaponAnimation &&
             nowAttackAnimationTime > float.Epsilon &&
-            _timer <= nowAttackAnimationTime &&
+            timer <= nowAttackAnimationTime &&
             (controller.equipmentUseInputInfo.FireInput || controller.equipmentUseInputInfo.AimInput))
         {
-            extendTime = _timer + extendTimeEasyToDefense;
+            extendTime = timer + extendTimeEasyToDefense;
             isContinueAttack = true;
             controller.playerAnimator.SetBool(
                 controller.playerMovementStateMachine.DicAnimatorIndexes["IsContinueAttack"], isContinueAttack);
@@ -254,30 +272,29 @@ public class Weapon : Equipment, ICounterattack
         
         // 当时间超过了自动将状态由攻击状态转变为状态机中默认状态并将武器卸下
         if (nowAttackAnimationTime > float.Epsilon &&
-            _timer > nowAttackAnimationTime && !isDefensing)
+            timer > nowAttackAnimationTime && !isDefensing)
         {
-            if (controller.playerMovementStateMachine.CurrentState.state == E_State.Fight &&
-                controller.playerMovementStateMachine.ChangeState(
-                    controller.playerMovementStateMachine.GetInitialState()))
+            if (controller.playerMovementStateMachine.CurrentState.state == E_State.Fight)
             {
-                nowAttackAnimationTime = 0f;
-            
-                controller.playerAnimator.SetTrigger(controller.playerMovementStateMachine.DicAnimatorIndexes["ToUnEquip"]);
-                return;
+                if (controller.playerMovementStateMachine.ChangeState(
+                        controller.playerMovementStateMachine.GetInitialState()))
+                {
+                    isReadyToFight = true;
+                    ResetIsContinueAttack(2f);
+                }
             }
             else
             {
-                nowAttackAnimationTime = 0f;
-
-                _isReadyToFight = false;
+                ResetIsContinueAttack(0f);
                 controller.playerAnimator.SetTrigger(controller.playerMovementStateMachine.DicAnimatorIndexes["ToUnEquip"]);
+                isReadyToFight = false;
                 return;
             }
         }
         
         // 延长监听便于进入防御状态
-        if (isContinueAttack && nowAttackAnimationTime > float.Epsilon && _timer < nowAttackAnimationTime &&
-            _timer < extendTime &&
+        if (isContinueAttack && nowAttackAnimationTime > float.Epsilon && timer < nowAttackAnimationTime &&
+            timer < extendTime &&
             !(_fireInputOnContinueAttack && _aimInputOnContinueAttack) &&
             (controller.equipmentUseInputInfo.FireInput && !_fireInputOnContinueAttack ||
              controller.equipmentUseInputInfo.AimInput && !_aimInputOnContinueAttack))
@@ -298,7 +315,7 @@ public class Weapon : Equipment, ICounterattack
             extendTime = 0f;
         }
 
-        if (_timer >= nowAttackAnimationTime && isDefensing && isSuccessfulDefense)
+        if (timer >= nowAttackAnimationTime && isDefensing && isSuccessfulDefense)
         {
             isSuccessfulDefense = false;
             controller.playerAnimator.SetBool(
@@ -324,36 +341,10 @@ public class Weapon : Equipment, ICounterattack
     }
     
     // 动画事件------
-    // 装备武器抓住武器
-    public void HoldWeapon()
-    {
-        _isReadyToFight = true;
-        _timer = 0f;
-        transform.SetParent(controller.weaponOnRightHandFatherTransform);
-        controller.playerAnimator.SetInteger(controller.playerMovementStateMachine.DicAnimatorIndexes["WeaponName"], (int)weaponName);
-    }
-    // 卸下武器松开武器
-    public void ReleaseWeapon(float time)
-    {
-        transform.SetParent(controller.weaponOnBackFatherTransform);
-        transform.localPosition = weaponModelOnBackPositionOffset;
-        transform.localRotation = weaponModelOnBackRotationOffset;
-        isInUse = false;
-        isContinueAttack = false;
-        controller.playerAnimator.SetBool(controller.playerMovementStateMachine.DicAnimatorIndexes["IsContinueAttack"],
-            false);
-        _fireInputOnContinueAttack = false;
-        controller.playerAnimator.SetBool(controller.playerMovementStateMachine.DicAnimatorIndexes["FireInput"],
-            false);
-        _aimInputOnContinueAttack = false;
-        controller.playerAnimator.SetBool(controller.playerMovementStateMachine.DicAnimatorIndexes["AimInput"],
-            false);
-        _timer = 0f; 
-        _isReadyToFight = false;
-    }
     // 开启攻击检测
     public void OpenCheckWeaponIsHit(int isAllowRotate)
     {
+        isAttacking = true;
         InfoManager.Instance.isLockAttackDirection = isAllowRotate == (int)E_IsAllowRotate.Yes ? true : false;
         _isHit = false;
         itemCollider.enabled = true;
@@ -361,30 +352,16 @@ public class Weapon : Equipment, ICounterattack
     // 关闭攻击检测
     public void CloseCheckWeaponIsHit()
     {
+        isAttacking = false;
         itemCollider.enabled = false;
         InfoManager.Instance.isLockAttackDirection = false;
     }
     // 重新开始监听是否摁了攻击键
     public void ResetIsContinueAttack(float time)
     {
-        if (time > float.Epsilon)
-        {
-            // time == 1.133f是防御的循环动作播放的时长防止自动进入防御动作结束后仍在接受输入导致不能正确卸下武器
-            if (Mathf.Abs(time - 1.133f) > float.Epsilon)
-            {
-                nowAttackAnimationTime = time + 0.1f;
-            }
-            else 
-            {
-                nowAttackAnimationTime = time;
-            }
-        }
-        else
-        {
-            nowAttackAnimationTime = time;
-        }
-        
-        _timer = 0f;
+        nowAttackAnimationTime = time;
+
+        timerIsToZero = true;
 
         isDefensing = false;
         isSuccessfulDefense = false;
@@ -414,24 +391,60 @@ public class Weapon : Equipment, ICounterattack
     {
         isDefensing = false;
     }
+    
+    // 装备武器抓住武器
+    public void HoldWeapon()
+    {
+        isHoldWeapon = true;
+        isReleaseWeapon = false;
+        timerIsToZero = true;
+        transform.SetParent(controller.weaponOnRightHandFatherTransform);
+        controller.playerAnimator.SetInteger(controller.playerMovementStateMachine.DicAnimatorIndexes["WeaponName"], (int)weaponName);
+    }
+    // 卸下武器松开武器
+    public void ReleaseWeapon(float time)
+    {
+        isHoldWeapon = false;
+        isReleaseWeapon = true;
+        transform.SetParent(controller.weaponOnBackFatherTransform);
+        transform.localPosition = weaponModelOnBackPositionOffset;
+        transform.localRotation = weaponModelOnBackRotationOffset;
+        
+        isContinueAttack = false;
+        controller.playerAnimator.SetBool(controller.playerMovementStateMachine.DicAnimatorIndexes["IsContinueAttack"],
+            false);
+        _fireInputOnContinueAttack = false;
+        controller.playerAnimator.SetBool(controller.playerMovementStateMachine.DicAnimatorIndexes["FireInput"],
+            false);
+        _aimInputOnContinueAttack = false;
+        controller.playerAnimator.SetBool(controller.playerMovementStateMachine.DicAnimatorIndexes["AimInput"],
+            false);
+        timer = 0f; 
+        isReadyToFight = false;
+    }
     // 开始播放拿武器动画
     public void StartTakeWeaponAnimation()
     {
-        isPlayTakeWeaponAnimation = true;
+        isReadyToFight = false;
+        isHoldWeapon = false;
+        isPlayUnTakeWeaponAnimation = false;
     }
     // 拿武器动画结束
     public void EndTakeWeaponAnimation()
     {
         isPlayTakeWeaponAnimation = false;
+        isReadyToFight = true;
     }
     // 开始播放卸武器动画
     public void StartUnTakeWeaponAnimation()
     {
         isPlayUnTakeWeaponAnimation = true;
+        isReleaseWeapon = false;
     }
-    // 切武器动画结束播放
+    // 卸武器动画结束播放
     public void EndUnTakeWeaponAnimation()
     {
         isPlayUnTakeWeaponAnimation = false;
+        isInUse = false;
     }
 }

@@ -14,6 +14,7 @@ public class MonsterStateMachine : StateMachine
 
     public MonsterWeapon monsterWeapon;
     public Transform weaponEquipFatherTransform;
+    public MonsterCharacter monsterCharacter;
     
     public MonsterIdle IdleState;
     public MonsterHit HitState;
@@ -23,7 +24,10 @@ public class MonsterStateMachine : StateMachine
     public MonsterWalk WalkState;
     public MonsterRun RunState;
     public MonsterTurn TurnState;
+    public MonsterAttack AttackState;
+    public MonsterDodge DodgeState;
 
+    [Header("怪物AI部分")]
     // 怪物AI
     public List<Transform> listPatrolPoints;
     // 当前怪物是否具有巡逻点
@@ -34,6 +38,8 @@ public class MonsterStateMachine : StateMachine
     public float seePlayerDistance;
     // 开始攻击玩家距离
     public float fightWithPlayerDistance;
+    // 开始脱离追踪玩家状态距离
+    public float stopFollowPlayerDistance;
     // 可视角度(与怪物正前方向量在水平面的角度)
     [Range(0,90f)]
     public float viewAngle;
@@ -47,11 +53,15 @@ public class MonsterStateMachine : StateMachine
     private float _allWeight;
     // 最大静止时长
     public float maxIdleTime;
-    [Range(0f, 1f)]
-    // 怪物90度角度内缓慢旋转旋转速度
-    public float rotateSpeed;
     // 怪物最大旋转时间90度内
     public float rotateMaxTime;
+    [Header("怪物动画部分")] 
+    // 怪物正常攻击动画数量
+    public int monsterNormalAttackCount;
+    // 怪物连击攻击动画数量
+    public int monsterComboAttackCount;
+    // 怪物处决攻击动画数量
+    public int monsterStrongAttackCount;
     
     public BaseState CurrentState => _currentState;
     // 当前怪物移动目标
@@ -76,6 +86,8 @@ public class MonsterStateMachine : StateMachine
     public float nowRotateTime;
     // 是否停止旋转协程
     public bool isStopRotateCoroutine;
+    // 是否锁定旋转
+    public bool isFreezeRotation;
     
     // 玩家位置满足怪物看见的情况下由怪物向玩家发射检测是否存在阻挡的射线检测
     private RaycastHit _monsterToPlayerRaycastHit;
@@ -91,6 +103,8 @@ public class MonsterStateMachine : StateMachine
     private float _rotateTimer;
     // fixedUpdate协程返回值
     private WaitForFixedUpdate _waitForFixedUpdate;
+    // 选择战斗行为的随机值
+    private float _randomValueOnSelectFightState;
     public void Awake()
     {
         AwakeInitParameters();
@@ -141,6 +155,8 @@ public class MonsterStateMachine : StateMachine
         WalkState = new MonsterWalk(this);
         RunState = new MonsterRun(this);
         TurnState = new MonsterTurn(this);
+        AttackState = new MonsterAttack(this);
+        DodgeState = new MonsterDodge(this);
 
         _animatorControllerParameters = animator.parameters;
         DicAnimatorIndexes = new Dictionary<string, int>();
@@ -151,6 +167,8 @@ public class MonsterStateMachine : StateMachine
 
         _allWeight = attackWeight + defenseWeight + avoidWeight;
         _waitForFixedUpdate = new WaitForFixedUpdate();
+
+        monsterCharacter = transform.GetComponent<MonsterCharacter>();
     }
     // 手动初始化
     public void Init()
@@ -192,6 +210,7 @@ public class MonsterStateMachine : StateMachine
             monsterToPlayerDirection =
                 Vector3.ProjectOnPlane(playerTransform.position - transform.position, Vector3.up);
             playerDistance = monsterToPlayerDirection.magnitude;
+            
             if (!isSeePlayer)
             {
                 // 发现玩家
@@ -220,6 +239,12 @@ public class MonsterStateMachine : StateMachine
             }
             else
             {
+                if (playerDistance >= stopFollowPlayerDistance)
+                {
+                    isSeePlayer = false;
+                    ChangeState(IdleState);
+                    return;
+                }
                 nowAngle = Vector3.Angle(monsterToPlayerDirection, transform.forward);
             }
         }
@@ -241,22 +266,24 @@ public class MonsterStateMachine : StateMachine
                 return false;
             }
 
-            return Physics.Raycast(transform.position, monsterToPlayerDirection.normalized, playerDistance,
+            return !Physics.Raycast(transform.position, monsterToPlayerDirection.normalized, playerDistance,
                 InfoManager.Instance.layerMonsterSightCheck);
         }
     }
     
     // 随机获取一处巡逻点
-    public Transform RandomGetPatrolPoint()
+    public void RandomSetPatrolPointToTarget()
     {
         _count = Random.Range(0, listPatrolPoints.Count);
         if (_count == nowPatrolPointIndex)
         {
-            return listPatrolPoints[(_count + 1) % listPatrolPoints.Count];
+            nowPatrolPointIndex = (_count + 1) % listPatrolPoints.Count;
+            nowTarget = listPatrolPoints[nowPatrolPointIndex];
         }
         else
         {
-            return listPatrolPoints[_count];
+            nowPatrolPointIndex = _count;
+            nowTarget = listPatrolPoints[nowPatrolPointIndex];
         }
     }
     
@@ -264,12 +291,11 @@ public class MonsterStateMachine : StateMachine
     // 返回true时切换为旋转状态，返回false使用协程进行缓慢旋转
     public bool CheckNowAngle()
     {
-        if (nowAngle < 90f)
+        UpdateToTargetDirectionAndAngleImmediately();
+        if (nowAngle <= 45f)
         {
             _rotateTimer = 0f;
             nowRotateTime = rotateMaxTime * nowAngle / 90f;
-            Debug.Log("nowAngle = " + nowAngle + "\n"
-                + "monsterToTargetDirection = " + monsterToTargetDirection);
             targetRotation = Quaternion.LookRotation(monsterToTargetDirection);
             if (!isRotating)
             {
@@ -301,48 +327,157 @@ public class MonsterStateMachine : StateMachine
         isRotating = false;
     }
     
+    // 立刻更新一次距离目标点方向和角度
+    public void UpdateToTargetDirectionAndAngleImmediately()
+    {
+        if (nowPatrolPointIndex != -1 && !isSeePlayer)
+        {
+            monsterToTargetDirection = Vector3.ProjectOnPlane(
+                listPatrolPoints[nowPatrolPointIndex].position - transform.position,
+                Vector3.up);
+            nowAngle = Vector3.Angle(monsterToTargetDirection, transform.forward);
+        }
+        else
+        {
+            monsterToPlayerDirection = Vector3.ProjectOnPlane(
+                playerTransform.position - transform.position,
+                Vector3.up);
+            monsterToTargetDirection = monsterToPlayerDirection;
+            nowAngle = Vector3.Angle(monsterToTargetDirection, transform.forward);
+        }
+    }
+    
+    // 根据战斗权重切换攻击防御或闪避行为
+    public void ChangeStateToFight()
+    {
+        _randomValueOnSelectFightState = Random.Range(0f, 1f);
+        // 攻击
+        if (_randomValueOnSelectFightState <= attackWeight)
+        {
+            // 选择攻击类型
+            // 连招攻击
+            if (_randomValueOnSelectFightState < attackWeight * 0.5f)
+            {
+                AttackState.AttackType = E_AttackType.ComboAttack;
+            }
+            // 普通攻击
+            else
+            {
+                AttackState.AttackType = E_AttackType.NormalAttack;
+            }
+            ChangeState(AttackState);
+        }
+        else
+        {
+            _randomValueOnSelectFightState -= attackWeight;
+            // 防御
+            if (_randomValueOnSelectFightState <= defenseWeight)
+            {
+                ChangeState(DefenseState);
+            }
+            // 闪避
+            else
+            {
+                ChangeState(DodgeState);
+            }
+        }
+    }
+    
+    // 检查是否满足开始进入战斗的条件并进入随机的战斗状态
+    public bool CheckPlayerDistanceAndAngleReadyToFight()
+    {
+        if (isSeePlayer && playerDistance <= fightWithPlayerDistance)
+        {
+            if (CheckNowAngle())
+            {
+                ChangeState(TurnState);
+                return true;
+            }
+            else
+            {
+                ChangeStateToFight();
+                return true;
+            }
+        }
+        else if (isSeePlayer)
+        {
+            if (_currentState.state != E_State.Run)
+            {
+                ChangeState(RunState);
+            }
+        }
+
+        return false;
+    }
+    
+    
     // 动画事件-----
     
     public void ChooseAndChangeNextState()
     {
         switch (_currentState.state)
         {
-            case E_State.Idle:
-                break;
-            case E_State.Walk:
-                break;
-            case E_State.Run:
-                break;
-            case E_State.Jump:
-                break;
-            case E_State.Fall:
-                break;
-            case E_State.Sliding:
-                break;
-            case E_State.WallRunning:
-                break;
-            case E_State.Climb:
-                break;
-            case E_State.Roll:
-                break;
-            case E_State.Grapple:
-                break;
-            case E_State.Fight:
-                break;
             case E_State.Hit:
-                break;
-            case E_State.Death:
+                if (monsterCharacter.hp <= 0f)
+                {
+                    ChangeState(DeathState);
+                }
+                else if(CheckPlayerDistanceAndAngleReadyToFight())
+                {
+                    return;
+                }
+                else
+                {
+                    ChangeState(IdleState);
+                }
                 break;
             case E_State.Dodge:
+                CheckPlayerDistanceAndAngleReadyToFight();
                 break;
             case E_State.Defense:
+                CheckPlayerDistanceAndAngleReadyToFight();
                 break;
             case E_State.Attack:
+                CheckPlayerDistanceAndAngleReadyToFight();
                 break;
-            case E_State.StrongAttack:
+            case E_State.SeePlayer:
+                ChangeState(RunState);
                 break;
-            default:
-                throw new ArgumentOutOfRangeException();
+            case E_State.Turn:
+                if (TurnState.preState.state != E_State.Turn)
+                {
+                    ChangeState(TurnState.preState);
+                }
+                else
+                {
+                    ChangeState(RunState);
+                }
+                break;
         }
+    }
+
+    // 进入防御
+    public void StartDefense()
+    {
+        DefenseState.isDefensing = true;
+    }
+
+    public void EndDefense()
+    {
+        DefenseState.isDefensing = false;
+    }
+    
+    // 开始攻击
+    public void StartAttack()
+    {
+        monsterWeapon.nowCollider.enabled = true;
+        monsterWeapon.isHit = false;
+        monsterWeapon.isAttacking = true;
+    }
+    // 结束攻击
+    public void EndAttack()
+    {
+        monsterWeapon.nowCollider.enabled = false;
+        monsterWeapon.isAttacking = false;
     }
 }

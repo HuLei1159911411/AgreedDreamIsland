@@ -20,6 +20,10 @@ public class MonsterHit : MonsterState
     {
         base.Enter();
         _timer = 0f;
+        if (preState.state == E_State.Attack)
+        {
+            _monsterStateMachine.EndAttack();
+        }
         CalculateHitDirectionAndToHit();
     }
 

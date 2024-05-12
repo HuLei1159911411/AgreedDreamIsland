@@ -7,6 +7,10 @@ public class Hit : BaseState
 {
     private PlayerMovementStateMachine _movementStateMachine;
     public Vector3 HitPosition;
+    // 是否正在播放装备武器动画
+    public bool isPlayTakeWeaponAnimation;
+    // 是否正在播放卸载武器动画
+    public bool isPlayUnTakeWeaponAnimation;
     // 到被击中点的方向
     private Vector3 _directionToHit;
     // 受击状态计时器
@@ -23,9 +27,22 @@ public class Hit : BaseState
     {
         base.Enter();
         _timer = 0f;
+        if (_movementStateMachine.FightState.FightWeapon != null &&
+            (_movementStateMachine.FightState.FightWeapon.isPlayTakeWeaponAnimation ||
+             _movementStateMachine.FightState.FightWeapon.isPlayUnTakeWeaponAnimation))
+        {
+            isPlayTakeWeaponAnimation = _movementStateMachine.FightState.FightWeapon.isPlayTakeWeaponAnimation;
+            isPlayUnTakeWeaponAnimation = _movementStateMachine.FightState.FightWeapon.isPlayUnTakeWeaponAnimation;
+        }
+        else
+        {
+            isPlayTakeWeaponAnimation = false;
+            isPlayUnTakeWeaponAnimation = false;
+        }
         if (preState.state == E_State.Fight)
         {
-            _movementStateMachine.FightState.FightWeapon.ResetIsContinueAttack(0.3f);
+            _movementStateMachine.FightState.FightWeapon.ResetIsContinueAttack(0.4f);
+            _movementStateMachine.FightState.FightWeapon.CloseCheckWeaponIsHit();
         }
         CalculateHitDirectionAndToHit();
     }
@@ -55,26 +72,17 @@ public class Hit : BaseState
         {
             if (Vector3.Angle(_directionToHit, _movementStateMachine.playerTransform.forward) <= 45f)
             {
-                if (CheckCanPlayHitAnimation())
-                {
-                    _movementStateMachine.playerAnimator.SetTrigger(_movementStateMachine.DicAnimatorIndexes["ToHitBack"]);
-                }
+                _movementStateMachine.playerAnimator.SetTrigger(_movementStateMachine.DicAnimatorIndexes["ToHitBack"]);
             }
-            else if(Vector3.Dot(_directionToHit, _movementStateMachine.playerTransform.right) >= 0f)
+            else if (Vector3.Dot(_directionToHit, _movementStateMachine.playerTransform.right) >= 0f)
             {
-                if (CheckCanPlayHitAnimation())
-                {
-                    _movementStateMachine.playerAnimator.SetTrigger(
-                        _movementStateMachine.DicAnimatorIndexes["ToHitRight"]);
-                }
+                _movementStateMachine.playerAnimator.SetTrigger(
+                    _movementStateMachine.DicAnimatorIndexes["ToHitRight"]);
             }
             else
             {
-                if (CheckCanPlayHitAnimation())
-                {
-                    _movementStateMachine.playerAnimator.SetTrigger(
-                        _movementStateMachine.DicAnimatorIndexes["ToHitLeft"]);
-                }
+                _movementStateMachine.playerAnimator.SetTrigger(
+                    _movementStateMachine.DicAnimatorIndexes["ToHitLeft"]);
             }
         }
         // 后方
@@ -82,37 +90,20 @@ public class Hit : BaseState
         {
             if (Vector3.Angle(_directionToHit, -_movementStateMachine.playerTransform.forward) <= 45f)
             {
-                if (CheckCanPlayHitAnimation())
-                {
-                    _movementStateMachine.playerAnimator.SetTrigger(
-                        _movementStateMachine.DicAnimatorIndexes["ToHitFront"]);
-                }
+                _movementStateMachine.playerAnimator.SetTrigger(
+                    _movementStateMachine.DicAnimatorIndexes["ToHitFront"]);
             }
-            else if(Vector3.Dot(_directionToHit, _movementStateMachine.playerTransform.right) >= 0f)
+            else if (Vector3.Dot(_directionToHit, _movementStateMachine.playerTransform.right) >= 0f)
             {
-                if (CheckCanPlayHitAnimation())
-                {
-                    _movementStateMachine.playerAnimator.SetTrigger(
-                        _movementStateMachine.DicAnimatorIndexes["ToHitRight"]);
-                }
+                _movementStateMachine.playerAnimator.SetTrigger(
+                    _movementStateMachine.DicAnimatorIndexes["ToHitRight"]);
             }
             else
             {
-                if (CheckCanPlayHitAnimation())
-                {
-                    _movementStateMachine.playerAnimator.SetTrigger(
-                        _movementStateMachine.DicAnimatorIndexes["ToHitLeft"]);
-                }
+                _movementStateMachine.playerAnimator.SetTrigger(
+                    _movementStateMachine.DicAnimatorIndexes["ToHitLeft"]);
             }
         }
-    }
-
-    private bool CheckCanPlayHitAnimation()
-    {
-        return !(_movementStateMachine.FightState.FightWeapon != null &&
-               _movementStateMachine.FightState.FightWeapon.isPlayTakeWeaponAnimation || 
-               _movementStateMachine.FightState.FightWeapon != null &&
-               _movementStateMachine.FightState.FightWeapon.isPlayUnTakeWeaponAnimation);
     }
     
     // 动画事件--------
@@ -127,16 +118,6 @@ public class Hit : BaseState
                     {
                         _movementStateMachine.ChangeState(_movementStateMachine.FightState);
                     }
-                    
-                }
-                else
-                {
-                    if (_movementStateMachine.CurrentState.state != E_State.Death)
-                    {
-                        _movementStateMachine.playerAnimator.SetTrigger(
-                            _movementStateMachine.DicAnimatorIndexes["ToUnEquip"]);
-                        _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
-                    }
                 }
                 break;
                 default:
@@ -145,6 +126,38 @@ public class Hit : BaseState
                         _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
                     }
                     break;
+        }
+
+        if (isPlayTakeWeaponAnimation)
+        {
+            if (_movementStateMachine.FightState.FightWeapon.isHoldWeapon)
+            {
+                _movementStateMachine.FightState.FightWeapon.isPlayTakeWeaponAnimation = false;
+                _movementStateMachine.FightState.FightWeapon.isReadyToFight = true;
+            }
+            else
+            {
+                _movementStateMachine.FightState.FightWeapon.isInUse = true;
+                _movementStateMachine.playerAnimator.SetTrigger(
+                    _movementStateMachine.DicAnimatorIndexes["ToEquip"]);
+                _movementStateMachine.FightState.FightWeapon.ResetIsContinueAttack(2f);
+            }
+        }
+
+        if (isPlayUnTakeWeaponAnimation)
+        {
+            if (_movementStateMachine.FightState.FightWeapon.isReleaseWeapon)
+            {
+                _movementStateMachine.FightState.FightWeapon.isPlayUnTakeWeaponAnimation = false;
+                _movementStateMachine.FightState.FightWeapon.isInUse = false;
+            }
+            else
+            {
+                _movementStateMachine.FightState.FightWeapon.timer = 0f;
+                _movementStateMachine.playerAnimator.SetTrigger(
+                    _movementStateMachine.DicAnimatorIndexes["ToUnEquip"]);
+                _movementStateMachine.FightState.FightWeapon.isReadyToFight = false;
+            }
         }
     }
 }

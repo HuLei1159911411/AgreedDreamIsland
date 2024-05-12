@@ -131,7 +131,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interactController: {fileID: 0}
   type: 0
-  strName: "\u68CD"
+  strName: "\u68CD1"
   itemType: 0
   itemCollider: {fileID: 4027761470320966453}
   equipmentName: 1
@@ -141,7 +141,7 @@ MonoBehaviour:
   controller: {fileID: 0}
   weaponName: 0
   weaponDamage: 1
-  listWeaponCanHitObjectTag:
+  listWeaponCanHitObjectTags:
   - Monster
   weaponModelTransform: {fileID: 4366253475796430006}
   weaponModelOnBackPositionOffset: {x: -0.05106504, y: 0.3159868, z: -0.3063551}
@@ -175,6 +175,6 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.1
-  m_Height: 2.28
+  m_Height: 1.34
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: -0.45, z: 0}

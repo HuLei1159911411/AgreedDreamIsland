@@ -83,7 +83,7 @@ ModelImporter:
         floatParameter: 2
         intParameter: 0
         messageOptions: 0
-      - time: 1
+      - time: 0.9894459
         functionName: EndTakeWeaponAnimation
         data: 
         objectReferenceParameter: {instanceID: 0}

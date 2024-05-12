@@ -5,9 +5,10 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
-public class MonsterWeapon : MonoBehaviour
+public class MonsterWeapon : MonoBehaviour, ICounterattack
 {
     public MonsterStateMachine monsterStateMachine;
+    public MonsterCharacter monsterCharacter;
 
     public Vector3 monsterWeaponEquipLocalPosition;
     public Quaternion monsterWeaponEquipLocalRotation;
@@ -16,9 +17,9 @@ public class MonsterWeapon : MonoBehaviour
     public Transform swordsFatherTransform;
     public Transform sicklesFatherTransform;
 
-    public Transform[] rods;
-    public Transform[] swords;
-    public Transform[] sickles;
+    public List<Transform> rods;
+    public List<Transform> swords;
+    public List<Transform> sickles;
 
     public Collider rodCollider;
     public Collider swordCollider;
@@ -36,6 +37,16 @@ public class MonsterWeapon : MonoBehaviour
     public E_WeaponType nowWeaponType;
     // 当前武器索引值
     public int nowWeaponIndex;
+    // 当前武器伤害
+    public float weaponDamage;
+    // 当前武器碰撞盒
+    public Collider nowCollider;
+    // 是否击中
+    public bool isHit;
+    // 可被击中的所有对象的Tag
+    public List<string> listCanHitObjectTags;
+    // 是否正在攻击
+    public bool isAttacking;
 
     private int _count;
 
@@ -53,25 +64,49 @@ public class MonsterWeapon : MonoBehaviour
             transform.localPosition = monsterWeaponEquipLocalPosition;
             transform.localRotation = monsterWeaponEquipLocalRotation;
             transform.localScale = Vector3.one;
+            monsterCharacter = monsterStateMachine.monsterCharacter;
+        }
+    }
+
+    public void OnTriggerEnter(Collider other)
+    {
+        if (!isHit)
+        {
+            for (_count = 0; _count < listCanHitObjectTags.Count; _count++)
+            {
+                if (other.CompareTag((listCanHitObjectTags[_count])))
+                {
+                    isHit = other.transform.parent.parent.GetComponent<DefeatableCharacter>().Hit(weaponDamage,
+                        nowCollider.ClosestPoint(other.transform.position), this,
+                        monsterStateMachine.AttackState.AttackType ==
+                        E_AttackType.StrongAttack);
+                    if (isHit)
+                    {
+                        monsterStateMachine.animator.speed = 0f;
+                        Invoke(nameof(ResetAnimatorSpeed), 0.2f);
+                    }
+                    break;
+                }
+            }
         }
     }
 
     private void AwakeInitParams()
     {
-        rods = new Transform[rodsFatherTransform.childCount];
-        for (_count = 0; _count < rods.Length; _count++)
+        rods = new List<Transform>();
+        for (_count = 0; _count < rods.Count; _count++)
         {
-            rods[_count] = rodsFatherTransform.GetChild(_count);
+            rods.Add(rodsFatherTransform.GetChild(_count));
         }
-        swords = new Transform[swordsFatherTransform.childCount];
-        for (_count = 0; _count < swords.Length; _count++)
+        swords = new List<Transform>();
+        for (_count = 0; _count < swords.Count; _count++)
         {
-            swords[_count] = swordsFatherTransform.GetChild(_count);
+            swords.Add(swordsFatherTransform.GetChild(_count));
         }
-        sickles = new Transform[sicklesFatherTransform.childCount];
-        for (_count = 0; _count < sickles.Length; _count++)
+        sickles = new List<Transform>();
+        for (_count = 0; _count < sickles.Count; _count++)
         {
-            sickles[_count] = sicklesFatherTransform.GetChild(_count);
+            sickles.Add(sicklesFatherTransform.GetChild(_count));
         }
     }
 
@@ -133,13 +168,13 @@ public class MonsterWeapon : MonoBehaviour
         switch (nowWeaponType)
         {
             case E_WeaponType.Rod:
-                nowWeaponIndex = Random.Range(0, rods.Length);
+                nowWeaponIndex = Random.Range(0, rods.Count);
                 break;
             case E_WeaponType.Sword:
-                nowWeaponIndex = Random.Range(0, swords.Length);
+                nowWeaponIndex = Random.Range(0, swords.Count);
                 break;
             case E_WeaponType.Sickle:
-                nowWeaponIndex = Random.Range(0, sickles.Length);
+                nowWeaponIndex = Random.Range(0, sickles.Count);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -155,7 +190,7 @@ public class MonsterWeapon : MonoBehaviour
                 rodsFatherTransform.gameObject.SetActive(true);
                 swordsFatherTransform.gameObject.SetActive(false);
                 sicklesFatherTransform.gameObject.SetActive(false);
-                for (_count = 0; _count < rods.Length; _count++)
+                for (_count = 0; _count < rods.Count; _count++)
                 {
                     if (_count == nowWeaponIndex)
                     {
@@ -171,7 +206,7 @@ public class MonsterWeapon : MonoBehaviour
                 rodsFatherTransform.gameObject.SetActive(false);
                 swordsFatherTransform.gameObject.SetActive(true);
                 sicklesFatherTransform.gameObject.SetActive(false);
-                for (_count = 0; _count < swords.Length; _count++)
+                for (_count = 0; _count < swords.Count; _count++)
                 {
                     if (_count == nowWeaponIndex)
                     {
@@ -187,7 +222,7 @@ public class MonsterWeapon : MonoBehaviour
                 rodsFatherTransform.gameObject.SetActive(false);
                 swordsFatherTransform.gameObject.SetActive(false);
                 sicklesFatherTransform.gameObject.SetActive(true);
-                for (_count = 0; _count < sickles.Length; _count++)
+                for (_count = 0; _count < sickles.Count; _count++)
                 {
                     if (_count == nowWeaponIndex)
                     {
@@ -209,22 +244,48 @@ public class MonsterWeapon : MonoBehaviour
         switch (nowWeaponType)
         {
             case E_WeaponType.Rod:
+                nowCollider = rodCollider;
+                
                 rodCollider.enabled = true;
                 swordCollider.enabled = false;
                 sickleCollider.enabled = false;
+                
+                nowCollider.enabled = false;
                 break;
             case E_WeaponType.Sword:
+                nowCollider = swordCollider;
+                
                 rodCollider.enabled = false;
                 swordCollider.enabled = true;
                 sickleCollider.enabled = false;
+                
+                nowCollider.enabled = false;
                 break;
             case E_WeaponType.Sickle:
+                nowCollider = sickleCollider;
+                
                 rodCollider.enabled = false;
                 swordCollider.enabled = false;
                 sickleCollider.enabled = true;
+                
+                nowCollider.enabled = false;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
+    // 回复动画机速度
+    private void ResetAnimatorSpeed()
+    {
+        monsterStateMachine.animator.speed = 1f;
+    }
+
+    // 对方进行反击
+    public void Counterattack(float damage, Vector3 hitPosition)
+    {
+        monsterStateMachine.HitState.HitPosition = hitPosition;
+        
+        monsterCharacter.hp -= damage;
+        monsterStateMachine.ChangeState(monsterStateMachine.HitState);
     }
 }

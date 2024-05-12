@@ -26,9 +26,8 @@ public enum E_State
     Dodge = 14,
     Defense = 15,
     Attack = 16,
-    StrongAttack = 17,
-    SeePlayer = 18,
-    Turn = 19,
+    SeePlayer = 17,
+    Turn = 18,
 }
 
 public struct MoveInputInformation
@@ -58,8 +57,8 @@ public class PlayerMovementStateMachine : StateMachine
     public Animator playerAnimator;
     public Transform headRaycastEmissionTransform;
     public Transform footRaycastEmissionTransform;
-    [HideInInspector] public Transform playerTransform;
-    [HideInInspector] public Rigidbody playerRigidbody;
+    public Transform playerTransform;
+    public Rigidbody playerRigidbody;
     // 碰撞盒父节点
     public Transform colliders;
     // 正常状态下的碰撞盒
@@ -631,10 +630,6 @@ public class PlayerMovementStateMachine : StateMachine
         FightState = new Fight(this);
         HitState = new Hit(this);
         DeathState = new Death(this);
-        
-        // 获取组件
-        playerTransform = transform;
-        playerRigidbody = GetComponent<Rigidbody>();
         
         _animatorControllerParameters = playerAnimator.parameters;
         // 初始化Animator参数名与Hash对照表

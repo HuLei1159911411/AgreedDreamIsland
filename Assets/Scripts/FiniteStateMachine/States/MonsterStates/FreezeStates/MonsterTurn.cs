@@ -17,29 +17,42 @@ public class MonsterTurn : MonsterState
 
     private void SelectTurn()
     {
-        if (_monsterStateMachine.nowAngle < 135f)
+        _monsterStateMachine.UpdateToTargetDirectionAndAngleImmediately();
+        
+        // 因为旋转动画旋转角度过小所以全部使用最大旋转角度
+        if (Vector3.Dot(_monsterStateMachine.monsterToTargetDirection.normalized, _monsterStateMachine.transform.right) > 0f)
         {
-            // 在右边
-            if (Vector3.Dot(_monsterStateMachine.monsterToTargetDirection.normalized, _monsterStateMachine.transform.right) > 0f)
-            {
-                _monsterStateMachine.animator.SetTrigger(_monsterStateMachine.DicAnimatorIndexes["ToTurnRight90"]);
-            }
-            else
-            {
-                _monsterStateMachine.animator.SetTrigger(_monsterStateMachine.DicAnimatorIndexes["ToTurnLeft90"]);
-            }
+            _monsterStateMachine.animator.SetTrigger(_monsterStateMachine.DicAnimatorIndexes["ToTurnRight180"]);
         }
         else
         {
-            // 在右边
-            if (Vector3.Dot(_monsterStateMachine.monsterToTargetDirection.normalized, _monsterStateMachine.transform.right) > 0f)
-            {
-                _monsterStateMachine.animator.SetTrigger(_monsterStateMachine.DicAnimatorIndexes["ToTurnRight180"]);
-            }
-            else
-            {
-                _monsterStateMachine.animator.SetTrigger(_monsterStateMachine.DicAnimatorIndexes["ToTurnLeft180"]);
-            }
+            _monsterStateMachine.animator.SetTrigger(_monsterStateMachine.DicAnimatorIndexes["ToTurnLeft180"]);
         }
+        
+        // 正确角度
+        // if (_monsterStateMachine.nowAngle < 135f)
+        // {
+        //     // 在右边
+        //     if (Vector3.Dot(_monsterStateMachine.monsterToTargetDirection.normalized, _monsterStateMachine.transform.right) > 0f)
+        //     {
+        //         _monsterStateMachine.animator.SetTrigger(_monsterStateMachine.DicAnimatorIndexes["ToTurnRight90"]);
+        //     }
+        //     else
+        //     {
+        //         _monsterStateMachine.animator.SetTrigger(_monsterStateMachine.DicAnimatorIndexes["ToTurnLeft90"]);
+        //     }
+        // }
+        // else
+        // {
+        //     // 在右边
+        //     if (Vector3.Dot(_monsterStateMachine.monsterToTargetDirection.normalized, _monsterStateMachine.transform.right) > 0f)
+        //     {
+        //         _monsterStateMachine.animator.SetTrigger(_monsterStateMachine.DicAnimatorIndexes["ToTurnRight180"]);
+        //     }
+        //     else
+        //     {
+        //         _monsterStateMachine.animator.SetTrigger(_monsterStateMachine.DicAnimatorIndexes["ToTurnLeft180"]);
+        //     }
+        // }
     }
 }

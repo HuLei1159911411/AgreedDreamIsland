@@ -2,14 +2,21 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class MonsterCharacter : DefeatableCharacter
 {
     public MonsterStateMachine stateMachine;
 
-    public void Start()
+    public Transform monsterModelsFatherTransform;
+    public List<Transform> listMonsterModels;
+    public int nowMonsterModelIndex = -1;
+    
+    private int _count;
+    public void Awake()
     {
-        stateMachine = transform.GetComponent<MonsterStateMachine>();
+        AwakeInitParams();
+        Init();
     }
 
     public override bool Hit(float damage, Vector3 hitPosition, ICounterattack counterattack, bool isStrongAttack)
@@ -21,30 +28,23 @@ public class MonsterCharacter : DefeatableCharacter
             return false;
         }
         
+        // 防御状态则对方攻击不造成击中效果
+        if (counterattack != null && stateMachine.CurrentState.state == E_State.Defense && stateMachine.DefenseState.isDefensing && !isStrongAttack)
+        {
+            stateMachine.DefenseState.isSuccessfulDefense = true;
+            counterattack.Counterattack(0.1f,
+                stateMachine.monsterCollider.ClosestPoint(hitPosition));
+            return true;
+        }
         
-        // 完成攻击防御等状态之后完善这里
-        
-        
-        // // 防御状态则对方攻击不造成击中效果
-        // if (counterattack != null && stateMachine.CurrentState.state == E_State.Defense && !isStrongAttack))
-        // {
-        //     nowWeapon.isSuccessfulDefense = true;
-        //     counterattack.Counterattack(0.1f,
-        //         stateMachine.monsterCollider.ClosestPoint(hitPosition));
-        //     return true;
-        // }
-        // 攻击状态弹刀
-        // 攻击状态弹刀
-        // if (counterattack != null && stateMachine.CurrentState.state == E_State.Attack && !isStrongAttack)
-        // {
-        //     stateMachine.HitState.
-        //     PlayerMovementStateMachine.Instance.HitState.HitPosition = hitPosition;
-        //     PlayerMovementStateMachine.Instance.ChangeState(PlayerMovementStateMachine.Instance.HitState);
-        //     counterattack.Counterattack(0.1f,
-        //         PlayerMovementStateMachine.Instance.baseCollider.ClosestPoint(hitPosition));
-        //     nowWeapon.Counterattack(0.1f,hitPosition);
-        //     return true;
-        // }
+        //攻击状态弹刀
+        if (counterattack != null && stateMachine.monsterWeapon.isAttacking && !isStrongAttack)
+        {
+            stateMachine.monsterWeapon.Counterattack(0.1f, hitPosition);
+            counterattack.Counterattack(0.1f,
+                stateMachine.monsterCollider.ClosestPoint(hitPosition));
+            return true;
+        }
 
         stateMachine.HitState.HitPosition = hitPosition;
         stateMachine.ChangeState(stateMachine.HitState);
@@ -54,5 +54,44 @@ public class MonsterCharacter : DefeatableCharacter
     public override void Death()
     {
         stateMachine.ChangeState(stateMachine.DeathState);
+    }
+
+    private void AwakeInitParams()
+    {
+        stateMachine = transform.GetComponent<MonsterStateMachine>();
+        for (_count = 0; _count < monsterModelsFatherTransform.childCount; _count++)
+        {
+            listMonsterModels.Add(monsterModelsFatherTransform.GetChild(_count));
+        }
+    }
+
+    public void Init()
+    {
+        InitParams();
+    }
+
+    public void InitParams()
+    {
+        if (nowMonsterModelIndex == -1)
+        {
+            RandomGetMonsterModelIndex();
+        }
+        
+        for (_count = 0; _count < monsterModelsFatherTransform.childCount; _count++)
+        {
+            if (_count == nowMonsterModelIndex)
+            {
+                listMonsterModels[_count].gameObject.SetActive(true);
+            }
+            else
+            {
+                listMonsterModels[_count].gameObject.SetActive(false);
+            }
+        }
+    }
+    
+    private void RandomGetMonsterModelIndex()
+    {
+        nowMonsterModelIndex = Random.Range(0, listMonsterModels.Count);
     }
 }

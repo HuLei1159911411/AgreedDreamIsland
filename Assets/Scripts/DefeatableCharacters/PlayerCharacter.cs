@@ -19,7 +19,7 @@ public class PlayerCharacter : DefeatableCharacter
         }
         
         // 防御状态则对方攻击不造成击中效果
-        if (counterattack != null && nowWeapon.isDefensing && !isStrongAttack)
+        if (counterattack != null && nowWeapon != null &&nowWeapon.isDefensing && !isStrongAttack)
         {
             nowWeapon.isSuccessfulDefense = true;
             PlayerMovementStateMachine.Instance.playerAnimator.SetBool(
@@ -31,10 +31,8 @@ public class PlayerCharacter : DefeatableCharacter
 
         // 攻击状态弹刀
         if (counterattack != null && PlayerMovementStateMachine.Instance.CurrentState.state == E_State.Fight &&
-            PlayerMovementStateMachine.Instance.FightState.nowFightState == E_FightState.Attack && !isStrongAttack)
+            PlayerMovementStateMachine.Instance.FightState.FightWeapon.isAttacking && !isStrongAttack)
         {
-            PlayerMovementStateMachine.Instance.HitState.HitPosition = hitPosition;
-            PlayerMovementStateMachine.Instance.ChangeState(PlayerMovementStateMachine.Instance.HitState);
             counterattack.Counterattack(0.1f,
                 PlayerMovementStateMachine.Instance.baseCollider.ClosestPoint(hitPosition));
             nowWeapon.Counterattack(0.1f,hitPosition);
