@@ -71,6 +71,8 @@ public class PlayerMovementStateMachine : StateMachine
     public Transform playerModelRootSyncPointTransform;
     // 交互碰撞盒
     public Transform interactBox;
+    // 人物角色
+    public PlayerCharacter playerCharacter;
     #endregion
 
     #region StateObjects
@@ -113,6 +115,8 @@ public class PlayerMovementStateMachine : StateMachine
 
     public event Func<bool> WhenOnCollisionEnter;
     public event UnityAction WhenUpdateLast;
+
+    public event Func<E_State, bool> ChangeStateExternalJudgmentEvent;
     
     #endregion
 
@@ -519,6 +523,11 @@ public class PlayerMovementStateMachine : StateMachine
 
     public override bool ChangeState(BaseState newState)
     {
+        if (ChangeStateExternalJudgmentEvent != null && !ChangeStateExternalJudgmentEvent(newState.state))
+        {
+            return false;
+        }
+        
         if (_currentState.preState != null && !IsHighMatchCondition(_currentState.state, newState.state))
         {
             if (newState.state != E_State.Fight)

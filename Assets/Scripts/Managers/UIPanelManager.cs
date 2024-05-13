@@ -27,7 +27,10 @@ public class UIPanelManager : MonoBehaviour
 
     private void Update()
     {
-        PanelsInputEvent?.Invoke();
+        if (!(InputManager.Instance is null))
+        {
+            PanelsInputEvent?.Invoke();
+        }
     }
 
     public void CloseAllPanels()

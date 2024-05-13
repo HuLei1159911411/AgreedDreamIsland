@@ -9,6 +9,8 @@ public enum E_EquipmentName
 {
     GrapplingHookGears,
     Rod,
+    Sword,
+    Sickle,
 }
 
 [Serializable]

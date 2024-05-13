@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Searcher;
 using UnityEngine;
 
 public class Squat : BaseState
@@ -71,7 +72,10 @@ public class Squat : BaseState
         // 不在地面
         if (!_movementStateMachine.isOnGround)
         {
-            return _movementStateMachine.ChangeState(_movementStateMachine.FallState);
+            if (_movementStateMachine.ChangeState(_movementStateMachine.FallState))
+            {
+                return true;
+            }
         }
         
         // 松开WASD或摁住WS或摁住AD或摁住WASD并且松开下蹲键

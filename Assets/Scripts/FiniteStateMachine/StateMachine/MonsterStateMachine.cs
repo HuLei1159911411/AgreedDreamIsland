@@ -88,6 +88,8 @@ public class MonsterStateMachine : StateMachine
     public bool isStopRotateCoroutine;
     // 是否锁定旋转
     public bool isFreezeRotation;
+    // 是否是主摄像机选定的跟踪目标
+    public bool isMainCameraFollowing;
     
     // 玩家位置满足怪物看见的情况下由怪物向玩家发射检测是否存在阻挡的射线检测
     private RaycastHit _monsterToPlayerRaycastHit;
@@ -108,12 +110,14 @@ public class MonsterStateMachine : StateMachine
     public void Awake()
     {
         AwakeInitParameters();
-        Init();
+        
     }
 
     protected override void Start()
     {
         base.Start();
+        
+        Init();
         
         playerTransform = PlayerMovementStateMachine.Instance.playerTransform;
     }
@@ -175,6 +179,8 @@ public class MonsterStateMachine : StateMachine
     {
         // 初始化参数
         InitParameters();
+        
+        GameManager.Instance.listMonsters.Add(this);
     }
 
     private void InitParameters()

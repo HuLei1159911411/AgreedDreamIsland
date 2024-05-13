@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-public class TestPanel : MonoBehaviour
+public class TestPanel : Panel
 {
     public PlayerMovementStateMachine playerMovementStateMachine;
     public Text nowView;
@@ -36,6 +36,9 @@ public class TestPanel : MonoBehaviour
     private E_FightState _nowFightState;
     private void Start()
     {
+        UIPanelManager.Instance.listPanels.Add(this);
+        UIPanelManager.Instance.PanelsInputEvent += ListenPanelShowAndClose;
+        
         _cameraView = mainCamera.nowView;
         UpdateCameraViewText();
         
@@ -60,6 +63,8 @@ public class TestPanel : MonoBehaviour
 
         _nowHigh = playerMovementStateMachine.nowHigh;
         UpdateNowHigh();
+
+        ClosePanel();
     }
 
     private void FixedUpdate()
@@ -129,6 +134,34 @@ public class TestPanel : MonoBehaviour
             _nowHigh = playerMovementStateMachine.nowHigh;
             UpdateNowHigh();
         }
+    }
+
+    public override void ShowPanel()
+    {
+        base.ShowPanel();
+        this.gameObject.SetActive(true);
+    }
+
+    public override void ClosePanel()
+    {
+        base.ClosePanel();
+        this.gameObject.SetActive(false);
+    }
+
+    public void ListenPanelShowAndClose()
+    {
+        if (Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.OpenTestPanel]))
+        {
+            if (!isShow)
+            {
+                ShowPanel();
+            }
+            else
+            {
+                ClosePanel();
+            }
+        }
+        
     }
 
     void UpdateCameraViewText()

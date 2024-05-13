@@ -91,13 +91,19 @@ public class Sliding : BaseState
         // 加速结束后摁奔跑键进入翻滚状态
         if (_movementStateMachine.MoveInputInfo.RollInput)
         {
-            return _movementStateMachine.ChangeState(_movementStateMachine.RollState);
+            if (_movementStateMachine.ChangeState(_movementStateMachine.RollState))
+            {
+                return true;
+            }
         }
 
         // 结束加速后摁后退键
         if (_movementStateMachine.MoveInputInfo.VerticalInput == -1)
         {
-            return _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
+            if (_movementStateMachine.ChangeState(_movementStateMachine.IdleState))
+            {
+                return true;
+            }
         }
 
         // 未松开滑铲键并且水平速度未接近0则不会改变滑铲状态(若松开滑铲键了速度变接近0则变为Idle状态，若速度不接近0则不改变状态)
@@ -109,7 +115,10 @@ public class Sliding : BaseState
         // 滑到空中并且加速结束
         if (!_movementStateMachine.isOnGround && _timer >= _movementStateMachine.slidingAccelerateTime)
         {
-            return stateMachine.ChangeState(_movementStateMachine.IdleState);
+            if (stateMachine.ChangeState(_movementStateMachine.IdleState))
+            {
+                return true;
+            }
         }
 
         // 松开WASD或摁住WS或摁住AD或摁住WASD且水平速度已经快接近0

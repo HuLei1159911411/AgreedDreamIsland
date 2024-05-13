@@ -51,21 +51,7 @@ public class WeaponsBagPanel : Panel
         SetWeaponsBagByEquipmentsController();
         
         UIPanelManager.Instance.listPanels.Add(this);
-        UIPanelManager.Instance.PanelsInputEvent += () =>
-        {
-            if (Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.OpenBag]))
-            {
-                if (!isShow)
-                {
-                    UIPanelManager.Instance.CloseAllPanels();
-                    ShowPanel();
-                }
-                else
-                {
-                    ClosePanel();
-                }
-            }
-        };
+        UIPanelManager.Instance.PanelsInputEvent += ListenPanelShowAndClose;
 
         selectFirstWeaponTipIconKeyText.text = Regex.Replace(Enum.GetName(typeof(KeyCode),
             InputManager.Instance.DicBehavior[E_InputBehavior.FirstWeapon]), Regex.Escape("Alpha"), "");
@@ -206,6 +192,22 @@ public class WeaponsBagPanel : Panel
         {
             listAlwaysShowWeaponCells[_nowWeaponIndex].weaponCellBackgroundImage.color = _existentWeaponColor;
             listAlwaysShowWeaponCells[_nowWeaponIndex].weaponCellTransform.localScale = Vector3.one;
+        }
+    }
+
+    public void ListenPanelShowAndClose()
+    {
+        if (Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.OpenBagPanel]))
+        {
+            if (!isShow)
+            {
+                UIPanelManager.Instance.CloseAllPanels();
+                ShowPanel();
+            }
+            else
+            {
+                ClosePanel();
+            }
         }
     }
 }

@@ -12,7 +12,7 @@ AnimatorStateTransition:
     m_ConditionEvent: IsContinueAttack
     m_EventTreshold: 0
   - m_ConditionMode: 6
-    m_ConditionEvent: WeaponName
+    m_ConditionEvent: WeaponType
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: -3623821078176548697}
   m_DstState: {fileID: 0}
@@ -72,7 +72,7 @@ AnimatorStateTransition:
     m_ConditionEvent: IsSuccessfulDefense
     m_EventTreshold: 0
   - m_ConditionMode: 6
-    m_ConditionEvent: WeaponName
+    m_ConditionEvent: WeaponType
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -4432299449988820032}
@@ -204,7 +204,7 @@ AnimatorStateTransition:
     m_ConditionEvent: IsContinueAttack
     m_EventTreshold: 0
   - m_ConditionMode: 6
-    m_ConditionEvent: WeaponName
+    m_ConditionEvent: WeaponType
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: -3623821078176548697}
   m_DstState: {fileID: 0}
@@ -595,6 +595,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: 1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3335575424636522289}
   m_Solo: 0
@@ -680,6 +683,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: 1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3335575424636522289}
   m_Solo: 0
@@ -896,6 +902,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 5289656634399165174}
   m_Solo: 0
@@ -2187,6 +2196,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 1
     m_ConditionEvent: RunInput
     m_EventTreshold: 0
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1821684080995972677}
   m_Solo: 0
@@ -2218,6 +2230,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: 1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3335575424636522289}
   m_Solo: 0
@@ -3035,6 +3050,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 5289656634399165174}
   m_Solo: 0
@@ -3344,6 +3362,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: 1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3335575424636522289}
   m_Solo: 0
@@ -3766,7 +3787,7 @@ AnimatorStateTransition:
     m_ConditionEvent: IsContinueAttack
     m_EventTreshold: 0
   - m_ConditionMode: 6
-    m_ConditionEvent: WeaponName
+    m_ConditionEvent: WeaponType
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: -2458400513434056716}
   m_DstState: {fileID: 0}
@@ -3792,6 +3813,9 @@ AnimatorStateTransition:
   m_Conditions:
   - m_ConditionMode: 1
     m_ConditionEvent: RunInput
+    m_EventTreshold: 0
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1821684080995972677}
@@ -3994,7 +4018,7 @@ AnimatorStateTransition:
     m_ConditionEvent: IsSuccessfulDefense
     m_EventTreshold: 0
   - m_ConditionMode: 6
-    m_ConditionEvent: WeaponName
+    m_ConditionEvent: WeaponType
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3729547004013947452}
@@ -4599,6 +4623,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: VerticalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 4578763852330423436}
   m_Solo: 0
@@ -4783,7 +4810,7 @@ AnimatorStateTransition:
     m_ConditionEvent: IsSuccessfulDefense
     m_EventTreshold: 0
   - m_ConditionMode: 6
-    m_ConditionEvent: WeaponName
+    m_ConditionEvent: WeaponType
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 697455248693341429}
@@ -4813,6 +4840,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: VerticalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 4578763852330423436}
   m_Solo: 0
@@ -4837,6 +4867,9 @@ AnimatorStateTransition:
   m_Conditions:
   - m_ConditionMode: 1
     m_ConditionEvent: RunInput
+    m_EventTreshold: 0
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1821684080995972677}
@@ -5020,6 +5053,7 @@ AnimatorState:
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 5333315890045318666}
+  - {fileID: 1452572420553589087}
   - {fileID: 4071172799845920602}
   - {fileID: 2172812423360405248}
   - {fileID: -461741033544807187}
@@ -5587,7 +5621,7 @@ AnimatorStateTransition:
     m_ConditionEvent: IsContinueAttack
     m_EventTreshold: 0
   - m_ConditionMode: 6
-    m_ConditionEvent: WeaponName
+    m_ConditionEvent: WeaponType
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: -3623821078176548697}
   m_DstState: {fileID: 0}
@@ -5705,6 +5739,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: VerticalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 4578763852330423436}
   m_Solo: 0
@@ -5761,259 +5798,265 @@ AnimatorController:
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: ToState
     m_Type: 3
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: isOnGround
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: isOnSlope
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: isFastToRun
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: hasWallOnLeft
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: hasWallOnRight
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: hasWallOnForward
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: hasWallOnHeadForward
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: hasWallOnFootForward
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: VerticalInputFloat
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: HorizontalInputFloat
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: VerticalInputInt
     m_Type: 3
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: HorizontalInputInt
     m_Type: 3
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: MoveForwardInput
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: MoveBackwardInput
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: MoveLeftInput
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: MoveRightInput
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: RunInput
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: JumpInput
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: SlidingInput
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: SquatInput
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: ToGrapple
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: IsGrappleHookRetractBoth
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: IsGrappleHookRetractLeft
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: IsGrappleHookRetractRight
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: IsLeftClimbStateByUp
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: ToPick
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: ToEquip
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: ToUnEquip
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
-  - m_Name: WeaponName
+    m_Controller: {fileID: 0}
+  - m_Name: WeaponType
     m_Type: 3
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FireInput
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: AimInput
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: IsContinueAttack
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: ReadyToFight
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: IsSuccessfulDefense
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: NowFightState
     m_Type: 3
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: ToHitFront
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: ToHitBack
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: ToHitLeft
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: ToHitRight
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: ToDeath
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: WeaponIsInUse
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
+  - m_Name: StaminaIsCanChangeState
+    m_Type: 4
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 0}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Base Layer
@@ -6290,6 +6333,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 1
     m_ConditionEvent: RunInput
     m_EventTreshold: 0
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1821684080995972677}
   m_Solo: 0
@@ -6344,6 +6390,9 @@ AnimatorStateTransition:
   m_Conditions:
   - m_ConditionMode: 1
     m_ConditionEvent: RunInput
+    m_EventTreshold: 0
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1821684080995972677}
@@ -6555,7 +6604,7 @@ AnimatorStateTransition:
     m_ConditionEvent: IsContinueAttack
     m_EventTreshold: 0
   - m_ConditionMode: 6
-    m_ConditionEvent: WeaponName
+    m_ConditionEvent: WeaponType
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: -3623821078176548697}
   m_DstState: {fileID: 0}
@@ -6748,6 +6797,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: 1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3335575424636522289}
   m_Solo: 0
@@ -6874,6 +6926,31 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!1101 &1452572420553589087
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions:
+  - m_ConditionMode: 6
+    m_ConditionEvent: ToState
+    m_EventTreshold: 1
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: -7986743553420322394}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0
+  m_ExitTime: 0.53125
+  m_HasExitTime: 0
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1101 &1465220439786148513
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -6888,6 +6965,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: VerticalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 4578763852330423436}
   m_Solo: 0
@@ -7114,6 +7194,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: 1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3335575424636522289}
   m_Solo: 0
@@ -7336,6 +7419,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 5289656634399165174}
   m_Solo: 0
@@ -7582,7 +7668,7 @@ AnimatorStateTransition:
     m_ConditionEvent: IsContinueAttack
     m_EventTreshold: 0
   - m_ConditionMode: 6
-    m_ConditionEvent: WeaponName
+    m_ConditionEvent: WeaponType
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: -3623821078176548697}
   m_DstState: {fileID: 0}
@@ -7816,6 +7902,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: VerticalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 4578763852330423436}
   m_Solo: 0
@@ -7979,6 +8068,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: VerticalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 4578763852330423436}
   m_Solo: 0
@@ -8010,6 +8102,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 5289656634399165174}
   m_Solo: 0
@@ -8102,6 +8197,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 5289656634399165174}
   m_Solo: 0
@@ -8268,6 +8366,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: VerticalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 4578763852330423436}
   m_Solo: 0
@@ -8325,7 +8426,7 @@ AnimatorStateTransition:
     m_ConditionEvent: IsContinueAttack
     m_EventTreshold: 0
   - m_ConditionMode: 6
-    m_ConditionEvent: WeaponName
+    m_ConditionEvent: WeaponType
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: -3623821078176548697}
   m_DstState: {fileID: 0}
@@ -8710,6 +8811,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 1
     m_ConditionEvent: RunInput
     m_EventTreshold: 0
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1821684080995972677}
   m_Solo: 0
@@ -8856,6 +8960,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 5289656634399165174}
   m_Solo: 0
@@ -9874,6 +9981,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: 1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3335575424636522289}
   m_Solo: 0
@@ -10124,6 +10234,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: HorizontalInputInt
     m_EventTreshold: -1
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 5289656634399165174}
   m_Solo: 0
@@ -10517,6 +10630,9 @@ AnimatorStateTransition:
   m_Conditions:
   - m_ConditionMode: 1
     m_ConditionEvent: RunInput
+    m_EventTreshold: 0
+  - m_ConditionMode: 1
+    m_ConditionEvent: StaminaIsCanChangeState
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1821684080995972677}
@@ -10974,7 +11090,7 @@ AnimatorStateTransition:
     m_ConditionEvent: IsContinueAttack
     m_EventTreshold: 0
   - m_ConditionMode: 6
-    m_ConditionEvent: WeaponName
+    m_ConditionEvent: WeaponType
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: -3623821078176548697}
   m_DstState: {fileID: 0}
@@ -11132,7 +11248,7 @@ AnimatorStateTransition:
     m_ConditionEvent: ToState
     m_EventTreshold: 11
   - m_ConditionMode: 6
-    m_ConditionEvent: WeaponName
+    m_ConditionEvent: WeaponType
     m_EventTreshold: 0
   - m_ConditionMode: 1
     m_ConditionEvent: ReadyToFight

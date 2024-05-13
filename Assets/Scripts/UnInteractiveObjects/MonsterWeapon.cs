@@ -94,17 +94,17 @@ public class MonsterWeapon : MonoBehaviour, ICounterattack
     private void AwakeInitParams()
     {
         rods = new List<Transform>();
-        for (_count = 0; _count < rods.Count; _count++)
+        for (_count = 0; _count < rodsFatherTransform.childCount; _count++)
         {
             rods.Add(rodsFatherTransform.GetChild(_count));
         }
         swords = new List<Transform>();
-        for (_count = 0; _count < swords.Count; _count++)
+        for (_count = 0; _count < swordsFatherTransform.childCount; _count++)
         {
             swords.Add(swordsFatherTransform.GetChild(_count));
         }
         sickles = new List<Transform>();
-        for (_count = 0; _count < sickles.Count; _count++)
+        for (_count = 0; _count < sicklesFatherTransform.childCount; _count++)
         {
             sickles.Add(sicklesFatherTransform.GetChild(_count));
         }
@@ -274,7 +274,7 @@ public class MonsterWeapon : MonoBehaviour, ICounterattack
                 throw new ArgumentOutOfRangeException();
         }
     }
-    // 回复动画机速度
+    // 恢复动画机速度
     private void ResetAnimatorSpeed()
     {
         monsterStateMachine.animator.speed = 1f;

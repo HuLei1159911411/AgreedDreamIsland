@@ -93,7 +93,8 @@ public class Climb : BaseState
         }
         
         // 松开前进键或达到最大攀爬时间
-        if (!_movementStateMachine.MoveInputInfo.MoveForwardInput || ClimbTimer >= _movementStateMachine.climbTime)
+        if (!_movementStateMachine.MoveInputInfo.MoveForwardInput || _movementStateMachine.playerCharacter.stamina <=
+            _movementStateMachine.playerCharacter.climbAndWallRunningStaminaReduceSpeed)
         {
             _movementStateMachine.playerRigidbody.useGravity = true;
         }
@@ -189,7 +190,8 @@ public class Climb : BaseState
     {
         // 更新移动方向
         // 若是攀爬时间还没到最大攀爬时间则还可以往上爬不然只能左右稍微改变
-        if (ClimbTimer < _movementStateMachine.climbTime)
+        // 体力相关
+        if (_movementStateMachine.playerCharacter.stamina > _movementStateMachine.playerCharacter.climbAndWallRunningStaminaReduceSpeed)
         {
             _movementStateMachine.direction = _movementStateMachine.playerTransform.up;
             _movementStateMachine.direction += 0.5f *

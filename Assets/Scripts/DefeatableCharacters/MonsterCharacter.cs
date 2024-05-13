@@ -11,6 +11,7 @@ public class MonsterCharacter : DefeatableCharacter
     public Transform monsterModelsFatherTransform;
     public List<Transform> listMonsterModels;
     public int nowMonsterModelIndex = -1;
+    public float maxHp;
     
     private int _count;
     public void Awake()
@@ -54,6 +55,10 @@ public class MonsterCharacter : DefeatableCharacter
     public override void Death()
     {
         stateMachine.ChangeState(stateMachine.DeathState);
+        if (stateMachine.isMainCameraFollowing)
+        {
+            CameraController.Instance.ResetCameraToFollowPlayer();
+        }
     }
 
     private void AwakeInitParams()
@@ -88,6 +93,8 @@ public class MonsterCharacter : DefeatableCharacter
                 listMonsterModels[_count].gameObject.SetActive(false);
             }
         }
+
+        hp = maxHp;
     }
     
     private void RandomGetMonsterModelIndex()

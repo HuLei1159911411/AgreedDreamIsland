@@ -6,6 +6,85 @@ using UnityEngine;
 public class PlayerCharacter : DefeatableCharacter
 {
     public Weapon nowWeapon;
+
+    public float maxHp;
+    public float maxStamina;
+    public float stamina;
+    public float staminaAddSpeed;
+    public float climbAndWallRunningStaminaReduceSpeed;
+    public float runStaminaReduceSpeed;
+    public float changeStateReduceStaminaValue;
+    private bool _preFrameStaminaIsCanChangeState;
+    private bool _nowFrameStaminaIsCanChangeState;
+
+    private void Awake()
+    {
+        hp = maxHp;
+        stamina = maxStamina;
+        _preFrameStaminaIsCanChangeState = true;
+        _nowFrameStaminaIsCanChangeState = true;
+        staminaAddSpeed *= Time.fixedDeltaTime;
+        climbAndWallRunningStaminaReduceSpeed *= Time.fixedDeltaTime;
+        runStaminaReduceSpeed *= Time.fixedDeltaTime;
+    }
+
+    private void Start()
+    {
+        PlayerMovementStateMachine.Instance.playerCharacter = this;
+        PlayerMovementStateMachine.Instance.ChangeStateExternalJudgmentEvent +=
+            CheckStaminaValueEnableCompleteChangeState;
+    }
+
+    private void FixedUpdate()
+    {
+        if (!(PlayerMovementStateMachine.Instance is null))
+        {
+            switch (PlayerMovementStateMachine.Instance.CurrentState.state)
+            {
+                case E_State.Idle :
+                    stamina += staminaAddSpeed * 2f;
+                    if (stamina > maxStamina)
+                    {
+                        stamina = maxStamina;
+                    }
+                    break;
+                case E_State.Run :
+                    stamina -= runStaminaReduceSpeed;
+                    break;
+                case E_State.WallRunning :
+                    stamina -= climbAndWallRunningStaminaReduceSpeed;
+                    break;
+                case E_State.Climb :
+                    stamina -= climbAndWallRunningStaminaReduceSpeed;
+                    break;
+                default:
+                    stamina += staminaAddSpeed;
+                    if (stamina > maxStamina)
+                    {
+                        stamina = maxStamina;
+                    }
+                    break;
+            }
+
+            if (stamina >= changeStateReduceStaminaValue)
+            {
+                _nowFrameStaminaIsCanChangeState = true;
+            }
+            else
+            {
+                _nowFrameStaminaIsCanChangeState = false;
+            }
+
+            if (_preFrameStaminaIsCanChangeState != _nowFrameStaminaIsCanChangeState)
+            {
+                _preFrameStaminaIsCanChangeState = _nowFrameStaminaIsCanChangeState;
+                PlayerMovementStateMachine.Instance.playerAnimator.SetBool(
+                    PlayerMovementStateMachine.Instance.DicAnimatorIndexes["StaminaIsCanChangeState"],
+                    _nowFrameStaminaIsCanChangeState);
+            }
+        }
+    }
+
     public override bool Hit(float damage, Vector3 hitPosition, ICounterattack counterattack, bool isStrongAttack)
     {
         // 闪避状态中击中失败
@@ -47,5 +126,43 @@ public class PlayerCharacter : DefeatableCharacter
     public override void Death()
     {
         PlayerMovementStateMachine.Instance.ChangeState(PlayerMovementStateMachine.Instance.DeathState);
+    }
+
+    public bool CheckStaminaValueEnableCompleteChangeState(E_State newState)
+    {
+        switch (newState)
+        {
+            case E_State.Jump :
+                // 在墙上跳消耗体力减75%
+                if ((PlayerMovementStateMachine.Instance.CurrentState.state == E_State.Climb ||
+                     PlayerMovementStateMachine.Instance.CurrentState.state == E_State.WallRunning)
+                    && stamina >= changeStateReduceStaminaValue * 0.25f)
+                {
+                    stamina -= changeStateReduceStaminaValue * 0.25f;
+                    return true;
+                }
+
+                if (stamina >= changeStateReduceStaminaValue)
+                {
+                    stamina -= changeStateReduceStaminaValue;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            case E_State.Roll :
+                if (stamina >= changeStateReduceStaminaValue)
+                {
+                    stamina -= changeStateReduceStaminaValue;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+        }
+
+        return true;
     }
 }

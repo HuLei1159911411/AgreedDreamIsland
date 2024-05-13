@@ -275,16 +275,25 @@ public class Grapple : BaseState
                 
                 if (_movementStateMachine.isFastToRun)
                 {
-                    return _movementStateMachine.ChangeState(_movementStateMachine.RunState);
+                    if (_movementStateMachine.ChangeState(_movementStateMachine.RunState))
+                    {
+                        return true;
+                    }
                 }
                 else
                 {
-                    return _movementStateMachine.ChangeState(_movementStateMachine.WalkState);
+                    if (_movementStateMachine.ChangeState(_movementStateMachine.WalkState))
+                    {
+                        return true;
+                    }
                 }
             }
             else
             {
-                return _movementStateMachine.ChangeState(_movementStateMachine.FallState);
+                if (_movementStateMachine.ChangeState(_movementStateMachine.FallState))
+                {
+                    return true;
+                }
             }
         }
         return false;

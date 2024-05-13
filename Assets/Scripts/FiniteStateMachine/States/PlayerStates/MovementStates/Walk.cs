@@ -134,8 +134,10 @@ public class Walk : BaseState
             // 摁过Shift
             if (_pressRunKeyTimer > 0f && _coolTimeTimer > 0.1f)
             {
-                _movementStateMachine.ChangeState(_movementStateMachine.RollState);
-                return true;
+                if (_movementStateMachine.ChangeState(_movementStateMachine.RollState))
+                {
+                    return true;
+                }
             }
         }
 

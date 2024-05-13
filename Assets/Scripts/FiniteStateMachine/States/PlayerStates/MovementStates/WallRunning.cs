@@ -34,7 +34,7 @@ public class WallRunning : BaseState
         }
         else
         {
-            _timer = 0;
+            _timer = 0f;
         }
 
         CheckCameraFocusTargetPointIsReverse();
@@ -86,7 +86,9 @@ public class WallRunning : BaseState
         
         _movementStateMachine.ClampXozVelocity();
 
-        if (_timer < _movementStateMachine.wallRunningTime && _movementStateMachine.MoveInputInfo.MoveForwardInput)
+        if (_movementStateMachine.playerCharacter.stamina >
+            _movementStateMachine.playerCharacter.climbAndWallRunningStaminaReduceSpeed &&
+            _movementStateMachine.MoveInputInfo.MoveForwardInput)
         {
             // 加力将使玩家贴近墙壁
             _movementStateMachine.playerRigidbody.AddForce(-_movementStateMachine.GetWallNormal() * 10f);
@@ -113,7 +115,8 @@ public class WallRunning : BaseState
             return true;
         }
         
-        if (_timer >= _movementStateMachine.wallRunningTime || 
+        if (_movementStateMachine.playerCharacter.stamina <=
+            _movementStateMachine.playerCharacter.climbAndWallRunningStaminaReduceSpeed|| 
             !_movementStateMachine.MoveInputInfo.MoveForwardInput)
         {
             _movementStateMachine.playerRigidbody.useGravity = true;

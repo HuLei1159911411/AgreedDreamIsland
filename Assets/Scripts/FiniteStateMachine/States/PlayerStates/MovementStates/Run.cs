@@ -93,7 +93,30 @@ public class Run : BaseState
             _movementStateMachine.ChangeState(_movementStateMachine.FallState);
             return true;
         }
-        
+
+        // 体力相关
+        if (!(_movementStateMachine.playerCharacter is null) && _movementStateMachine.playerCharacter.stamina <=
+            _movementStateMachine.playerCharacter.runStaminaReduceSpeed)
+        {
+            if (_movementStateMachine.ChangeState(_movementStateMachine.WalkState))
+            {
+                return true;
+            }
+            else if(_movementStateMachine.ChangeState(_movementStateMachine.SquatState))
+            {
+                return true;
+            }
+            else if (_coolTimeTimer >= _movementStateMachine.slidingCoolTime &&
+                     _movementStateMachine.ChangeState(_movementStateMachine.SlidingState))
+            {
+                return true;
+            }
+            else if (_movementStateMachine.ChangeState(_movementStateMachine.IdleState))
+            {
+                return true;
+            }
+        }
+
         // 摁前进键加空格并且前方有墙壁并且角度满足条件
         if (_movementStateMachine.MoveInputInfo.MoveForwardInput && 
             _movementStateMachine.MoveInputInfo.JumpInput &&
@@ -114,8 +137,10 @@ public class Run : BaseState
         // 摁跑步键
         if (_movementStateMachine.MoveInputInfo.RollInput  && _coolTimeTimer > 0.1f && hasReleaseShiftKey)
         {
-            stateMachine.ChangeState(_movementStateMachine.RollState);
-            return true;
+            if (stateMachine.ChangeState(_movementStateMachine.RollState))
+            {
+                return true;
+            }
         }
 
         // 松开WASD或摁住WS或摁住AD或摁住WASD
