@@ -478,7 +478,7 @@ public class PlayerMovementStateMachine : StateMachine
             playerTransform.position = _calPlayerModelPosition;
         }
         
-        // 除了滑墙和攀爬重力全部在这里管理
+        // 除了滑墙、攀爬和死亡重力全部在这里管理
         if (isOnSlope)
         {
             // 关闭玩家刚体自带的重力
@@ -495,7 +495,8 @@ public class PlayerMovementStateMachine : StateMachine
                     break;
             }
         }
-        else if (_currentState != null && _currentState.state != E_State.WallRunning && _currentState.state != E_State.Climb)
+        else if (_currentState != null && _currentState.state != E_State.WallRunning &&
+                 _currentState.state != E_State.Climb && _currentState.state != E_State.Death)
         {
             playerRigidbody.useGravity = true;
         }
@@ -668,6 +669,8 @@ public class PlayerMovementStateMachine : StateMachine
         nowMoveSpeed = 0;
         
         _isTryToChangeState = false;
+
+        playerRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
     }
 
 

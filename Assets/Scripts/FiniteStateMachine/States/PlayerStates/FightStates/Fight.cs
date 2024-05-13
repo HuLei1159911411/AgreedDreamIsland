@@ -77,6 +77,10 @@ public class Fight : BaseState
     public void SetNowFightState(int fightState)
     {
         nowFightState = (E_FightState)fightState;
+        if (nowFightState != E_FightState.Defense && FightWeapon.isDefensing)
+        {
+            FightWeapon.isDefensing = false;
+        }
         _movementStateMachine.playerAnimator.SetInteger(_movementStateMachine.DicAnimatorIndexes["NowFightState"],
             fightState);
     }

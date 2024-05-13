@@ -17,7 +17,11 @@ public class Death : BaseState
     {
         base.Enter();
         CameraController.Instance.isStopPlayerRotation = true;
+        _movementStateMachine.playerRigidbody.useGravity = false;
+        _movementStateMachine.playerRigidbody.constraints = RigidbodyConstraints.FreezeAll;
+        _movementStateMachine.playerRigidbody.velocity = Vector3.zero;
         _movementStateMachine.playerAnimator.SetTrigger(_movementStateMachine.DicAnimatorIndexes["ToDeath"]);
+        _movementStateMachine.colliders.gameObject.SetActive(false);
     }
 
     public override void Exit()

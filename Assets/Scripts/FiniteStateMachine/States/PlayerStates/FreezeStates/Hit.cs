@@ -41,7 +41,7 @@ public class Hit : BaseState
         }
         if (preState.state == E_State.Fight)
         {
-            _movementStateMachine.FightState.FightWeapon.ResetIsContinueAttack(0.4f);
+            _movementStateMachine.FightState.FightWeapon.ResetIsContinueAttack(0.8f);
             _movementStateMachine.FightState.FightWeapon.CloseCheckWeaponIsHit();
         }
         CalculateHitDirectionAndToHit();

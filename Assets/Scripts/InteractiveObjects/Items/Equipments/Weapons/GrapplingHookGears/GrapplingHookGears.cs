@@ -9,10 +9,12 @@ public class GrapplingHookGears : Equipment
 { 
     public Transform grapplingHookGearLeftModelTransform;
     public Vector3 grapplingHookGearLeftOnEquipPositionOffset;
+    public Quaternion grapplingHookGearLeftOnEquipRotationOffset;
     private Vector3 _grapplingHookGearLeftOnItemPositionOffset;
     private Quaternion _grapplingHookGearLeftOnItemRotationOffset;
     public Transform grapplingHookGearRightModelTransform;
     public Vector3 grapplingHookGearRightOnEquipPositionOffset;
+    public Quaternion grapplingHookGearRightOnEquipRotationOffset;
     private Vector3 _grapplingHookGearRightOnItemPositionOffset;
     private Quaternion _grapplingHookGearRightOnItemRotationOffset;
     
@@ -163,11 +165,11 @@ public class GrapplingHookGears : Equipment
         {
             // 设置左右两个立体机动装置模型Transform父节点及位置
             grapplingHookGearLeftModelTransform.SetParent(controller.grapplingHookGearsFatherTransform);
-            grapplingHookGearLeftModelTransform.localRotation = Quaternion.identity;
+            grapplingHookGearLeftModelTransform.localRotation = grapplingHookGearLeftOnEquipRotationOffset;
             grapplingHookGearLeftModelTransform.localPosition = grapplingHookGearLeftOnEquipPositionOffset;
             
             grapplingHookGearRightModelTransform.SetParent(controller.grapplingHookGearsFatherTransform);
-            grapplingHookGearRightModelTransform.localRotation = Quaternion.identity;
+            grapplingHookGearRightModelTransform.localRotation = grapplingHookGearRightOnEquipRotationOffset;
             grapplingHookGearRightModelTransform.localPosition = grapplingHookGearRightOnEquipPositionOffset;
 
             _isChangeModelFatherTransform = true;

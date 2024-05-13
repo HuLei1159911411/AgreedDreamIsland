@@ -155,7 +155,7 @@ MonoBehaviour:
   hook: {fileID: 6453755293011495957}
   hookFather: {fileID: 8647655187444644182}
   isLeft: 0
-  hookMoveSpeed: 0.3
+  hookMoveSpeed: 0.4
   isDrawHookAndRope: 0
   isCompletedMove: 1
   isRetractingRope: 0
@@ -274,7 +274,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interactController: {fileID: 0}
   type: 0
-  strName: 
+  strName: "\u7ACB\u4F53\u673A\u52A8\u88C5\u7F6E"
   itemType: 0
   itemCollider: {fileID: 0}
   equipmentName: 0
@@ -283,15 +283,19 @@ MonoBehaviour:
   isInEquip: 0
   controller: {fileID: 0}
   grapplingHookGearLeftModelTransform: {fileID: 7607377698541436097}
-  grapplingHookGearLeftOnEquipPositionOffset: {x: -0.25, y: 0, z: 0.1}
+  grapplingHookGearLeftOnEquipPositionOffset: {x: 0, y: 20, z: 25}
+  grapplingHookGearLeftOnEquipRotationOffset: {x: 0.49999997, y: -0.49999997, z: -0.49999997,
+    w: -0.49999997}
   grapplingHookGearRightModelTransform: {fileID: 3354619246025261745}
-  grapplingHookGearRightOnEquipPositionOffset: {x: 0.25, y: 0, z: 0.1}
+  grapplingHookGearRightOnEquipPositionOffset: {x: 0, y: 20, z: -25}
+  grapplingHookGearRightOnEquipRotationOffset: {x: 0.49999997, y: -0.49999997, z: -0.49999997,
+    w: -0.49999997}
   grapplingHookLeft: {fileID: 2430407305656356989}
   grapplingHookRight: {fileID: 7451332288884665616}
-  maxHookCheckDistance: 18
+  maxHookCheckDistance: 20
   cameraHookCheckPointSphereCastRadius: 0.5
   autoHookCheckPointSphereCastRadius: 1
-  grapplingHookRopeLength: 11
+  grapplingHookRopeLength: 13
   grapplingHookRopeMaxLengthRatio: 1.2
   grapplingHookRopeMinLengthRatio: 0
   grapplingHookRopeDestroyLengthRatio: 1.3
@@ -482,7 +486,7 @@ MonoBehaviour:
   hook: {fileID: 3591298989128759554}
   hookFather: {fileID: 3349341907893919370}
   isLeft: 0
-  hookMoveSpeed: 0.3
+  hookMoveSpeed: 0.4
   isDrawHookAndRope: 0
   isCompletedMove: 1
   isRetractingRope: 0

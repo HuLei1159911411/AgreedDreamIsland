@@ -14,6 +14,7 @@ public class MonsterDeath : MonsterState
         base.Enter();
         _monsterStateMachine.monsterRigidbody.useGravity = false;
         _monsterStateMachine.monsterCollider.enabled = false;
+        _monsterStateMachine.monsterRigidbody.constraints = RigidbodyConstraints.FreezeAll;
         _monsterStateMachine.animator.SetTrigger(_monsterStateMachine.DicAnimatorIndexes["ToDeath"]);
     }
 }

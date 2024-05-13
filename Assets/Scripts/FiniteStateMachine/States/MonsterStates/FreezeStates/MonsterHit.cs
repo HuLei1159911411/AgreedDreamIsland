@@ -29,8 +29,8 @@ public class MonsterHit : MonsterState
 
     public override void UpdatePhysic()
     {
-        _timer += Time.deltaTime;
-        if (_timer >= 0.4f)
+        _timer += Time.fixedDeltaTime;
+        if (_timer >= 0.8f)
         {
             _monsterStateMachine.ChangeState(_monsterStateMachine.IdleState);
         }

@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance => _instance;
 
     public List<MonsterStateMachine> listMonsters;
+    public bool canAccessMonsters;
     
     // 上一次查找最近距离的怪物的最近距离
     public float lastTimeNearestMonsterNearestDistance;
@@ -29,6 +30,7 @@ public class GameManager : MonoBehaviour
         }
 
         listMonsters = new List<MonsterStateMachine>();
+        canAccessMonsters = true;
     }
     
     // 获取距离玩家最近的怪物的距离

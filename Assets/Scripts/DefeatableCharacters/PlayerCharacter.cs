@@ -98,7 +98,7 @@ public class PlayerCharacter : DefeatableCharacter
         }
         
         // 防御状态则对方攻击不造成击中效果
-        if (counterattack != null && nowWeapon != null &&nowWeapon.isDefensing && !isStrongAttack)
+        if (counterattack != null && nowWeapon != null && nowWeapon.isDefensing && !isStrongAttack)
         {
             nowWeapon.isSuccessfulDefense = true;
             PlayerMovementStateMachine.Instance.playerAnimator.SetBool(

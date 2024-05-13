@@ -57,11 +57,18 @@ public class Weapon : Equipment, ICounterattack
     // 在地上作为物品时、放在背上装备中位置和旋转信息
     private Quaternion _weaponOnItemRotationOffset;
     // 背上
+    public Vector3 weaponModelOnBackPositionOffsetRod;
+    public Quaternion weaponModelOnBackRotationOffsetRod;
+    public Vector3 weaponModelOnBackPositionOffsetSword;
+    public Quaternion weaponModelOnBackRotationOffsetSword;
+    public Vector3 weaponModelOnBackPositionOffsetSickle;
+    public Quaternion weaponModelOnBackRotationOffsetSickle;
+    
     public Vector3 weaponModelOnBackPositionOffset;
     public Quaternion weaponModelOnBackRotationOffset;
     
     // 是否正在进行防御
-    [HideInInspector]  public bool isDefensing;
+  public bool isDefensing;
     // 是否防御成功
     [HideInInspector]  public bool isSuccessfulDefense;
     // 左键或右键摁下后继续监听另一个键摁下的延长时间(使更容易进入防御状态)
@@ -102,6 +109,8 @@ public class Weapon : Equipment, ICounterattack
     [HideInInspector] public bool isHoldWeapon;
     // 是否已经卸载武器
     [HideInInspector] public bool isReleaseWeapon;
+    // 武器拿到手上开始攻击计时器
+    [HideInInspector] public float toStartAttackTimer;
 
     private PlayerCharacter _playerCharacter;
     private void Awake()
@@ -159,6 +168,24 @@ public class Weapon : Equipment, ICounterattack
                 break;
             case E_WeaponType.Sickle:
                 strName = "镰刀";
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        switch (weaponType)
+        {
+            case E_WeaponType.Rod:
+                weaponModelOnBackPositionOffset = weaponModelOnBackPositionOffsetRod;
+                weaponModelOnBackRotationOffset = weaponModelOnBackRotationOffsetRod;
+                break;
+            case E_WeaponType.Sword:
+                weaponModelOnBackPositionOffset = weaponModelOnBackPositionOffsetSword;
+                weaponModelOnBackRotationOffset = weaponModelOnBackRotationOffsetSword;
+                break;
+            case E_WeaponType.Sickle:
+                weaponModelOnBackPositionOffset = weaponModelOnBackPositionOffsetSickle;
+                weaponModelOnBackRotationOffset = weaponModelOnBackRotationOffsetSickle;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -310,6 +337,8 @@ public class Weapon : Equipment, ICounterattack
             default:
                 throw new ArgumentOutOfRangeException();
         }
+
+        equipmentName = (E_EquipmentName)(int)equipmentType + 1;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -427,15 +456,21 @@ public class Weapon : Equipment, ICounterattack
 
             controller.playerAnimator.SetTrigger(
                 controller.playerMovementStateMachine.DicAnimatorIndexes["ToEquip"]);
+
+            _fireInputOnContinueAttack = false;
+            _aimInputOnContinueAttack = false;
             
             ResetIsContinueAttack(2f);
             return;
         }
 
-        // 武器已经拿到手上后摁开火键或瞄准键攻击
-        if (isReadyToFight &&
-            (controller.equipmentUseInputInfo.FireInput || controller.equipmentUseInputInfo.AimInput))
+        if (isReadyToFight && (_fireInputOnContinueAttack || _aimInputOnContinueAttack))
         {
+            toStartAttackTimer += Time.deltaTime;
+        }
+        if (toStartAttackTimer >= 0.1f)
+        {
+            toStartAttackTimer = 0f;
             if (!controller.playerMovementStateMachine.ChangeState(_fightState))
             {
                 return;
@@ -448,14 +483,26 @@ public class Weapon : Equipment, ICounterattack
             isContinueAttack = true;
             controller.playerAnimator.SetBool(
                 controller.playerMovementStateMachine.DicAnimatorIndexes["IsContinueAttack"], isContinueAttack);
-            _fireInputOnContinueAttack = controller.equipmentUseInputInfo.FireInput;
             controller.playerAnimator.SetBool(controller.playerMovementStateMachine.DicAnimatorIndexes["FireInput"],
                 _fireInputOnContinueAttack);
-            _aimInputOnContinueAttack = controller.equipmentUseInputInfo.AimInput;
             controller.playerAnimator.SetBool(controller.playerMovementStateMachine.DicAnimatorIndexes["AimInput"],
                 _aimInputOnContinueAttack);
+        }
+
+        // 武器已经拿到手上后摁开火键或瞄准键攻击
+        if (isReadyToFight &&
+            (controller.equipmentUseInputInfo.FireInput || controller.equipmentUseInputInfo.AimInput))
+        {
+            if (controller.equipmentUseInputInfo.FireInput)
+            {
+                _fireInputOnContinueAttack = controller.equipmentUseInputInfo.FireInput;
+            }
+
+            if (controller.equipmentUseInputInfo.AimInput)
+            {
+                _aimInputOnContinueAttack = controller.equipmentUseInputInfo.AimInput;
+            }
             
-            return;
         }
 
         if (timerIsToZero)
@@ -583,8 +630,7 @@ public class Weapon : Equipment, ICounterattack
         nowAttackAnimationTime = time;
 
         timerIsToZero = true;
-
-        isDefensing = false;
+        
         isSuccessfulDefense = false;
         controller.playerAnimator.SetBool(
             controller.playerMovementStateMachine.DicAnimatorIndexes["IsSuccessfulDefense"], isSuccessfulDefense);
@@ -627,7 +673,9 @@ public class Weapon : Equipment, ICounterattack
     {
         isHoldWeapon = false;
         isReleaseWeapon = true;
+        
         transform.SetParent(controller.weaponOnBackFatherTransform);
+
         transform.localPosition = weaponModelOnBackPositionOffset;
         transform.localRotation = weaponModelOnBackRotationOffset;
         

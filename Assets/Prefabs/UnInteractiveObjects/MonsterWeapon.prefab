@@ -95,7 +95,7 @@ GameObject:
   - component: {fileID: 8372260545868601410}
   - component: {fileID: 4359586779380645729}
   m_Layer: 0
-  m_Name: Sword_7
+  m_Name: Sword_6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -178,7 +178,7 @@ GameObject:
   - component: {fileID: 7546266989600230808}
   - component: {fileID: 6834534197015881858}
   m_Layer: 0
-  m_Name: Sword_6
+  m_Name: Rod_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -193,11 +193,11 @@ Transform:
   m_GameObject: {fileID: 1272819685801367488}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.3, z: 0}
+  m_LocalPosition: {x: 0, y: -0.3, z: 0}
   m_LocalScale: {x: 1, y: 1.4, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 8336716654605900740}
+  m_Father: {fileID: 1252300112547261985}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7546266989600230808
 MeshFilter:
@@ -485,7 +485,6 @@ Transform:
   - {fileID: 6024551149970242887}
   - {fileID: 1899340628238808868}
   - {fileID: 8358669383421912399}
-  - {fileID: 7056026307065828915}
   - {fileID: 4722254489516753403}
   m_Father: {fileID: 5378358721855464315}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -688,6 +687,7 @@ Transform:
   - {fileID: 1128844387631085381}
   - {fileID: 8633575282660556388}
   - {fileID: 4933346151619250614}
+  - {fileID: 7056026307065828915}
   m_Father: {fileID: 5378358721855464315}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4968685196433796799
@@ -1014,6 +1014,7 @@ MonoBehaviour:
   isHit: 0
   listCanHitObjectTags:
   - Player
+  isAttacking: 0
 --- !u!136 &2034877117723375474
 CapsuleCollider:
   m_ObjectHideFlags: 0

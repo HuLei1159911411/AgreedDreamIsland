@@ -69,14 +69,14 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.34781682
+      - time: 0.37643936
         functionName: HoldWeapon
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.3890829
+      - time: 0.37656054
         functionName: ResetIsContinueAttack
         data: 
         objectReferenceParameter: {instanceID: 0}

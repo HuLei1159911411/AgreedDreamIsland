@@ -74,11 +74,11 @@ public class CameraController : MonoBehaviour
     // 鼠标X坐标变化
     private float _mouseX;
     // 绕世界坐标up向量旋转角度
-    public float _upAngle;
+    public float upAngle;
     // 鼠标Y坐标变化
     private float _mouseY;
     // 绕世界坐标right向量旋转角度
-    public float _rightAngle;
+    public float rightAngle;
     // Focus向摄像机发射的射线的击中信息
     private RaycastHit _focusToCameraHit;
     // 玩家在Xoz平面的面朝向向量
@@ -143,16 +143,11 @@ public class CameraController : MonoBehaviour
             _instance = this;
         }
 
-        _waitForFixedUpdate = new WaitForFixedUpdate();
-        _thirdPersonFocusWithPlayerDefaultOffset = thirdPersonFocusWithPlayerOffset;
-
-        _nowViewCount = Enum.GetValues(typeof(E_CameraView)).Length;
+        AwakeInit();
     }
 
     private void Start()
     {
-        playerTransform = PlayerMovementStateMachine.Instance.transform;
-        
         Init();
     }
 
@@ -168,10 +163,20 @@ public class CameraController : MonoBehaviour
         UpdateCameraPositionWithRotation();
     }
 
+    private void AwakeInit()
+    {
+        _waitForFixedUpdate = new WaitForFixedUpdate();
+        _thirdPersonFocusWithPlayerDefaultOffset = thirdPersonFocusWithPlayerOffset;
+
+        _nowViewCount = Enum.GetValues(typeof(E_CameraView)).Length;
+    }
+    
     private void Init()
     {
-        LockWithHideCursor();
         InitParameters();
+        
+        LockWithHideCursor();
+        
         UpdateCameraPositionAndRotationImmediately();
 
         if (_cameraMoveAndRotateCoroutine != null)
@@ -191,6 +196,8 @@ public class CameraController : MonoBehaviour
     // 初始化参数
     private void InitParameters()
     {
+        playerTransform = PlayerMovementStateMachine.Instance.transform;
+        
         nowView = E_CameraView.ThirdPerson;
         _targetTransform = playerTransform;
 
@@ -205,6 +212,9 @@ public class CameraController : MonoBehaviour
         reverseFocusOffset = new Vector3(-focusDefaultOffset.x, focusDefaultOffset.y, focusDefaultOffset.z);
 
         isFollowMonster = false;
+        
+        upAngle = 0f;
+        rightAngle = -4.5f;
     }
 
     // 监听与摄像机有关行为输入
@@ -224,6 +234,7 @@ public class CameraController : MonoBehaviour
             {
                 // 视野锁定最近的怪物
                 if (Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.LockViewToFollowMonster]) &&
+                    GameManager.Instance.canAccessMonsters &&
                     GameManager.Instance.listMonsters.Count > 0 &&
                     GameManager.Instance.GetNearestMonster() <= followMonsterDistance)
                 {
@@ -249,17 +260,17 @@ public class CameraController : MonoBehaviour
 
                     // 对鼠标输入进行角度变化的转换
                     // 上下角度变化
-                    _rightAngle -= _mouseY * mouseSpeed * Time.deltaTime;
+                    rightAngle -= _mouseY * mouseSpeed * Time.deltaTime;
                     // 左右角度变化
-                    _upAngle += _mouseX * mouseSpeed * Time.deltaTime;
-                    if (_upAngle > 360f)
+                    upAngle += _mouseX * mouseSpeed * Time.deltaTime;
+                    if (upAngle > 360f)
                     {
-                        _upAngle -= 360f;
+                        upAngle -= 360f;
                     }
 
-                    if (_upAngle < -360f)
+                    if (upAngle < -360f)
                     {
-                        _upAngle += 360f;
+                        upAngle += 360f;
                     }
 
                     switch (nowView)
@@ -268,7 +279,7 @@ public class CameraController : MonoBehaviour
                         case E_CameraView.FirstPerson:
                             // 第一人称摄像机视角旋转，对鼠标输入进行角度变化处理
                             // 限制绕right旋转最大角度为从上往下看的角度和从下往上看的角度
-                            _rightAngle = Mathf.Clamp(_rightAngle, -90f, 90f);
+                            rightAngle = Mathf.Clamp(rightAngle, -90f, 90f);
                             // 更新摄像机位置及旋转
                             UpdateCameraPositionWithRotation();
                             break;
@@ -276,7 +287,7 @@ public class CameraController : MonoBehaviour
                         case E_CameraView.ThirdPerson:
                             // 第三人称摄像机视角旋转(根据鼠标移动的变化产生的变化与第一人称一样)，对鼠标输入进行角度变化处理
                             // 限制绕right旋转最大角度为从上往下看的角度和从下往上看的角度(89.99和-89.99防止万象锁)
-                            _rightAngle = ClampAngle(_rightAngle, -89.99f, 89.99f);
+                            rightAngle = ClampAngle(rightAngle, -89.99f, 89.99f);
                             // 更新摄像机位置及旋转
                             UpdateCameraPositionWithRotation();
                             break;
@@ -284,7 +295,7 @@ public class CameraController : MonoBehaviour
                         case E_CameraView.ThirdPersonFurther:
                             // 第三人称摄像机视角旋转(根据鼠标移动的变化产生的变化与第一人称一样)，对鼠标输入进行角度变化处理
                             // 限制绕right旋转最大角度为从上往下看的角度和从下往上看的角度(89.99和-89.99防止万象锁)
-                            _rightAngle = ClampAngle(_rightAngle, -89.99f, 89.99f);
+                            rightAngle = ClampAngle(rightAngle, -89.99f, 89.99f);
                             // 更新摄像机位置及旋转
                             UpdateCameraPositionWithRotation();
                             break;
@@ -439,7 +450,7 @@ public class CameraController : MonoBehaviour
                 // 更新摄像机位置
                 _targetPosition = _focusPosition;
                 // 旋转摄像机
-                _targetRotation = Quaternion.Euler(_rightAngle, _upAngle, 0).normalized;
+                _targetRotation = Quaternion.Euler(rightAngle, upAngle, 0).normalized;
                 
                 // 更新玩家旋转
                 UpdatePlayerTargetQuaternion();
@@ -487,7 +498,7 @@ public class CameraController : MonoBehaviour
         {
             case E_CameraView.FirstPerson:
                 // 旋转角色，根据鼠标左右移动旋转
-                _playerTargetRotation = Quaternion.Euler(0, _upAngle, 0).normalized;
+                _playerTargetRotation = Quaternion.Euler(0, upAngle, 0).normalized;
                 break;
             case E_CameraView.ThirdPerson:
                 // 让玩家移动状态机为不为空时(及非编辑器模式下)||Idle状态下当前摄像机朝向和人物朝向的两向量夹角大于某一角度时人物旋转至摄像机朝向
@@ -532,11 +543,11 @@ public class CameraController : MonoBehaviour
     private void CalculateDir()
     {
         // 计算摄像机绕聚焦点上下旋转后聚焦点到摄像机的方向向量
-        _dir = Quaternion.AngleAxis(_rightAngle, Vector3.right) * Vector3.forward;
+        _dir = Quaternion.AngleAxis(rightAngle, Vector3.right) * Vector3.forward;
         // 计算摄像机绕聚焦点左右旋转后聚焦点到摄像机的方向向量
-        _dir = Quaternion.AngleAxis(_upAngle, Vector3.up) * _dir;
+        _dir = Quaternion.AngleAxis(upAngle, Vector3.up) * _dir;
         // 计算摄像机在Xoz平面旋转的方向向量
-        _dirXoz = Quaternion.AngleAxis(_upAngle, Vector3.up) * Vector3.forward;
+        _dirXoz = Quaternion.AngleAxis(upAngle, Vector3.up) * Vector3.forward;
         
         _dirXoz = _dirXoz.normalized;
         _dir = _dir.normalized;
@@ -585,7 +596,7 @@ public class CameraController : MonoBehaviour
             case E_CameraView.FirstPerson:
                 transform.position = _focusPosition;
                 // 旋转摄像机
-                transform.rotation = Quaternion.Euler(_rightAngle, _upAngle, 0).normalized;
+                transform.rotation = Quaternion.Euler(rightAngle, upAngle, 0).normalized;
                 break;
             case E_CameraView.ThirdPerson:
                 // 计算摄像机旋转后方向 
@@ -681,12 +692,12 @@ public class CameraController : MonoBehaviour
     // 恢复摄像机去追踪人物
     public void ResetCameraToFollowPlayer()
     {
-        _rightAngle = 4.5f;
+        rightAngle = 4.5f;
         
-        _upAngle = Vector3.Angle(Vector3.ProjectOnPlane(transform.forward, Vector3.up), Vector3.forward);
+        upAngle = Vector3.Angle(Vector3.ProjectOnPlane(transform.forward, Vector3.up), Vector3.forward);
         if (Vector3.Dot(Vector3.ProjectOnPlane(transform.forward, Vector3.up), Vector3.right) < 0f)
         {
-            _upAngle = -_upAngle;
+            upAngle = -upAngle;
         }
         isFollowMonster = false;
         nowFollowMonster.isMainCameraFollowing = false;

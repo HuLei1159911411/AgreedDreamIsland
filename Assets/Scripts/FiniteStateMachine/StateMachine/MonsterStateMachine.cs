@@ -110,7 +110,6 @@ public class MonsterStateMachine : StateMachine
     public void Awake()
     {
         AwakeInitParameters();
-        
     }
 
     protected override void Start()
@@ -181,6 +180,8 @@ public class MonsterStateMachine : StateMachine
         InitParameters();
         
         GameManager.Instance.listMonsters.Add(this);
+        
+        monsterRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
     }
 
     private void InitParameters()
@@ -245,12 +246,15 @@ public class MonsterStateMachine : StateMachine
             }
             else
             {
-                if (playerDistance >= stopFollowPlayerDistance)
+                if ((PlayerMovementStateMachine.Instance != null &&
+                     PlayerMovementStateMachine.Instance.CurrentState.state == E_State.Death) ||
+                    playerDistance >= stopFollowPlayerDistance)
                 {
                     isSeePlayer = false;
                     ChangeState(IdleState);
                     return;
                 }
+
                 nowAngle = Vector3.Angle(monsterToPlayerDirection, transform.forward);
             }
         }

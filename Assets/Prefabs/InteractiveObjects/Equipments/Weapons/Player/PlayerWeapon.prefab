@@ -273,8 +273,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3067975152015564637}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 1, w: 0}
+  m_LocalPosition: {x: -0, y: 0.362, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -284,10 +284,9 @@ Transform:
   - {fileID: 2657613745471293719}
   - {fileID: 5048732856487913127}
   - {fileID: 2170166005876205276}
-  - {fileID: 5952265719562894488}
   - {fileID: 2233795752456676834}
   m_Father: {fileID: 5616260312486597009}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
 --- !u!1 &3111800354906558637
 GameObject:
   m_ObjectHideFlags: 0
@@ -810,7 +809,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5476102350838253982}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 1, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -819,8 +818,9 @@ Transform:
   - {fileID: 718927548982983850}
   - {fileID: 3509701429763421565}
   - {fileID: 3795740349618955963}
+  - {fileID: 5952265719562894488}
   m_Father: {fileID: 5616260312486597009}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
 --- !u!1 &5569396957519914596
 GameObject:
   m_ObjectHideFlags: 0
@@ -1042,16 +1042,16 @@ MonoBehaviour:
   strName: "\u68CD"
   itemType: 0
   itemCollider: {fileID: 4027761470320966453}
-  equipmentName: 2
+  equipmentName: 3
   equipmentType: 0
   isInUse: 0
   isInEquip: 0
   controller: {fileID: 0}
-  weaponType: 1
-  weaponModelIndex: 1
-  isRandomSetWeapon: 1
-  canSetWeaponTypeRod: 1
-  canSetWeaponTypeSword: 1
+  weaponType: 2
+  weaponModelIndex: 2
+  isRandomSetWeapon: 0
+  canSetWeaponTypeRod: 0
+  canSetWeaponTypeSword: 0
   canSetWeaponTypeSickle: 1
   weaponDamage: 1
   listWeaponCanHitObjectTags:
@@ -1066,9 +1066,17 @@ MonoBehaviour:
   rodCollider: {fileID: 4027761470320966453}
   swordCollider: {fileID: 2539047389828339962}
   sickleCollider: {fileID: 5278176374309619733}
-  weaponModelOnBackPositionOffset: {x: -0.05106504, y: 0.3159868, z: -0.3063551}
-  weaponModelOnBackRotationOffset: {x: -0.24265295, y: 0.02473434, z: 0.50784415,
-    w: -0.8261973}
+  weaponModelOnBackPositionOffsetRod: {x: -24.5, y: 23.9, z: 7.6}
+  weaponModelOnBackRotationOffsetRod: {x: 0.86223173, y: -0.1840849, z: -0.33668217,
+    w: 0.3306272}
+  weaponModelOnBackPositionOffsetSword: {x: -24.5, y: 23.9, z: 7.6}
+  weaponModelOnBackRotationOffsetSword: {x: -0.8622317, y: 0.18408507, z: 0.33668214,
+    w: -0.3306272}
+  weaponModelOnBackPositionOffsetSickle: {x: -24.5, y: 23.9, z: 7.6}
+  weaponModelOnBackRotationOffsetSickle: {x: 0.86223173, y: -0.18408503, z: -0.33668214,
+    w: 0.33062726}
+  weaponModelOnBackPositionOffset: {x: 0, y: 0, z: 0}
+  weaponModelOnBackRotationOffset: {x: 0, y: 0, z: 0, w: 1}
   isDefensing: 0
   isSuccessfulDefense: 0
   extendTimeEasyToDefense: 0.3
@@ -1083,6 +1091,7 @@ MonoBehaviour:
   isAttacking: 0
   isHoldWeapon: 0
   isReleaseWeapon: 0
+  toStartAttackTimer: 0
 --- !u!136 &4027761470320966453
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1128,7 +1137,7 @@ CapsuleCollider:
   m_Radius: 0.2
   m_Height: 1.7
   m_Direction: 1
-  m_Center: {x: 0, y: 0.8, z: 0}
+  m_Center: {x: 0, y: -0.438, z: 0}
 --- !u!65 &5278176374309619733
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1148,8 +1157,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.05, y: 1, z: 0.7}
-  m_Center: {x: 0, y: 0.35, z: -0.24}
+  m_Size: {x: 0.05, y: 0.36, z: 0.8}
+  m_Center: {x: 0, y: -0.55, z: -0.36}
 --- !u!1 &6644911108693916218
 GameObject:
   m_ObjectHideFlags: 0
@@ -1162,7 +1171,7 @@ GameObject:
   - component: {fileID: 5200675593100480368}
   - component: {fileID: 4738066261415786933}
   m_Layer: 0
-  m_Name: Sword_6
+  m_Name: Rod_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1177,11 +1186,11 @@ Transform:
   m_GameObject: {fileID: 6644911108693916218}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.3, z: 0}
+  m_LocalPosition: {x: 0, y: -0.061999977, z: 0}
   m_LocalScale: {x: 1, y: 1.4, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2250174380481994165}
+  m_Father: {fileID: 4046191011684358008}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5200675593100480368
 MeshFilter:
@@ -1260,7 +1269,7 @@ Transform:
   m_GameObject: {fileID: 6744993383643716487}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.05, z: 0}
+  m_LocalPosition: {x: 0, y: -0.14, z: 0}
   m_LocalScale: {x: 1, y: 0.65, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1423,8 +1432,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7985547133494199612}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 1, y: 0, z: 0, w: 0}
+  m_LocalPosition: {x: -0, y: -0.2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1433,7 +1442,7 @@ Transform:
   - {fileID: 5972310803205102278}
   - {fileID: 4969789259645944515}
   m_Father: {fileID: 5616260312486597009}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 180}
 --- !u!1 &8821617450736961665
 GameObject:
   m_ObjectHideFlags: 0
@@ -1529,7 +1538,7 @@ GameObject:
   - component: {fileID: 1106987597812476635}
   - component: {fileID: 8445451928797541753}
   m_Layer: 0
-  m_Name: Sword_7
+  m_Name: Sword_6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
