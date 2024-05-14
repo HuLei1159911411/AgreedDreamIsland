@@ -91,4 +91,9 @@ public class PlayerAnimatorEvents : MonoBehaviour
     {
         equipmentsController.EndUnTakeWeaponAnimation();
     }
+    // 战斗翻滚减体力
+    public void ReduceStamina()
+    {
+        movementStateMachine.ReduceStamina();
+    }
 }

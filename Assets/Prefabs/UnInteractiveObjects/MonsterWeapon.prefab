@@ -1003,18 +1003,20 @@ MonoBehaviour:
   rodCollider: {fileID: 2034877117723375474}
   swordCollider: {fileID: 6087137007590583822}
   sickleCollider: {fileID: 753876388924222415}
-  isRandomSetWeapon: 1
+  isRandomSetWeaponType: 0
   canSetWeaponTypeRod: 1
   canSetWeaponTypeSword: 1
   canSetWeaponTypeSickle: 1
   nowWeaponType: 0
+  isRandomSetWeaponIndex: 0
   nowWeaponIndex: 0
-  weaponDamage: 0
+  weaponDamage: 1
   nowCollider: {fileID: 0}
   isHit: 0
   listCanHitObjectTags:
   - Player
   isAttacking: 0
+  isAwakeInit: 0
 --- !u!136 &2034877117723375474
 CapsuleCollider:
   m_ObjectHideFlags: 0

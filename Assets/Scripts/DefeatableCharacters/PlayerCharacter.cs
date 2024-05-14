@@ -2,9 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class PlayerCharacter : DefeatableCharacter
 {
+    private static PlayerCharacter _instance;
+    public static PlayerCharacter Instance => _instance;
+    
     public Weapon nowWeapon;
 
     public float maxHp;
@@ -14,22 +18,30 @@ public class PlayerCharacter : DefeatableCharacter
     public float climbAndWallRunningStaminaReduceSpeed;
     public float runStaminaReduceSpeed;
     public float changeStateReduceStaminaValue;
-    private bool _preFrameStaminaIsCanChangeState;
-    private bool _nowFrameStaminaIsCanChangeState;
+    public bool _preFrameStaminaIsCanChangeState;
+    public bool _nowFrameStaminaIsCanChangeState;
 
+    public Action whenHpChange;
+    public Action whenStaminaChange;
+    
     private void Awake()
     {
-        hp = maxHp;
-        stamina = maxStamina;
-        _preFrameStaminaIsCanChangeState = true;
-        _nowFrameStaminaIsCanChangeState = true;
+        if (_instance is null)
+        {
+            _instance = this;
+        }
+        
         staminaAddSpeed *= Time.fixedDeltaTime;
         climbAndWallRunningStaminaReduceSpeed *= Time.fixedDeltaTime;
         runStaminaReduceSpeed *= Time.fixedDeltaTime;
+        
+        ChangeHp(maxHp);
+        stamina = maxStamina;
     }
 
     private void Start()
     {
+        Init();
         PlayerMovementStateMachine.Instance.playerCharacter = this;
         PlayerMovementStateMachine.Instance.ChangeStateExternalJudgmentEvent +=
             CheckStaminaValueEnableCompleteChangeState;
@@ -42,26 +54,47 @@ public class PlayerCharacter : DefeatableCharacter
             switch (PlayerMovementStateMachine.Instance.CurrentState.state)
             {
                 case E_State.Idle :
-                    stamina += staminaAddSpeed * 2f;
-                    if (stamina > maxStamina)
+                    if (stamina < maxStamina)
                     {
-                        stamina = maxStamina;
+                        stamina += staminaAddSpeed * 2f;
+                        if (stamina > maxStamina)
+                        {
+                            stamina = maxStamina;
+                        }
+                        whenStaminaChange?.Invoke();
                     }
                     break;
                 case E_State.Run :
                     stamina -= runStaminaReduceSpeed;
+                    whenStaminaChange?.Invoke();
                     break;
                 case E_State.WallRunning :
                     stamina -= climbAndWallRunningStaminaReduceSpeed;
+                    whenStaminaChange?.Invoke();
                     break;
                 case E_State.Climb :
                     stamina -= climbAndWallRunningStaminaReduceSpeed;
+                    whenStaminaChange?.Invoke();
+                    break;
+                case E_State.Roll :
+                    break;
+                case E_State.Fall :
+                    break;
+                case E_State.Jump :
+                    break;    
+                case E_State.Fight :
+                    break;
+                case E_State.Sliding :
                     break;
                 default:
-                    stamina += staminaAddSpeed;
-                    if (stamina > maxStamina)
+                    if (stamina < maxStamina)
                     {
-                        stamina = maxStamina;
+                        stamina += staminaAddSpeed;
+                        if (stamina > maxStamina)
+                        {
+                            stamina = maxStamina;
+                        }
+                        whenStaminaChange?.Invoke();
                     }
                     break;
             }
@@ -139,12 +172,48 @@ public class PlayerCharacter : DefeatableCharacter
                     && stamina >= changeStateReduceStaminaValue * 0.25f)
                 {
                     stamina -= changeStateReduceStaminaValue * 0.25f;
+                    whenStaminaChange?.Invoke();
+                    
+                    if (stamina >= changeStateReduceStaminaValue)
+                    {
+                        _nowFrameStaminaIsCanChangeState = true;
+                    }
+                    else
+                    {
+                        _nowFrameStaminaIsCanChangeState = false;
+                    }
+                    if (_preFrameStaminaIsCanChangeState != _nowFrameStaminaIsCanChangeState)
+                    {
+                        _preFrameStaminaIsCanChangeState = _nowFrameStaminaIsCanChangeState;
+                        PlayerMovementStateMachine.Instance.playerAnimator.SetBool(
+                            PlayerMovementStateMachine.Instance.DicAnimatorIndexes["StaminaIsCanChangeState"],
+                            _nowFrameStaminaIsCanChangeState);
+                    }
+                    
                     return true;
                 }
 
                 if (stamina >= changeStateReduceStaminaValue)
                 {
                     stamina -= changeStateReduceStaminaValue;
+                    whenStaminaChange?.Invoke();
+                    
+                    if (stamina >= changeStateReduceStaminaValue)
+                    {
+                        _nowFrameStaminaIsCanChangeState = true;
+                    }
+                    else
+                    {
+                        _nowFrameStaminaIsCanChangeState = false;
+                    }
+                    if (_preFrameStaminaIsCanChangeState != _nowFrameStaminaIsCanChangeState)
+                    {
+                        _preFrameStaminaIsCanChangeState = _nowFrameStaminaIsCanChangeState;
+                        PlayerMovementStateMachine.Instance.playerAnimator.SetBool(
+                            PlayerMovementStateMachine.Instance.DicAnimatorIndexes["StaminaIsCanChangeState"],
+                            _nowFrameStaminaIsCanChangeState);
+                    }
+                    
                     return true;
                 }
                 else
@@ -155,6 +224,24 @@ public class PlayerCharacter : DefeatableCharacter
                 if (stamina >= changeStateReduceStaminaValue)
                 {
                     stamina -= changeStateReduceStaminaValue;
+                    whenStaminaChange?.Invoke();
+                    
+                    if (stamina >= changeStateReduceStaminaValue)
+                    {
+                        _nowFrameStaminaIsCanChangeState = true;
+                    }
+                    else
+                    {
+                        _nowFrameStaminaIsCanChangeState = false;
+                    }
+                    if (_preFrameStaminaIsCanChangeState != _nowFrameStaminaIsCanChangeState)
+                    {
+                        _preFrameStaminaIsCanChangeState = _nowFrameStaminaIsCanChangeState;
+                        PlayerMovementStateMachine.Instance.playerAnimator.SetBool(
+                            PlayerMovementStateMachine.Instance.DicAnimatorIndexes["StaminaIsCanChangeState"],
+                            _nowFrameStaminaIsCanChangeState);
+                    }
+                    
                     return true;
                 }
                 else
@@ -164,5 +251,29 @@ public class PlayerCharacter : DefeatableCharacter
         }
 
         return true;
+    }
+
+    public override void ChangeHp(float value)
+    {
+        base.ChangeHp(value);
+        if (hp < 0f)
+        {
+            hp = 0f;
+        }
+
+        if (hp > maxHp)
+        {
+            hp = maxHp;
+        }
+        
+        whenHpChange?.Invoke();
+    }
+
+    public void Init()
+    {
+        ChangeHp(maxHp);
+        stamina = maxStamina;
+        _preFrameStaminaIsCanChangeState = false;
+        _nowFrameStaminaIsCanChangeState = false;
     }
 }

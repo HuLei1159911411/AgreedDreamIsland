@@ -25,8 +25,8 @@ public class MonsterWeapon : MonoBehaviour, ICounterattack
     public Collider swordCollider;
     public Collider sickleCollider;
     
-    // 是否自动随机生成武器
-    public bool isRandomSetWeapon;
+    // 是否自动随机设置武器类型
+    public bool isRandomSetWeaponType;
     // 是否可以生成rod类型武器
     public bool canSetWeaponTypeRod;
     // 是否可以生成sword类型武器
@@ -35,6 +35,8 @@ public class MonsterWeapon : MonoBehaviour, ICounterattack
     public bool canSetWeaponTypeSickle;
     // 当前武器类型
     public E_WeaponType nowWeaponType;
+    // 是否自动随机设置武器索引
+    public bool isRandomSetWeaponIndex;
     // 当前武器索引值
     public int nowWeaponIndex;
     // 当前武器伤害
@@ -49,23 +51,11 @@ public class MonsterWeapon : MonoBehaviour, ICounterattack
     public bool isAttacking;
 
     private int _count;
-
-    public void Awake()
-    {
-        AwakeInitParams();
-        Init();
-    }
+    public bool isAwakeInit;
 
     public void Start()
     {
-        if (monsterStateMachine != null)
-        {
-            transform.SetParent(monsterStateMachine.weaponEquipFatherTransform);
-            transform.localPosition = monsterWeaponEquipLocalPosition;
-            transform.localRotation = monsterWeaponEquipLocalRotation;
-            transform.localScale = Vector3.one;
-            monsterCharacter = monsterStateMachine.monsterCharacter;
-        }
+        Init();
     }
 
     public void OnTriggerEnter(Collider other)
@@ -93,6 +83,7 @@ public class MonsterWeapon : MonoBehaviour, ICounterattack
 
     private void AwakeInitParams()
     {
+        isAwakeInit = true;
         rods = new List<Transform>();
         for (_count = 0; _count < rodsFatherTransform.childCount; _count++)
         {
@@ -112,14 +103,33 @@ public class MonsterWeapon : MonoBehaviour, ICounterattack
 
     public void Init()
     {
+        if (!isAwakeInit)
+        {
+            AwakeInitParams();
+        }
+        
         InitParams();
+        
+        if (monsterStateMachine != null)
+        {
+            transform.SetParent(monsterStateMachine.weaponEquipFatherTransform);
+            transform.localPosition = monsterWeaponEquipLocalPosition;
+            transform.localRotation = monsterWeaponEquipLocalRotation;
+            transform.localScale = Vector3.one;
+            monsterCharacter = monsterStateMachine.monsterCharacter;
+        }
     }
 
     public void InitParams()
     {
-        if (isRandomSetWeapon)
+        if (isRandomSetWeaponType)
         {
-            RandomSetWeaponTypeAndIndex();
+            RandomSetWeaponType();
+        }
+
+        if (isRandomSetWeaponIndex)
+        {
+            RandomSetWeaponIndex();
         }
 
         SetNowWeaponModel();
@@ -127,8 +137,8 @@ public class MonsterWeapon : MonoBehaviour, ICounterattack
         SetWeaponCollider();
     }
 
-    // 随机设置武器类型与索引
-    public void RandomSetWeaponTypeAndIndex()
+    // 随机设置武器类型
+    public void RandomSetWeaponType()
     {
         nowWeaponType = E_WeaponType.Rod;
         if (canSetWeaponTypeRod && canSetWeaponTypeSword && canSetWeaponTypeSickle)
@@ -164,7 +174,10 @@ public class MonsterWeapon : MonoBehaviour, ICounterattack
                 nowWeaponType = E_WeaponType.Sickle;
             }
         }
-        
+    }
+
+    private void RandomSetWeaponIndex()
+    {
         switch (nowWeaponType)
         {
             case E_WeaponType.Rod:

@@ -535,22 +535,20 @@ MonoBehaviour:
   playerTransform: {fileID: 0}
   monsterCollider: {fileID: 5403999190506396453}
   monsterRigidbody: {fileID: 6195420462520356536}
+  monsterCreator: {fileID: 0}
   monsterWeapon: {fileID: 0}
   weaponEquipFatherTransform: {fileID: 281764658178111362}
-  monsterCharacter: {fileID: 0}
-  listPatrolPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  isHasPatrolPoints: 1
+  monsterCharacter: {fileID: 5371568962456616836}
+  listPatrolPoints: []
+  isHasPatrolPoints: 0
   isSeePlayer: 0
   seePlayerDistance: 15
   fightWithPlayerDistance: 3
+  stopFollowPlayerDistance: 20
   viewAngle: 90
-  attackWeight: 0.5
-  defenseWeight: 0.25
-  avoidWeight: 0.25
+  attackWeight: 1
+  defenseWeight: 0
+  avoidWeight: 0
   maxIdleTime: 1
   rotateMaxTime: 1
   monsterNormalAttackCount: 10
@@ -568,6 +566,8 @@ MonoBehaviour:
   nowRotateTime: 0
   isStopRotateCoroutine: 0
   isFreezeRotation: 0
+  isMainCameraFollowing: 0
+  isAwakeInit: 0
 --- !u!114 &5371568962456616836
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -585,6 +585,12 @@ MonoBehaviour:
   monsterModelsFatherTransform: {fileID: 3975337721634278106}
   listMonsterModels: []
   nowMonsterModelIndex: -1
+  maxHp: 10
+  monsterHpController: {fileID: 0}
+  hpUIShowTime: 3
+  hpUIShowTimer: 0
+  isShowHpUI: 0
+  isAwakeInit: 0
 --- !u!114 &1815827174763975999
 MonoBehaviour:
   m_ObjectHideFlags: 0

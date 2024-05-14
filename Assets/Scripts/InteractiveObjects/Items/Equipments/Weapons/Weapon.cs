@@ -41,14 +41,15 @@ public class Weapon : Equipment, ICounterattack
     public List<string> listWeaponCanHitObjectTags; 
     
     public Transform weaponModelTransform;
+    public Transform weaponEffect;
     
     public Transform rodsFatherTransform;
     public Transform swordsFatherTransform;
     public Transform sicklesFatherTransform;
     
-     public List<Transform> rods;
-     public List<Transform> swords;
-     public List<Transform> sickles;
+    public List<Transform> rods;
+    public List<Transform> swords;
+    public List<Transform> sickles;
     
     public Collider rodCollider;
     public Collider swordCollider;
@@ -68,7 +69,7 @@ public class Weapon : Equipment, ICounterattack
     public Quaternion weaponModelOnBackRotationOffset;
     
     // 是否正在进行防御
-  public bool isDefensing;
+    [HideInInspector] public bool isDefensing;
     // 是否防御成功
     [HideInInspector]  public bool isSuccessfulDefense;
     // 左键或右键摁下后继续监听另一个键摁下的延长时间(使更容易进入防御状态)
@@ -113,6 +114,8 @@ public class Weapon : Equipment, ICounterattack
     [HideInInspector] public float toStartAttackTimer;
 
     private PlayerCharacter _playerCharacter;
+    // 是否停止武器所有行为
+    public bool isStopWeaponAll;
     private void Awake()
     {
         AwakeInitParams();
@@ -142,6 +145,8 @@ public class Weapon : Equipment, ICounterattack
     public void Init()
     {
         InitParams();
+        
+        transform.SetParent(null);
     }
 
     public void InitParams()
@@ -150,9 +155,6 @@ public class Weapon : Equipment, ICounterattack
         {
             RandomSetWeaponTypeAndIndex();
         }
-        
-        _isChangeModelFatherTransform = false;
-        _weaponOnItemRotationOffset = transform.rotation;
 
         SetNowWeaponModel();
 
@@ -190,6 +192,29 @@ public class Weapon : Equipment, ICounterattack
             default:
                 throw new ArgumentOutOfRangeException();
         }
+        
+        _isChangeModelFatherTransform = false;
+        _weaponOnItemRotationOffset = transform.rotation;
+        isDefensing = false;
+        isSuccessfulDefense = false;
+        extendTime = 0f;
+        _fireInputOnContinueAttack = false;
+        _aimInputOnContinueAttack = false; 
+        isPlayTakeWeaponAnimation = false;
+        isPlayUnTakeWeaponAnimation = false;
+        _isChangeModelFatherTransform = false;
+        isReadyToFight = false;
+        _isHit = false;
+        isContinueAttack = false;
+        timer = 0f; 
+        timerIsToZero = false; 
+        nowAttackAnimationTime = 0f;
+        isAttacking = false;
+        isHoldWeapon = false;
+        isReleaseWeapon = false;
+        toStartAttackTimer = 0f;
+        isStopWeaponAll = false;
+        weaponEffect.gameObject.SetActive(false);
     }
 
     private void SetNowWeaponModel()
@@ -250,6 +275,9 @@ public class Weapon : Equipment, ICounterattack
             default:
                 throw new ArgumentOutOfRangeException();
         }
+
+        isAttacking = false;
+        isDefensing = false;
     }
 
     private void SetWeaponCollider()
@@ -379,7 +407,6 @@ public class Weapon : Equipment, ICounterattack
                 _fightState = null;
                 _playerCharacter = null;
                 weaponModelTransform.gameObject.SetActive(true);
-                
                 return false;
             }
         }
@@ -443,7 +470,10 @@ public class Weapon : Equipment, ICounterattack
 
     public override void ListenEquipmentUse()
     {
-        controller.playerAnimator.SetBool(controller.playerMovementStateMachine.DicAnimatorIndexes["WeaponIsInUse"], isInUse);
+        if (isStopWeaponAll)
+        {
+            return;
+        }
         
         // 把武器装备到手上
         if (!isInUse &&
@@ -553,7 +583,10 @@ public class Weapon : Equipment, ICounterattack
             else
             {
                 ResetIsContinueAttack(0f);
-                controller.playerAnimator.SetTrigger(controller.playerMovementStateMachine.DicAnimatorIndexes["ToUnEquip"]);
+                if (controller.playerMovementStateMachine.CurrentState.state != E_State.Death)
+                {
+                    controller.playerAnimator.SetTrigger(controller.playerMovementStateMachine.DicAnimatorIndexes["ToUnEquip"]);
+                }
                 isReadyToFight = false;
                 return;
             }
@@ -596,7 +629,7 @@ public class Weapon : Equipment, ICounterattack
     {
         PlayerMovementStateMachine.Instance.HitState.HitPosition = hitPosition;
         PlayerMovementStateMachine.Instance.ChangeState(PlayerMovementStateMachine.Instance.HitState);
-        _playerCharacter.hp -= damage;
+        _playerCharacter.ChangeHp(-damage);
         if (_playerCharacter.hp <= 0)
         {
             _playerCharacter.Death();
@@ -612,6 +645,7 @@ public class Weapon : Equipment, ICounterattack
     // 开启攻击检测
     public void OpenCheckWeaponIsHit(int isAllowRotate)
     {
+        weaponEffect.gameObject.SetActive(true);
         isAttacking = true;
         InfoManager.Instance.isLockAttackDirection = isAllowRotate == (int)E_IsAllowRotate.Yes ? true : false;
         _isHit = false;
@@ -620,6 +654,7 @@ public class Weapon : Equipment, ICounterattack
     // 关闭攻击检测
     public void CloseCheckWeaponIsHit()
     {
+        weaponEffect.gameObject.SetActive(false);
         isAttacking = false;
         itemCollider.enabled = false;
         InfoManager.Instance.isLockAttackDirection = false;

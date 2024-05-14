@@ -9,7 +9,7 @@ public abstract class DefeatableCharacter : MonoBehaviour
     // 受到攻击
     public virtual bool Hit(float damage, Vector3 hitPosition, ICounterattack counterattack, bool isStrongAttack)
     {
-        hp -= damage;
+        ChangeHp(-damage);
         if (hp <= 0)
         {
             Death();
@@ -19,4 +19,9 @@ public abstract class DefeatableCharacter : MonoBehaviour
     }
     // 死亡
     public abstract void Death();
+    // 血量改变
+    public virtual void ChangeHp(float value)
+    {
+        hp += value;
+    }
 }

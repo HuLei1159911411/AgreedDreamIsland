@@ -11,6 +11,7 @@ public class MonsterStateMachine : StateMachine
     public Transform playerTransform;
     public Collider monsterCollider;
     public Rigidbody monsterRigidbody;
+    public MonsterCreator monsterCreator;
 
     public MonsterWeapon monsterWeapon;
     public Transform weaponEquipFatherTransform;
@@ -107,35 +108,46 @@ public class MonsterStateMachine : StateMachine
     private WaitForFixedUpdate _waitForFixedUpdate;
     // 选择战斗行为的随机值
     private float _randomValueOnSelectFightState;
-    public void Awake()
-    {
-        AwakeInitParameters();
-    }
+    // 是否进行过唤醒初始化
+    public bool isAwakeInit;
 
     protected override void Start()
     {
-        base.Start();
+        if (!isAwakeInit)
+        {
+            Init();
+        }
         
-        Init();
+        base.Start();
         
         playerTransform = PlayerMovementStateMachine.Instance.playerTransform;
     }
 
     protected override void Update()
     {
-        
         base.Update();
     }
 
     protected override void FixedUpdate()
     {
+        if (_currentState.state == E_State.Death)
+        {
+            base.FixedUpdate();
+            return;
+        }
+
+        if (monsterCharacter.hp <= 0 && _currentState.state == E_State.Death)
+        {
+            ChangeState(DeathState);
+        }
+        
         UpdateToPlayerAndToTargetDirectionAndDistanceAndAngle();
         base.FixedUpdate();
     }
 
     public override bool ChangeState(BaseState newState)
     {
-        if (_currentState.state == E_State.Death)
+        if (newState == null || _currentState == null)
         {
             return false;
         }
@@ -150,6 +162,8 @@ public class MonsterStateMachine : StateMachine
 
     private void AwakeInitParameters()
     {
+        isAwakeInit = true;
+        
         IdleState = new MonsterIdle(this);
         HitState = new MonsterHit(this);
         DeathState = new MonsterDeath(this);
@@ -160,7 +174,7 @@ public class MonsterStateMachine : StateMachine
         TurnState = new MonsterTurn(this);
         AttackState = new MonsterAttack(this);
         DodgeState = new MonsterDodge(this);
-
+        
         _animatorControllerParameters = animator.parameters;
         DicAnimatorIndexes = new Dictionary<string, int>();
         for (_count = 0; _count < _animatorControllerParameters.Length; _count++)
@@ -170,29 +184,33 @@ public class MonsterStateMachine : StateMachine
 
         _allWeight = attackWeight + defenseWeight + avoidWeight;
         _waitForFixedUpdate = new WaitForFixedUpdate();
-
-        monsterCharacter = transform.GetComponent<MonsterCharacter>();
     }
     // 手动初始化
     public void Init()
     {
+        if (!isAwakeInit)
+        {
+            AwakeInitParameters();
+        }
+        
         // 初始化参数
         InitParameters();
         
-        GameManager.Instance.listMonsters.Add(this);
+        GameManager.Instance.AddMonsterInListMonsters(this);
         
         monsterRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+
+        if (_currentState != null && _currentState.state != E_State.Idle)
+        {
+            ChangeState(IdleState);
+            animator.SetTrigger(DicAnimatorIndexes["ToIdle"]);
+        }
     }
 
     private void InitParameters()
     {
         monsterCollider.enabled = true;
         monsterRigidbody.useGravity = true;
-        
-        if (monsterWeapon != null)
-        {
-            monsterWeapon.monsterStateMachine = this;
-        }
 
         if (listPatrolPoints.Count != 0)
         {
@@ -207,6 +225,8 @@ public class MonsterStateMachine : StateMachine
         nowPatrolPointIndex = -1;
 
         isStopRotateCoroutine = false;
+
+        isSeePlayer = false;
     }
 
     // 更新玩家距离，目标方向，在距离满足条件时更新与怪物到玩家方向与怪物正前方之间的角度
@@ -214,6 +234,13 @@ public class MonsterStateMachine : StateMachine
     {
         if (playerTransform != null)
         {
+            if (!(PlayerMovementStateMachine.Instance is null) &&
+                PlayerMovementStateMachine.Instance.CurrentState.state == E_State.Death)
+            {
+                isSeePlayer = false;
+                return;
+            }
+            
             monsterToPlayerDirection =
                 Vector3.ProjectOnPlane(playerTransform.position - transform.position, Vector3.up);
             playerDistance = monsterToPlayerDirection.magnitude;
@@ -419,7 +446,13 @@ public class MonsterStateMachine : StateMachine
 
         return false;
     }
-    
+
+    public void RecyclingSelf()
+    {
+        GameManager.Instance.RemoveMonsterInListMonsters(this);
+        monsterCreator.nowMonsterCount--;
+        ObjectPoolManager.Instance.RecyclingObject(E_ObjectType.Monster, transform.gameObject);
+    }
     
     // 动画事件-----
     

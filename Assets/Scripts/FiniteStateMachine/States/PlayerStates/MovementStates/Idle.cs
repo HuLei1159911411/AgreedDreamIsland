@@ -22,11 +22,15 @@ public class Idle : BaseState
 
         _coolTimeTimer = 0f;
         _movementStateMachine.isFastToRun = false;
+        _movementStateMachine.playerRigidbody.constraints = RigidbodyConstraints.FreezeRotation |
+                                                            RigidbodyConstraints.FreezePositionX |
+                                                            RigidbodyConstraints.FreezePositionY;
     }
 
     public override void Exit()
     {
         base.Exit();
+        _movementStateMachine.playerRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
     }
 
     public override void UpdateLogic()

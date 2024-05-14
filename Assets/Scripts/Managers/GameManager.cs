@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance => _instance;
 
     public List<MonsterStateMachine> listMonsters;
-    public bool canAccessMonsters;
+    public bool canAccessListMonsters;
     
     // 上一次查找最近距离的怪物的最近距离
     public float lastTimeNearestMonsterNearestDistance;
@@ -30,7 +30,7 @@ public class GameManager : MonoBehaviour
         }
 
         listMonsters = new List<MonsterStateMachine>();
-        canAccessMonsters = true;
+        canAccessListMonsters = true;
     }
     
     // 获取距离玩家最近的怪物的距离
@@ -52,7 +52,21 @@ public class GameManager : MonoBehaviour
         return lastTimeNearestMonsterNearestDistance;
     }
     
-    // 游戏对象生成(去与对象池交互)
+    // 向listMonster中添加对象
+    public void AddMonsterInListMonsters(MonsterStateMachine monsterStateMachine)
+    {
+        canAccessListMonsters = false;
+        listMonsters.Add(monsterStateMachine);
+        canAccessListMonsters = true;
+    }
+    
+    // 向listMonster中移除对象
+    public void RemoveMonsterInListMonsters(MonsterStateMachine monsterStateMachine)
+    {
+        canAccessListMonsters = false;
+        listMonsters.Remove(monsterStateMachine);
+        canAccessListMonsters = true;
+    }
     
     // 控制游戏中道具、怪物总数量等
     

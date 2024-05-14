@@ -1322,4 +1322,9 @@ public class PlayerMovementStateMachine : StateMachine
     {
         HitState.ExitHitState();
     }
+
+    public void ReduceStamina()
+    {
+        playerCharacter.CheckStaminaValueEnableCompleteChangeState(E_State.Roll);
+    }
 }

@@ -32,7 +32,10 @@ public class StateMachine : MonoBehaviour
 
     public virtual bool ChangeState(BaseState newState)
     {
-        _currentState.Exit();
+        if (_currentState != null)
+        {
+            _currentState.Exit();
+        }
         
         newState.preState = _currentState;
         _currentState = newState;
