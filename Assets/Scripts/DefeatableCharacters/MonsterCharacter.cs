@@ -31,17 +31,17 @@ public class MonsterCharacter : DefeatableCharacter
 
     public override bool Hit(float damage, Vector3 hitPosition, ICounterattack counterattack, bool isStrongAttack)
     {
-        hpUIShowTimer = 0f;
-        if (!isShowHpUI)
-        {
-            _hpUIShowCoroutine = StartCoroutine(ShowHpUI());
-        }
-        
         // 闪避状态
         if (stateMachine.CurrentState.state == E_State.Dodge ||
             stateMachine.CurrentState.state == E_State.Death)
         {
             return false;
+        }
+        
+        hpUIShowTimer = 0f;
+        if (!isShowHpUI)
+        {
+            _hpUIShowCoroutine = StartCoroutine(ShowHpUI());
         }
         
         // 防御状态则对方攻击不造成击中效果

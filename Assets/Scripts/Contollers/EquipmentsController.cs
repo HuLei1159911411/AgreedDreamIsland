@@ -39,16 +39,18 @@ public class EquipmentsController : MonoBehaviour
     public Transform weaponOnBackFatherTransform;
     
     // 装备控制输入信息
-    public EquipmentUseInputInformation equipmentUseInputInfo;
+    public EquipmentUseInputInformation EquipmentUseInputInfo;
     
     // 装备栏
-    public List<List<Equipment>> listEquipments;
+    public List<Equipment[]> ListEquipments;
     // 格装备最大数量
     public List<int> listEquipmentTypesMaxCounts;
     // 所有的当前装备
     public Equipment[] nowEquipments;
     // 所有的当前装备在其装备栏中的索引值
     public int[] nowEquipmentsIndexes;
+    // 当前不同装备的装备数量
+    public int[] nowEquipmentCount;
     
     // UI
     public WeaponsBagPanel weaponsBagPanel;
@@ -64,13 +66,14 @@ public class EquipmentsController : MonoBehaviour
             _instance = this;
         }
         
-        listEquipments = new List<List<Equipment>>();
+        ListEquipments = new List<Equipment[]>();
         nowEquipments = new Equipment[Enum.GetValues(typeof(E_EquipmentType)).Length];
         nowEquipmentsIndexes = new int[Enum.GetValues(typeof(E_EquipmentType)).Length];
+        nowEquipmentCount = new int[Enum.GetValues(typeof(E_EquipmentType)).Length];
         for (_count = 0; _count < nowEquipmentsIndexes.Length; _count++)
         {
             nowEquipmentsIndexes[_count] = -1;
-            listEquipments.Add(new List<Equipment>());
+            ListEquipments.Add(new Equipment[listEquipmentTypesMaxCounts[_count]]);
         }
         
         playerTransform = transform;
@@ -104,18 +107,17 @@ public class EquipmentsController : MonoBehaviour
                 nowEquipments[_count].ListenEquipmentUse();
             }
         }
-        
     }
     
     // 监听装备使用输入
     public void UpdateEquipmentUseInputInformation()
     {
-        equipmentUseInputInfo.HookShootLeftInput =
+        EquipmentUseInputInfo.HookShootLeftInput =
             Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.HookShootLeft]);
-        equipmentUseInputInfo.HookShootRightInput =
+        EquipmentUseInputInfo.HookShootRightInput =
             Input.GetKey(InputManager.Instance.DicBehavior[E_InputBehavior.HookShootRight]);
-        equipmentUseInputInfo.FireInput = Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.Fire]);
-        equipmentUseInputInfo.AimInput = Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.Aim]);
+        EquipmentUseInputInfo.FireInput = Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.Fire]);
+        EquipmentUseInputInfo.AimInput = Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.Aim]);
     }
 
     // 添加装备
@@ -124,47 +126,22 @@ public class EquipmentsController : MonoBehaviour
         // 判断是否这种装备是否装满了
         if (!CheckEquipmentIsFull(equipment.equipmentType))
         {
-            // 对武器进行特殊处理，优先将武器放入前两格中
-            if (equipment.equipmentType == E_EquipmentType.Weapon && 
-                listEquipments[(int)E_EquipmentType.Weapon].Count != 0)
+            // 找到最小空位置放入装备
+            for (_count = 0; _count < ListEquipments[(int)equipment.equipmentType].Length; _count++)
             {
-                if (listEquipments[(int)E_EquipmentType.Weapon][0] == null)
+                if (ListEquipments[(int)equipment.equipmentType][_count] == null)
                 {
-                    listEquipments[(int)E_EquipmentType.Weapon][0] = equipment;
-                    // 在当前类型装备还没有装备时，添加装备后自动装备该装备
-                    if (nowEquipmentsIndexes[(int)equipment.equipmentType] == -1)
+                    ListEquipments[(int)equipment.equipmentType][_count] = equipment;
+                    nowEquipmentCount[(int)equipment.equipmentType]++;
+                    if (equipment.equipmentType == E_EquipmentType.Weapon)
                     {
-                        ChangeEquipment(equipment.equipmentType, 0);
+                        weaponsBagPanel.SetWeaponsBagByEquipmentsController();
                     }
-
-                    return true;
-                }
-                else if (listEquipments[(int)E_EquipmentType.Weapon].Count >= 2 && listEquipments[(int)E_EquipmentType.Weapon][1] == null)
-                {
-                    listEquipments[(int)E_EquipmentType.Weapon][1] = equipment;
-                    // 在当前类型装备还没有装备时，添加装备后自动装备该装备
-                    if (nowEquipmentsIndexes[(int)equipment.equipmentType] == -1)
-                    {
-                        ChangeEquipment(equipment.equipmentType, 1);
-                    }
-
                     return true;
                 }
             }
 
-            listEquipments[(int)equipment.equipmentType].Add(equipment);
-            // 在当前类型装备还没有装备时，添加装备后自动装备该装备
-            if (nowEquipmentsIndexes[(int)equipment.equipmentType] == -1)
-            {
-                ChangeEquipment(equipment.equipmentType, listEquipments.Count - 1);
-            }
-            
-            if (equipment.equipmentType == E_EquipmentType.Weapon)
-            {
-                weaponsBagPanel.SetWeaponsBagByEquipmentsController();
-            }
-            
-            return true;
+            return false;
         }
         else
         {
@@ -181,22 +158,16 @@ public class EquipmentsController : MonoBehaviour
             RemoveEquipment(equipmentType);
         }
         
-        listEquipments[(int)equipmentType][equipmentIndex].DiscardItem(playerTransform.position);
-        listEquipments[(int)equipmentType][equipmentIndex].controller = null;
-        
-        // 如果是前两格的扔下
-        if (equipmentIndex < 2 && equipmentType == E_EquipmentType.Weapon)
+        ListEquipments[(int)equipmentType][equipmentIndex].DiscardItem(playerTransform.position);
+        ListEquipments[(int)equipmentType][equipmentIndex].controller = null;
+
+        if (equipmentType == E_EquipmentType.Weapon)
         {
-            listEquipments[(int)equipmentType][equipmentIndex] = null;
-            if (equipmentType == E_EquipmentType.Weapon)
-            {
-                weaponsBagPanel.SetNowWeaponCell(-1);
-            }
+            weaponsBagPanel.SetWeaponsBagByEquipmentsController();
         }
-        else
-        {
-            listEquipments[(int)equipmentType].RemoveAt(equipmentIndex);
-        }
+
+        ListEquipments[(int)equipmentType][equipmentIndex] = null;
+        nowEquipmentCount[(int)equipmentType]--;
     }
     
     // 卸下装备(取消装备)
@@ -209,7 +180,7 @@ public class EquipmentsController : MonoBehaviour
 
         if (equipmentType == E_EquipmentType.Weapon)
         {
-            weaponsBagPanel.SetNowWeaponCell(-1);
+            weaponsBagPanel.SetNowEquippedWeaponCell(-1);
         }
         
         return true;
@@ -218,105 +189,148 @@ public class EquipmentsController : MonoBehaviour
     // 在已有装备中切换装备
     public void ChangeEquipment(E_EquipmentType equipmentType, int equipmentIndex)
     {
-        if (equipmentIndex == nowEquipmentsIndexes[(int)equipmentType])
+        if (equipmentIndex == nowEquipmentsIndexes[(int)equipmentType] ||
+            equipmentIndex == -1 ||
+            ListEquipments[(int)equipmentType] == null)
         {
             return;
         }
-        
-        if (equipmentIndex == -1)
-        {
-            return;
-        }
-        
-        // 当前装备了装备进行切换装备先将当前装备卸下(并且交换装备)
+
         if (nowEquipmentsIndexes[(int)equipmentType] != -1)
         {
             nowEquipments[(int)equipmentType].RemoveEquipment();
-            
-            _tempEquipment = listEquipments[(int)equipmentType][nowEquipmentsIndexes[(int)equipmentType]];
-            listEquipments[(int)equipmentType][nowEquipmentsIndexes[(int)equipmentType]] =
-                listEquipments[(int)equipmentType][equipmentIndex];
-            nowEquipments[(int)equipmentType] = listEquipments[(int)equipmentType][equipmentIndex];
-            listEquipments[(int)equipmentType][equipmentIndex] = _tempEquipment;
-            nowEquipments[(int)equipmentType].WearEquipment();
         }
-        else
-        {
-            nowEquipments[(int)equipmentType] = listEquipments[(int)equipmentType][equipmentIndex];
-            nowEquipments[(int)equipmentType].WearEquipment();
-            nowEquipmentsIndexes[(int)equipmentType] = equipmentIndex;
-        }
+        
+        nowEquipments[(int)equipmentType] = ListEquipments[(int)equipmentType][equipmentIndex];
+        nowEquipmentsIndexes[(int)equipmentType] = equipmentIndex;
+        nowEquipments[(int)equipmentType].WearEquipment();
+        
         if (equipmentType == E_EquipmentType.Weapon)
         {
             weaponsBagPanel.SetWeaponsBagByEquipmentsController();
         }
     }
     
+    // 交换装备
+    public bool ExchangeEquipment(E_EquipmentType equipmentType, int index1, int index2)
+    {
+        // 当前装备了装备进行切换装备先将当前装备卸下(并且交换装备)
+        if (nowEquipmentsIndexes[(int)equipmentType] != -1 && 
+            (nowEquipmentsIndexes[(int)equipmentType] == index1 ||
+             nowEquipmentsIndexes[(int)equipmentType] == index2))
+        {
+            nowEquipments[(int)equipmentType].RemoveEquipment();
+            
+            _tempEquipment = ListEquipments[(int)equipmentType][index1];
+            ListEquipments[(int)equipmentType][index1] =
+                ListEquipments[(int)equipmentType][index2];
+            ListEquipments[(int)equipmentType][index2] = _tempEquipment;
+            
+            nowEquipments[(int)equipmentType] = ListEquipments[(int)equipmentType][index2];
+            nowEquipments[(int)equipmentType].WearEquipment();
+        }
+        else
+        {
+            _tempEquipment = ListEquipments[(int)equipmentType][index1];
+            ListEquipments[(int)equipmentType][index1] =
+                ListEquipments[(int)equipmentType][index2];
+            ListEquipments[(int)equipmentType][index2] = _tempEquipment;
+        }
+
+        if (equipmentType == E_EquipmentType.Weapon)
+        {
+            weaponsBagPanel.SetWeaponsBagByEquipmentsController();
+        }
+
+        return true;
+    }
+    // 交换装备
+    public bool ExchangeEquipment(E_EquipmentType equipmentType, int index, Equipment equipment)
+    {
+        if (CheckEquipmentIsFull(equipmentType))
+        {
+            if (nowEquipmentsIndexes[(int)equipmentType] == index)
+            {
+                DiscardEquipment(equipmentType, index);
+                equipment.PickUpItem();
+                ChangeEquipment(equipmentType, index);
+            }
+            else
+            {
+                DiscardEquipment(equipmentType, index);
+                equipment.PickUpItem();
+                ChangeEquipment(equipmentType, index);
+            }
+
+            return true;
+        }
+        
+        // 找到最小空位置放入装备
+        for (_count = 0; _count < ListEquipments[(int)equipment.equipmentType].Length; _count++)
+        {
+            if (ListEquipments[(int)equipment.equipmentType][_count] == null)
+            {
+                ListEquipments[(int)equipment.equipmentType][_count] = equipment;
+                ExchangeEquipment(equipmentType, index, _count);
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
     // 判断该类型装备是否已满
     public bool CheckEquipmentIsFull(E_EquipmentType equipmentType)
     {
-        if (equipmentType == E_EquipmentType.Weapon)
-        {
-            return listEquipments[(int)equipmentType].Count == listEquipmentTypesMaxCounts[(int)equipmentType] &&
-                   listEquipments[(int)equipmentType][0] != null && listEquipments[(int)equipmentType][1] != null;
-        }
-        
-        return listEquipments[(int)equipmentType].Count == listEquipmentTypesMaxCounts[(int)equipmentType];
+        return nowEquipmentCount[(int)equipmentType] == listEquipmentTypesMaxCounts[(int)equipmentType];
+    }
+    
+    // 判断该类型装备数量是否为0
+    public bool CheckEquipmentIsEmpty(E_EquipmentType equipmentType)
+    {
+        return nowEquipmentCount[(int)equipmentType] == 0;
     }
     
     // 监听装备切换
     public bool ListenEquipmentsChange()
     {
-        // 当前一号武器栏有装备并且当前装备没在使用或没装备装备
-        if (listEquipments[(int)E_EquipmentType.Weapon].Count >= 1 &&
-            listEquipments[(int)E_EquipmentType.Weapon][0] != null &&
-            Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.FirstWeapon]))
+        // 当前并没有装备装备
+        if (nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] == -1)
         {
-            if(nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] == -1)
+            if (ListEquipments[(int)E_EquipmentType.Weapon][0] != null &&
+                Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.FirstWeapon]))
             {
                 ChangeEquipment(E_EquipmentType.Weapon, 0);
                 return true;
             }
-            // 当期装备了装备(这里不能直接使用ChangeEquipment，因为ChangeEquipment在装备了装备的情况下切换装备会将装备了的装备与需要装备的装备在列表中的位置进行互换而不是更换装备的装备)
-            if(nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] != -1 &&
-                !nowEquipments[(int)E_EquipmentType.Weapon].isInUse)
-            {
-                nowEquipments[(int)E_EquipmentType.Weapon].RemoveEquipment();
-                nowEquipments[(int)E_EquipmentType.Weapon] = listEquipments[(int)E_EquipmentType.Weapon][0];
-                nowEquipments[(int)E_EquipmentType.Weapon].WearEquipment();
-                nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] = 0;
-                weaponsBagPanel.SetNowWeaponCell(0);
-                return true;
-            }
-        }
-
-        // 当前二号武器栏有装备并且当前装备没在使用或没装备装备
-        if (listEquipments[(int)E_EquipmentType.Weapon].Count >= 2 &&
-            listEquipments[(int)E_EquipmentType.Weapon][1] != null &&
-            Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.SecondWeapon]) &&
-            (nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] == -1 || 
-             (nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] != -1 &&
-              !nowEquipments[(int)E_EquipmentType.Weapon].isInUse)))
-        {
-            if(nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] == -1)
+            
+            if (ListEquipments[(int)E_EquipmentType.Weapon][1] != null &&
+                Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.SecondWeapon]))
             {
                 ChangeEquipment(E_EquipmentType.Weapon, 1);
                 return true;
             }
-            // 当期装备了装备(这里不能直接使用ChangeEquipment，因为ChangeEquipment在装备了装备的情况下切换装备会将装备了的装备与需要装备的装备在列表中的位置进行互换而不是更换装备的装备)
-            if(nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] != -1 &&
-               !nowEquipments[(int)E_EquipmentType.Weapon].isInUse)
+        }
+        else if(!nowEquipments[(int)E_EquipmentType.Weapon].isInUse)
+        {
+            if (nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] != 0 &&
+                ListEquipments[(int)E_EquipmentType.Weapon][0] != null &&
+                Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.FirstWeapon]))
             {
-                nowEquipments[(int)E_EquipmentType.Weapon].RemoveEquipment();
-                nowEquipments[(int)E_EquipmentType.Weapon] = listEquipments[(int)E_EquipmentType.Weapon][1];
-                nowEquipments[(int)E_EquipmentType.Weapon].WearEquipment();
-                nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] = 1;
-                weaponsBagPanel.SetNowWeaponCell(1);
+                ChangeEquipment(E_EquipmentType.Weapon, 0);
+                return true;
+            }
+            
+            if (nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] != 1 &&
+                ListEquipments[(int)E_EquipmentType.Weapon][1] != null &&
+                Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.SecondWeapon]))
+            {
+                ChangeEquipment(E_EquipmentType.Weapon, 1);
                 return true;
             }
         }
 
-        // 当前装备了武器并且当前装备没在使用
+        // 卸武器
         if (nowEquipmentsIndexes[(int)E_EquipmentType.Weapon] != -1 &&
             !nowEquipments[(int)E_EquipmentType.Weapon].isInUse &&
             Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.CancelWeapon]))

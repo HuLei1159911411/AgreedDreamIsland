@@ -13,11 +13,20 @@ public enum E_EquipmentName
     Sickle,
 }
 
+public enum E_EquipmentLevel
+{
+    White,
+    Blue,
+    Purple,
+    Golden,
+}
+
 [Serializable]
 public abstract class Equipment : Item
 {
     public E_EquipmentName equipmentName;
     public E_EquipmentType equipmentType;
+    public E_EquipmentLevel equipmentLevel;
     public bool isInUse;
     public bool isInEquip;
     

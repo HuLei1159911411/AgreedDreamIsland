@@ -234,6 +234,7 @@ public class CameraController : MonoBehaviour
             {
                 // 视野锁定最近的怪物
                 if (Input.GetKeyDown(InputManager.Instance.DicBehavior[E_InputBehavior.LockViewToFollowMonster]) &&
+                    PlayerMovementStateMachine.Instance.CurrentState.state != E_State.Death &&
                     GameManager.Instance.canAccessListMonsters &&
                     GameManager.Instance.listMonsters.Count > 0 &&
                     GameManager.Instance.GetNearestMonster() <= followMonsterDistance)

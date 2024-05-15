@@ -119,6 +119,10 @@ public class Hit : BaseState
                         _movementStateMachine.ChangeState(_movementStateMachine.FightState);
                     }
                 }
+                else
+                {
+                    _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
+                }
                 break;
                 default:
                     if (_movementStateMachine.CurrentState.state != E_State.Death)

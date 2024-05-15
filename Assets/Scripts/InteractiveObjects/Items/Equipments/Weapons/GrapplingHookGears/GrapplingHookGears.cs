@@ -373,9 +373,8 @@ public class GrapplingHookGears : Equipment
     // 监听钩锁发射与回收
     private void ListenGrapplingHookShoot()
     {
-        
         // 收回钩锁
-        if (controller.equipmentUseInputInfo.AimInput)
+        if (controller.EquipmentUseInputInfo.AimInput)
         {
             if (grapplingHookLeft.IsGrapplingHookLocked())
             {
@@ -390,7 +389,7 @@ public class GrapplingHookGears : Equipment
         }
         
         // 人拉向钩锁
-        if (controller.equipmentUseInputInfo.FireInput &&
+        if (controller.EquipmentUseInputInfo.FireInput &&
             (grapplingHookLeft.IsGrapplingHookLocked() &&
              (controller.playerMovementStateMachine.CurrentState.state != E_State.Grapple || 
               !_grappleState.IsMoveToLeftHookCheckPoint)
@@ -420,14 +419,14 @@ public class GrapplingHookGears : Equipment
             return;
         }
 
-        if (controller.equipmentUseInputInfo.HookShootLeftInput && !grapplingHookLeft.isDrawHookAndRope &&
+        if (controller.EquipmentUseInputInfo.HookShootLeftInput && !grapplingHookLeft.isDrawHookAndRope &&
             (hasHookCheckPoint || hasAutoLeftGrapplingHookCheckPoint))
         {
             UpdateHookCheckPoint(true);
             grapplingHookLeft.ShootHook(hookCheckPoint);
         }
 
-        if (controller.equipmentUseInputInfo.HookShootRightInput && !grapplingHookRight.isDrawHookAndRope &&
+        if (controller.EquipmentUseInputInfo.HookShootRightInput && !grapplingHookRight.isDrawHookAndRope &&
             (hasHookCheckPoint || hasAutoRightGrapplingHookCheckPoint))
         {
             UpdateHookCheckPoint(false);

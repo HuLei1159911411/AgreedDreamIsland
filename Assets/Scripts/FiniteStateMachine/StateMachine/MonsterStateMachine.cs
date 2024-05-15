@@ -136,7 +136,7 @@ public class MonsterStateMachine : StateMachine
             return;
         }
 
-        if (monsterCharacter.hp <= 0 && _currentState.state == E_State.Death)
+        if (monsterCharacter.hp <= 0 && _currentState.state != E_State.Death)
         {
             ChangeState(DeathState);
         }

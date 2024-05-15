@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 public class PlayerCharacter : DefeatableCharacter
 {
@@ -18,12 +19,14 @@ public class PlayerCharacter : DefeatableCharacter
     public float climbAndWallRunningStaminaReduceSpeed;
     public float runStaminaReduceSpeed;
     public float changeStateReduceStaminaValue;
+    public float hpAddSpeed;
     public bool _preFrameStaminaIsCanChangeState;
     public bool _nowFrameStaminaIsCanChangeState;
 
     public Action whenHpChange;
     public Action whenStaminaChange;
-    
+
+    private float _idleStateTimer;
     private void Awake()
     {
         if (_instance is null)
@@ -34,6 +37,7 @@ public class PlayerCharacter : DefeatableCharacter
         staminaAddSpeed *= Time.fixedDeltaTime;
         climbAndWallRunningStaminaReduceSpeed *= Time.fixedDeltaTime;
         runStaminaReduceSpeed *= Time.fixedDeltaTime;
+        hpAddSpeed *= Time.fixedDeltaTime;
         
         ChangeHp(maxHp);
         stamina = maxStamina;
@@ -63,6 +67,18 @@ public class PlayerCharacter : DefeatableCharacter
                         }
                         whenStaminaChange?.Invoke();
                     }
+
+                    if (_idleStateTimer >= 1.5f && hp < maxHp)
+                    {
+                        hp += hpAddSpeed;
+                        if (hp > maxHp)
+                        {
+                            hp = maxHp;
+                        }
+                        whenHpChange?.Invoke();
+                    }
+
+                    
                     break;
                 case E_State.Run :
                     stamina -= runStaminaReduceSpeed;
@@ -97,6 +113,18 @@ public class PlayerCharacter : DefeatableCharacter
                         whenStaminaChange?.Invoke();
                     }
                     break;
+            }
+
+            if (PlayerMovementStateMachine.Instance.CurrentState.state == E_State.Idle)
+            {
+                if (_idleStateTimer < 1.5f)
+                {
+                    _idleStateTimer += Time.fixedDeltaTime;
+                }
+            }
+            else
+            {
+                _idleStateTimer = 0f;
             }
 
             if (stamina >= changeStateReduceStaminaValue)

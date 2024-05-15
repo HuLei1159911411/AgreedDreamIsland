@@ -35,6 +35,34 @@ public class Weapon : Equipment, ICounterattack
     public bool canSetWeaponTypeSword;
     // 是否可以生成sickle类型武器
     public bool canSetWeaponTypeSickle;
+    // 是否随机设置装备等级
+    public bool isRandomSetEquipmentLevel;
+    // 白色武器概率
+    public float whiteLevelWeight;
+    // 蓝色武器概率
+    public float blueLevelWeight;
+    // 紫色武器概率
+    public float purpleLevelWeight;
+    // 金色武器概率
+    public float goldenLevelWeight;
+    // 总概率
+    private float _sumLevelWeight;
+    // 是否通过武器等级设置武器伤害
+    public bool isSetWeaponDamageByTypeAndLevel;
+    // Rod类型武器伤害基础值
+    public float rodTypeWeaponDamageValue;
+    // Sword类型武器伤害基础值
+    public float swordTypeWeaponDamageValue;
+    // sickle类型武器伤害基础值
+    public float sickleTypeWeaponDamageValue;
+    // 白色等级武器伤害值倍率
+    public float whiteLevelDamageValue;
+    // 蓝色武器伤害值倍率
+    public float blueLevelDamageValue;
+    // 紫色武器伤害值倍率
+    public float purpleLevelDamageValue;
+    // 金色武器伤害值倍率
+    public float goldenLevelDamageValue;
     // 武器伤害
     public float weaponDamage;
 
@@ -116,6 +144,8 @@ public class Weapon : Equipment, ICounterattack
     private PlayerCharacter _playerCharacter;
     // 是否停止武器所有行为
     public bool isStopWeaponAll;
+    // 随机数
+    private float _randomValue;
     private void Awake()
     {
         AwakeInitParams();
@@ -214,7 +244,19 @@ public class Weapon : Equipment, ICounterattack
         isReleaseWeapon = false;
         toStartAttackTimer = 0f;
         isStopWeaponAll = false;
+        equipmentName = (E_EquipmentName)(int)weaponType + 1;
         weaponEffect.gameObject.SetActive(false);
+        _sumLevelWeight = whiteLevelWeight + blueLevelWeight + purpleLevelWeight + goldenLevelWeight;
+
+        if (isRandomSetEquipmentLevel)
+        {
+            RandomSetEquipmentLevel();
+        }
+
+        if (isSetWeaponDamageByTypeAndLevel)
+        {
+            SetWeaponDamageByWeaponTypeAndEquipmentLevel();
+        }
     }
 
     private void SetNowWeaponModel()
@@ -365,8 +407,70 @@ public class Weapon : Equipment, ICounterattack
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
 
-        equipmentName = (E_EquipmentName)(int)equipmentType + 1;
+    private void RandomSetEquipmentLevel()
+    {
+        _randomValue = Random.Range(0, _sumLevelWeight);
+        if (_randomValue < whiteLevelWeight)
+        {
+            equipmentLevel = E_EquipmentLevel.White;
+            return;
+        }
+
+        _randomValue -= whiteLevelWeight;
+
+        if (_randomValue < blueLevelWeight)
+        {
+            equipmentLevel = E_EquipmentLevel.Blue;
+            return;
+        }
+
+        _randomValue -= blueLevelWeight;
+
+        if (_randomValue < purpleLevelWeight)
+        {
+            equipmentLevel = E_EquipmentLevel.Purple;
+            return;
+        }
+
+        equipmentLevel = E_EquipmentLevel.Golden;
+    }
+
+    private void SetWeaponDamageByWeaponTypeAndEquipmentLevel()
+    {
+        switch (weaponType)
+        {
+            case E_WeaponType.Rod:
+                weaponDamage = rodTypeWeaponDamageValue;
+                break;
+            case E_WeaponType.Sword:
+                weaponDamage = swordTypeWeaponDamageValue;
+                break;
+            case E_WeaponType.Sickle:
+                weaponDamage = swordTypeWeaponDamageValue;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        switch (equipmentLevel)
+        {
+            case E_EquipmentLevel.White:
+                weaponDamage *= whiteLevelDamageValue;
+                break;
+            case E_EquipmentLevel.Blue:
+                weaponDamage *= blueLevelDamageValue;
+                break;
+            case E_EquipmentLevel.Purple:
+                weaponDamage *= purpleLevelDamageValue;
+                break;
+            case E_EquipmentLevel.Golden:
+                weaponDamage *= goldenLevelDamageValue;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -477,7 +581,7 @@ public class Weapon : Equipment, ICounterattack
         
         // 把武器装备到手上
         if (!isInUse &&
-            (controller.equipmentUseInputInfo.FireInput || controller.equipmentUseInputInfo.AimInput) &&
+            (controller.EquipmentUseInputInfo.FireInput || controller.EquipmentUseInputInfo.AimInput) &&
             controller.playerMovementStateMachine.CurrentState.state != E_State.Fight &&
             controller.playerMovementStateMachine.CurrentState.state != E_State.Death)
             // && setIsUseFalseTime == 0f)
@@ -521,16 +625,16 @@ public class Weapon : Equipment, ICounterattack
 
         // 武器已经拿到手上后摁开火键或瞄准键攻击
         if (isReadyToFight &&
-            (controller.equipmentUseInputInfo.FireInput || controller.equipmentUseInputInfo.AimInput))
+            (controller.EquipmentUseInputInfo.FireInput || controller.EquipmentUseInputInfo.AimInput))
         {
-            if (controller.equipmentUseInputInfo.FireInput)
+            if (controller.EquipmentUseInputInfo.FireInput)
             {
-                _fireInputOnContinueAttack = controller.equipmentUseInputInfo.FireInput;
+                _fireInputOnContinueAttack = controller.EquipmentUseInputInfo.FireInput;
             }
 
-            if (controller.equipmentUseInputInfo.AimInput)
+            if (controller.EquipmentUseInputInfo.AimInput)
             {
-                _aimInputOnContinueAttack = controller.equipmentUseInputInfo.AimInput;
+                _aimInputOnContinueAttack = controller.EquipmentUseInputInfo.AimInput;
             }
             
         }
@@ -552,16 +656,16 @@ public class Weapon : Equipment, ICounterattack
             !isPlayUnTakeWeaponAnimation &&
             nowAttackAnimationTime > float.Epsilon &&
             timer <= nowAttackAnimationTime &&
-            (controller.equipmentUseInputInfo.FireInput || controller.equipmentUseInputInfo.AimInput))
+            (controller.EquipmentUseInputInfo.FireInput || controller.EquipmentUseInputInfo.AimInput))
         {
             extendTime = timer + extendTimeEasyToDefense;
             isContinueAttack = true;
             controller.playerAnimator.SetBool(
                 controller.playerMovementStateMachine.DicAnimatorIndexes["IsContinueAttack"], isContinueAttack);
-            _fireInputOnContinueAttack = controller.equipmentUseInputInfo.FireInput;
+            _fireInputOnContinueAttack = controller.EquipmentUseInputInfo.FireInput;
             controller.playerAnimator.SetBool(controller.playerMovementStateMachine.DicAnimatorIndexes["FireInput"],
                 _fireInputOnContinueAttack);
-            _aimInputOnContinueAttack = controller.equipmentUseInputInfo.AimInput;
+            _aimInputOnContinueAttack = controller.EquipmentUseInputInfo.AimInput;
             controller.playerAnimator.SetBool(controller.playerMovementStateMachine.DicAnimatorIndexes["AimInput"],
                 _aimInputOnContinueAttack);
             return;
@@ -596,8 +700,8 @@ public class Weapon : Equipment, ICounterattack
         if (isContinueAttack && nowAttackAnimationTime > float.Epsilon && timer < nowAttackAnimationTime &&
             timer < extendTime &&
             !(_fireInputOnContinueAttack && _aimInputOnContinueAttack) &&
-            (controller.equipmentUseInputInfo.FireInput && !_fireInputOnContinueAttack ||
-             controller.equipmentUseInputInfo.AimInput && !_aimInputOnContinueAttack))
+            (controller.EquipmentUseInputInfo.FireInput && !_fireInputOnContinueAttack ||
+             controller.EquipmentUseInputInfo.AimInput && !_aimInputOnContinueAttack))
         {
             if (!_fireInputOnContinueAttack)
             {
@@ -742,6 +846,10 @@ public class Weapon : Equipment, ICounterattack
     // 开始播放卸武器动画
     public void StartUnTakeWeaponAnimation()
     {
+        if (weaponEffect.gameObject.activeSelf)
+        {
+            weaponEffect.gameObject.SetActive(false);
+        }
         isPlayUnTakeWeaponAnimation = true;
         isReleaseWeapon = false;
     }

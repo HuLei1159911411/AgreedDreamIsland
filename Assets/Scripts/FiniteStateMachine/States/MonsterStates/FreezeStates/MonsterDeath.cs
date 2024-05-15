@@ -70,6 +70,8 @@ public class MonsterDeath : MonsterState
         tempPlayerWeaponGameObject.SetActive(false);
         tempPlayerWeapon = tempPlayerWeaponGameObject.gameObject.GetComponent<Weapon>();
         tempPlayerWeapon.isRandomSetWeapon = false;
+        tempPlayerWeapon.isRandomSetEquipmentLevel = true;
+        tempPlayerWeapon.isSetWeaponDamageByTypeAndLevel = true;
         tempPlayerWeapon.weaponModelIndex = _monsterStateMachine.monsterWeapon.nowWeaponIndex;
         tempPlayerWeapon.weaponType = _monsterStateMachine.monsterWeapon.nowWeaponType;
         tempPlayerWeaponGameObject.transform.rotation = _monsterStateMachine.monsterWeapon.transform.rotation;

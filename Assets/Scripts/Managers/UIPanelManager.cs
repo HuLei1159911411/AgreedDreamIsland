@@ -9,10 +9,12 @@ public class UIPanelManager : MonoBehaviour
 {
     private static UIPanelManager _instance;
     public static UIPanelManager Instance => _instance;
-    
-    public event UnityAction PanelsInputEvent;
 
+    public E_Theme theme;
+    public event UnityAction PanelsInputEvent;
     public List<Panel> listPanels;
+    public Transform lowLayer;
+    public RectTransform canvasRectTransform;
 
     private int _count;
     private void Awake()

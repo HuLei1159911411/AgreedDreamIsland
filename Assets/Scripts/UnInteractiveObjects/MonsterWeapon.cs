@@ -296,6 +296,12 @@ public class MonsterWeapon : MonoBehaviour, ICounterattack
     // 对方进行反击
     public void Counterattack(float damage, Vector3 hitPosition)
     {
+        // 闪避状态
+        if (monsterStateMachine.CurrentState.state == E_State.Death)
+        {
+            return;
+        }
+        
         monsterStateMachine.HitState.HitPosition = hitPosition;
         
         monsterCharacter.hp -= damage;
