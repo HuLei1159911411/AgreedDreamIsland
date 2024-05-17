@@ -62,7 +62,7 @@ public class CameraController : MonoBehaviour
     public Vector3 followMonsterThirdPersonViewCameraOffset;
     
     // 摄像机跟踪目标Transform组件
-    private Transform _targetTransform;
+    public Transform targetTransform;
     // 记录摄像机之前位置玩家边上的聚焦点的坐标
     private Vector3 _focusPosition;
     // 计算当前帧玩家边上的聚焦点的坐标的临时变量
@@ -138,7 +138,7 @@ public class CameraController : MonoBehaviour
     public List<Vector3> listThirdPersonViewFocusOffsetChangeOffset;
     private void Awake()
     {
-        if (_instance is null)
+        if (_instance == null)
         {
             _instance = this;
         }
@@ -171,7 +171,7 @@ public class CameraController : MonoBehaviour
         _nowViewCount = Enum.GetValues(typeof(E_CameraView)).Length;
     }
     
-    private void Init()
+    public void Init()
     {
         InitParameters();
         
@@ -196,10 +196,9 @@ public class CameraController : MonoBehaviour
     // 初始化参数
     private void InitParameters()
     {
-        playerTransform = PlayerMovementStateMachine.Instance.transform;
-        
+        playerTransform = PlayerMovementStateMachine.Instance.playerTransform;
         nowView = E_CameraView.ThirdPerson;
-        _targetTransform = playerTransform;
+        targetTransform = playerTransform;
 
         isStopCameraPositionAndRotation = false;
         isStopPlayerRotation = false;
@@ -262,6 +261,7 @@ public class CameraController : MonoBehaviour
                     // 对鼠标输入进行角度变化的转换
                     // 上下角度变化
                     rightAngle -= _mouseY * mouseSpeed * Time.deltaTime;
+                    
                     // 左右角度变化
                     upAngle += _mouseX * mouseSpeed * Time.deltaTime;
                     if (upAngle > 360f)
@@ -373,10 +373,10 @@ public class CameraController : MonoBehaviour
         switch (nowView)
         {
             case E_CameraView.FirstPerson:
-                _curFocusPosition = _targetTransform.position +
-                                    firstPersonViewOffset.x * _targetTransform.right +
-                                    firstPersonViewOffset.y * _targetTransform.up +
-                                    firstPersonViewOffset.z * _targetTransform.forward;
+                _curFocusPosition = targetTransform.position +
+                                    firstPersonViewOffset.x * targetTransform.right +
+                                    firstPersonViewOffset.y * targetTransform.up +
+                                    firstPersonViewOffset.z * targetTransform.forward;
                 if (_focusPosition == _curFocusPosition)
                 {
                     return false;
@@ -388,10 +388,10 @@ public class CameraController : MonoBehaviour
                 }
             case E_CameraView.ThirdPerson:
             case E_CameraView.ThirdPersonFurther:
-                _curFocusPosition = _targetTransform.position +
-                                    thirdPersonFocusWithPlayerOffset.x * _targetTransform.right +
-                                    thirdPersonFocusWithPlayerOffset.y * _targetTransform.up +
-                                    thirdPersonFocusWithPlayerOffset.z * _targetTransform.forward;
+                _curFocusPosition = targetTransform.position +
+                                    thirdPersonFocusWithPlayerOffset.x * targetTransform.right +
+                                    thirdPersonFocusWithPlayerOffset.y * targetTransform.up +
+                                    thirdPersonFocusWithPlayerOffset.z * targetTransform.forward;
                 if (_focusPosition == _curFocusPosition)
                 {
                     return false;
@@ -557,7 +557,7 @@ public class CameraController : MonoBehaviour
     // 检查人物Forward向量在Xoz平面与摄像机Forward向量的夹角是否大于最大夹角
     private bool CheckPlayerAndCameraAngleInXoz()
     {
-        _playerForwardXoz = Vector3.ProjectOnPlane(_targetTransform.forward, Vector3.up);
+        _playerForwardXoz = Vector3.ProjectOnPlane(targetTransform.forward, Vector3.up);
         _cameraForwardXoz = Vector3.ProjectOnPlane(transform.forward, Vector3.up);
         _xozAngle = Vector3.Angle(_playerForwardXoz, _cameraForwardXoz);
         return _xozAngle > thirdPersonViewCameraWithPlayerMaxAngle || _xozAngle < -thirdPersonViewCameraWithPlayerMaxAngle;
@@ -569,7 +569,7 @@ public class CameraController : MonoBehaviour
         playerIsRotating = true;
         while (!isStopPlayerRotation)
         {
-            _targetTransform.rotation = Quaternion.Slerp(_targetTransform.rotation, _playerTargetRotation, playerRotateSpeed).normalized;
+            targetTransform.rotation = Quaternion.Slerp(targetTransform.rotation, _playerTargetRotation, playerRotateSpeed).normalized;
             yield return _waitForFixedUpdate;
         }
 
@@ -591,6 +591,8 @@ public class CameraController : MonoBehaviour
     public void UpdateCameraPositionAndRotationImmediately()
     {
         UpdateFocusPosition();
+
+        CalculateDir();
 
         switch (nowView)
         {

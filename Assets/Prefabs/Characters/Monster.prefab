@@ -546,10 +546,10 @@ MonoBehaviour:
   fightWithPlayerDistance: 3
   stopFollowPlayerDistance: 20
   viewAngle: 90
-  attackWeight: 1
-  defenseWeight: 0
-  avoidWeight: 0
-  maxIdleTime: 1
+  attackWeight: 0.75
+  defenseWeight: 0.1
+  avoidWeight: 0.15
+  maxIdleTime: 3
   rotateMaxTime: 1
   monsterNormalAttackCount: 10
   monsterComboAttackCount: 1

@@ -10,6 +10,8 @@ public class Walk : BaseState
     private float _pressRunKeyTimer;
     // 冷却计时器
     private float _coolTimeTimer;
+    // 离开地面计时器
+    private float _leafGroundTimer;
 
     public Walk(StateMachine stateMachine) : base(E_State.Walk, stateMachine)
     {
@@ -29,6 +31,7 @@ public class Walk : BaseState
         
         // 清空计时器
         _pressRunKeyTimer = 0f;
+        _leafGroundTimer = 0f;
         _movementStateMachine.isFastToRun = false;
     }
 
@@ -80,8 +83,16 @@ public class Walk : BaseState
         // 不在地面
         if (!_movementStateMachine.isOnGround)
         {
-            _movementStateMachine.ChangeState(_movementStateMachine.FallState);
-            return true;
+            _leafGroundTimer += Time.deltaTime;
+            if (_leafGroundTimer >= 0.5f)
+            {
+                _movementStateMachine.ChangeState(_movementStateMachine.FallState);
+                return true;
+            }
+        }
+        else
+        {
+            _leafGroundTimer = 0f;
         }
 
         // 摁前进键加空格并且前方有墙壁并且角度满足条件

@@ -30,13 +30,14 @@ public class InfoManager : MonoBehaviour
     [Header("设置信息")]
     [Tooltip("是否在攻击时锁定方向")] public bool isLockAttackDirection;
     [Tooltip("是否在攻击时自动锁定敌人")] public bool isAutoLockEnemy;
+    [Tooltip("是否终止对人物行为操作的监听")] public bool isStopListenPlayerBehaviorInput;
     
     // 遍历用参数
     private int _count;
 
     private void Awake()
     {
-        if (_instance is null)
+        if (_instance == null)
         {
             _instance = this;
         }

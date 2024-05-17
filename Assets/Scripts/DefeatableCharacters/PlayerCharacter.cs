@@ -29,7 +29,7 @@ public class PlayerCharacter : DefeatableCharacter
     private float _idleStateTimer;
     private void Awake()
     {
-        if (_instance is null)
+        if (_instance == null)
         {
             _instance = this;
         }
@@ -53,7 +53,7 @@ public class PlayerCharacter : DefeatableCharacter
 
     private void FixedUpdate()
     {
-        if (!(PlayerMovementStateMachine.Instance is null))
+        if (PlayerMovementStateMachine.Instance != null)
         {
             switch (PlayerMovementStateMachine.Instance.CurrentState.state)
             {

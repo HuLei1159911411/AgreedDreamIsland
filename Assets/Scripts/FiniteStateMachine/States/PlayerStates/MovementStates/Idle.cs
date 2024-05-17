@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEditor.Rendering;
 using UnityEngine;
 
 public class Idle : BaseState
@@ -7,6 +9,8 @@ public class Idle : BaseState
     private PlayerMovementStateMachine _movementStateMachine;
     // 冷却计时器
     private float _coolTimeTimer;
+    // 离开地面时间计时器
+    private float _leafGroundTimer;
     public Idle(StateMachine stateMachine) : base(E_State.Idle, stateMachine)
     {
         if (stateMachine is PlayerMovementStateMachine)
@@ -23,8 +27,9 @@ public class Idle : BaseState
         _coolTimeTimer = 0f;
         _movementStateMachine.isFastToRun = false;
         _movementStateMachine.playerRigidbody.constraints = RigidbodyConstraints.FreezeRotation |
-                                                            RigidbodyConstraints.FreezePositionX |
-                                                            RigidbodyConstraints.FreezePositionY;
+                                                            RigidbodyConstraints.FreezePositionX | 
+                                                            RigidbodyConstraints.FreezePositionZ;
+        _leafGroundTimer = 0f;
     }
 
     public override void Exit()
@@ -42,8 +47,16 @@ public class Idle : BaseState
         // 不在地面
         if (!_movementStateMachine.isOnGround)
         {
-            _movementStateMachine.ChangeState(_movementStateMachine.FallState);
-            return;
+            _leafGroundTimer += Time.deltaTime;
+            if (_leafGroundTimer >= 0.5f)
+            {
+                _movementStateMachine.ChangeState(_movementStateMachine.FallState);
+                return;
+            }
+        }
+        else
+        {
+            _leafGroundTimer = 0f;
         }
         
         // 前一状态为下落并且快速下落

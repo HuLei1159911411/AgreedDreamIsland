@@ -24,7 +24,7 @@ public class InteractController : MonoBehaviour
 
     private void Awake()
     {
-        if (_instance is null)
+        if (_instance == null)
         {
             _instance = this;
         }
@@ -36,7 +36,7 @@ public class InteractController : MonoBehaviour
     {
         if (nowInteractiveObjectCollider != null)
         {
-            if (!(interactTipPanel is null))
+            if (interactTipPanel != null && !InfoManager.Instance.isStopListenPlayerBehaviorInput)
             {
                 // 监听交互界面交互结果
                 if (interactTipPanel.ListenInteract())
@@ -48,7 +48,7 @@ public class InteractController : MonoBehaviour
         }
         else
         {
-            if (interactTipPanel is not null && interactTipPanel.isShow)
+            if (interactTipPanel != null && interactTipPanel.isShow)
             {
                 interactTipPanel.ClosePanel();
             }

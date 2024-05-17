@@ -510,6 +510,7 @@ public class Weapon : Equipment, ICounterattack
             {
                 _fightState = null;
                 _playerCharacter = null;
+                controller = null;
                 weaponModelTransform.gameObject.SetActive(true);
                 return false;
             }

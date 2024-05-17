@@ -11,6 +11,8 @@ public class Run : BaseState
     private bool isListenReleaseShiftKey;
     // 是否松开过shift键
     private bool hasReleaseShiftKey;
+    // 离开地面计时器
+    private float _leafGroundTimer;
 
     public Run(StateMachine stateMachine) : base(E_State.Run, stateMachine)
     {
@@ -35,6 +37,8 @@ public class Run : BaseState
             isListenReleaseShiftKey = false;
             hasReleaseShiftKey = true;
         }
+
+        _leafGroundTimer = 0f;
     }
 
     public override void Exit()
@@ -90,8 +94,16 @@ public class Run : BaseState
         // 不在地面
         if (!_movementStateMachine.isOnGround)
         {
-            _movementStateMachine.ChangeState(_movementStateMachine.FallState);
-            return true;
+            _leafGroundTimer += Time.deltaTime;
+            if (_leafGroundTimer >= 0.5f)
+            {
+                _movementStateMachine.ChangeState(_movementStateMachine.FallState);
+                return true;
+            }
+        }
+        else
+        {
+            _leafGroundTimer = 0f;
         }
 
         // 体力相关

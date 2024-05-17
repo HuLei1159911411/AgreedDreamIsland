@@ -111,14 +111,15 @@ public class MonsterStateMachine : StateMachine
     // 是否进行过唤醒初始化
     public bool isAwakeInit;
 
-    protected override void Start()
+    protected override void Awake()
     {
-        if (!isAwakeInit)
-        {
-            Init();
-        }
-        
-        base.Start();
+        AwakeInitParameters();
+        base.Awake();
+    }
+
+    protected void Start()
+    {
+        Init();
         
         playerTransform = PlayerMovementStateMachine.Instance.playerTransform;
     }
@@ -130,7 +131,7 @@ public class MonsterStateMachine : StateMachine
 
     protected override void FixedUpdate()
     {
-        if (_currentState.state == E_State.Death)
+        if (_currentState == null || _currentState.state == E_State.Death)
         {
             base.FixedUpdate();
             return;
@@ -188,11 +189,6 @@ public class MonsterStateMachine : StateMachine
     // 手动初始化
     public void Init()
     {
-        if (!isAwakeInit)
-        {
-            AwakeInitParameters();
-        }
-        
         // 初始化参数
         InitParameters();
         
@@ -205,6 +201,12 @@ public class MonsterStateMachine : StateMachine
             ChangeState(IdleState);
             animator.SetTrigger(DicAnimatorIndexes["ToIdle"]);
         }
+
+        if (transform.localScale.x > 1f)
+        {
+            fightWithPlayerDistance += fightWithPlayerDistance * (transform.localScale.x - 1f) * 0.6f;    
+        }
+        
     }
 
     private void InitParameters()
@@ -450,7 +452,10 @@ public class MonsterStateMachine : StateMachine
     public void RecyclingSelf()
     {
         GameManager.Instance.RemoveMonsterInListMonsters(this);
-        monsterCreator.nowMonsterCount--;
+        if (monsterCreator != null)
+        {
+            monsterCreator.nowMonsterCount--;
+        }
         ObjectPoolManager.Instance.RecyclingObject(E_ObjectType.Monster, transform.gameObject);
     }
     

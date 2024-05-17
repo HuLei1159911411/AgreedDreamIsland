@@ -37,7 +37,7 @@ public class InputManager : MonoBehaviour
 
     private void Awake()
     {
-        if (_instance is null)
+        if (_instance == null)
         {
             _instance = this;
         }

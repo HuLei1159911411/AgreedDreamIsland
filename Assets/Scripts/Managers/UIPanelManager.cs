@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 public class UIPanelManager : MonoBehaviour
 {
@@ -15,16 +17,22 @@ public class UIPanelManager : MonoBehaviour
     public List<Panel> listPanels;
     public Transform lowLayer;
     public RectTransform canvasRectTransform;
-
+    public GraphicRaycaster graphicRaycaster;
+    
     private int _count;
     private void Awake()
     {
-        if (_instance is null)
+        if (_instance == null)
         {
             _instance = this;
         }
 
         listPanels = new List<Panel>();
+    }
+
+    private void Start()
+    {
+        graphicRaycaster = canvasRectTransform.GetComponent<GraphicRaycaster>();
     }
 
     private void Update()
@@ -45,4 +53,5 @@ public class UIPanelManager : MonoBehaviour
             }
         }
     }
+    
 }

@@ -1003,7 +1003,7 @@ MonoBehaviour:
   rodCollider: {fileID: 2034877117723375474}
   swordCollider: {fileID: 6087137007590583822}
   sickleCollider: {fileID: 753876388924222415}
-  isRandomSetWeaponType: 0
+  isRandomSetWeaponType: 1
   canSetWeaponTypeRod: 1
   canSetWeaponTypeSword: 1
   canSetWeaponTypeSickle: 1
@@ -1036,8 +1036,8 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Radius: 0.1
-  m_Height: 1.1
+  m_Radius: 0.2
+  m_Height: 1.3
   m_Direction: 1
   m_Center: {x: 0, y: 1.15, z: 0}
 --- !u!136 &6087137007590583822
@@ -1059,8 +1059,8 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Radius: 0.2
-  m_Height: 1.7
+  m_Radius: 0.3
+  m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0.8, z: 0}
 --- !u!65 &753876388924222415
@@ -1082,7 +1082,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.05, y: 1, z: 0.7}
+  m_Size: {x: 0.1, y: 1.2, z: 1}
   m_Center: {x: 0, y: 0.35, z: -0.24}
 --- !u!1 &5626746197838900610
 GameObject:

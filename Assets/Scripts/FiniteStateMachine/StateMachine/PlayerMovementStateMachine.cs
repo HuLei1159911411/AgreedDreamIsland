@@ -388,16 +388,26 @@ public class PlayerMovementStateMachine : StateMachine
     private bool _isRotateRootToTarget;
     // 旋转人物Root协程yield return变量
     private WaitForFixedUpdate _waitForFixedUpdate;
+    // 是否是awake进行初始化
+    private bool _isAwakeInit;
     #endregion
 
-    private void Awake()
+    protected override void Awake()
     {
         if (_instance == null)
         {
             _instance = this;
         }
-
+        
         AwakeInitParameters();
+        
+        _isAwakeInit = true;
+        
+        base.Awake();
+    }
+
+    private void Start()
+    {
         // 初始化
         Init();
     }
@@ -666,11 +676,22 @@ public class PlayerMovementStateMachine : StateMachine
     // 初始化参数
     private void InitParameters()
     {
-        nowMoveSpeed = 0;
+        nowMoveSpeed = 0f;
         
         _isTryToChangeState = false;
 
         playerRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+
+        if(!_isAwakeInit)
+        {
+            ChangeState(GetInitialState());
+        }
+        else
+        {
+            _isAwakeInit = false;
+        }
+        
+        CameraController.Instance.UpdateCameraPositionAndRotationImmediately();
     }
 
 

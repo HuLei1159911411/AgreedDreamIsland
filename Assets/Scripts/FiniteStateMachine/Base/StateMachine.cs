@@ -6,7 +6,7 @@ public class StateMachine : MonoBehaviour
 {
     protected BaseState _currentState;
 
-    protected virtual void Start()
+    protected virtual void Awake()
     {
         _currentState = GetInitialState();
         if (_currentState != null)
