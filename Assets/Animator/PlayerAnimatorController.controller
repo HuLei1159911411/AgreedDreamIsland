@@ -824,7 +824,7 @@ BlendTree:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Blend Tree
+  m_Name: Walk Blend Tree
   m_Childs:
   - serializedVersion: 2
     m_Motion: {fileID: 7400000, guid: a99a6366bf1a5f14eae9303e77a557f1, type: 3}
@@ -4137,7 +4137,7 @@ BlendTree:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Blend Tree
+  m_Name: Run Blend Tree
   m_Childs:
   - serializedVersion: 2
     m_Motion: {fileID: 7400000, guid: 6dfa7b6ccd5c7fc4ea3cb6f22b6af92b, type: 3}
@@ -9136,7 +9136,7 @@ BlendTree:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Blend Tree
+  m_Name: Squat Blend Tree
   m_Childs:
   - serializedVersion: 2
     m_Motion: {fileID: 7400000, guid: a3c34100b4edc484fb6bc5dfb7109304, type: 3}

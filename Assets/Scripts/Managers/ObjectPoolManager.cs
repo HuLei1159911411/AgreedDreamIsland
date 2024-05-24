@@ -9,6 +9,7 @@ public enum E_ObjectType
     MonsterWeapon,
     PlayerWeapon,
     MonsterHp,
+    SoundEffect,
 }
 
 public class ObjectPoolManager : MonoBehaviour
@@ -20,10 +21,13 @@ public class ObjectPoolManager : MonoBehaviour
     public GameObject monsterWeaponPrefab;
     public GameObject playerWeaponPrefab;
     public GameObject monsterHpPrefab;
+    public GameObject soundEffectPrefab;
 
     private Dictionary<E_ObjectType, Queue<GameObject>> _dictionaryObjectPool;
 
-    private GameObject _tempGameObject;
+    private GameObject _tempMonsterHpGameObject;
+    private GameObject _tempSoundEffectGameObject;
+    private SoundEffect _tempSoundEffect;
     private void Awake()
     {
         if (_instance == null)
@@ -50,10 +54,15 @@ public class ObjectPoolManager : MonoBehaviour
             case E_ObjectType.PlayerWeapon:
                 return GameObject.Instantiate(playerWeaponPrefab);
             case E_ObjectType.MonsterHp:
-                _tempGameObject = GameObject.Instantiate(monsterHpPrefab);
-                _tempGameObject.transform.SetParent(UIPanelManager.Instance.lowLayer);
-                _tempGameObject.transform.localScale = Vector3.one;
-                return _tempGameObject;
+                _tempMonsterHpGameObject = GameObject.Instantiate(monsterHpPrefab);
+                _tempMonsterHpGameObject.transform.SetParent(UIPanelManager.Instance.lowLayer);
+                _tempMonsterHpGameObject.transform.localScale = Vector3.one;
+                return _tempMonsterHpGameObject;
+            case E_ObjectType.SoundEffect:
+                _tempSoundEffectGameObject = GameObject.Instantiate(soundEffectPrefab);
+                _tempSoundEffect = _tempSoundEffectGameObject.GetComponent<SoundEffect>();
+                SoundManager.Instance.SetSoundEffect(_tempSoundEffect.audioSource);
+                return _tempSoundEffectGameObject;
             default:
                 throw new ArgumentOutOfRangeException(nameof(objectType), objectType, null);
         }

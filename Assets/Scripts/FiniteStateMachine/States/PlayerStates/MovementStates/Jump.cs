@@ -31,12 +31,6 @@ public class Jump : BaseState
         DoJump();
     }
 
-    public override void Exit()
-    {
-        base.Exit();
-        
-    }
-
     public override void UpdateLogic()
     {
         base.UpdatePhysic();

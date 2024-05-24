@@ -35,6 +35,8 @@ public class TestPanel : Panel
     private float _nowMaxSpeed;
     private E_FightState _nowFightState;
     private bool _isGivenPower;
+    private float _normalWeaponDamage;
+    private Weapon _changedWeapon;
     private void Start()
     {
         mainCamera = CameraController.Instance;
@@ -191,6 +193,13 @@ public class TestPanel : Panel
         playerMovementStateMachine.runForwardSpeed = 40f;
         playerMovementStateMachine.jumpHigh = 30f;
         playerMovementStateMachine.fallSpeed = 40f;
+
+        _changedWeapon = playerMovementStateMachine.FightState.FightWeapon;
+        if (_changedWeapon != null)
+        {
+            _normalWeaponDamage = _changedWeapon.weaponDamage;
+            _changedWeapon.weaponDamage = 100f;
+        }
     }
 
     private void ResetPower()
@@ -204,6 +213,11 @@ public class TestPanel : Panel
         playerMovementStateMachine.runForwardSpeed = 4.5f;
         playerMovementStateMachine.jumpHigh = 2;
         playerMovementStateMachine.fallSpeed = 1.8f;
+        
+        if (_changedWeapon != null)
+        {
+            _changedWeapon.weaponDamage = _normalWeaponDamage;
+        }
     }
 
     void UpdateCameraViewText()

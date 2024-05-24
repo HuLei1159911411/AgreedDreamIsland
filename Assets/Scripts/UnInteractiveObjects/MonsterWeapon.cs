@@ -53,6 +53,8 @@ public class MonsterWeapon : MonoBehaviour, ICounterattack
     private int _count;
     public bool isAwakeInit;
 
+    public AudioSource waveSoundEffect;
+
     public void Start()
     {
         Init();
@@ -118,6 +120,12 @@ public class MonsterWeapon : MonoBehaviour, ICounterattack
             transform.localScale = Vector3.one;
             monsterCharacter = monsterStateMachine.monsterCharacter;
         }
+        
+        // 加载武器挥动音效
+        // 加载挥动音效
+        waveSoundEffect.clip =
+            ResourcesManager.Instance.LoadObject<AudioClip>("AudioClip/Wave" + nowWeaponType + Random.Range(1, 3));
+        SoundManager.Instance.SetSoundEffect(waveSoundEffect);
     }
 
     public void InitParams()

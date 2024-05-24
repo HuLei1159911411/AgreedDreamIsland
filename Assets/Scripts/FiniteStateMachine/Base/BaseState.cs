@@ -19,17 +19,14 @@ public class BaseState
     {
         
     }
-
     public virtual void UpdateLogic()
     {
         
     }
-
     public virtual void UpdatePhysic()
     {
         
     }
-
     public virtual void Exit()
     {
         

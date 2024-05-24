@@ -26,6 +26,8 @@ public class Run : BaseState
     public override void Enter()
     {
         base.Enter();
+        
+        _movementStateMachine.runSoundEffect.Play();
         _coolTimeTimer = 0f;
         if (_movementStateMachine.MoveInputInfo.RunInput)
         {
@@ -44,6 +46,7 @@ public class Run : BaseState
     public override void Exit()
     {
         base.Exit();
+        _movementStateMachine.runSoundEffect.Stop();
         _movementStateMachine.isFastToRun = true;
     }
 

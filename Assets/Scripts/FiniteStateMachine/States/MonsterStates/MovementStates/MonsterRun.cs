@@ -13,6 +13,8 @@ public class MonsterRun : MonsterState
     {
         base.Enter();
 
+        _monsterStateMachine.runSoundEffect.Play();
+        
         if (_monsterStateMachine.CheckNowAngle())
         {
             _monsterStateMachine.ChangeState(_monsterStateMachine.TurnState);
@@ -20,7 +22,14 @@ public class MonsterRun : MonsterState
         }
         _monsterStateMachine.animator.SetTrigger(_monsterStateMachine.DicAnimatorIndexes["ToRun"]);
     }
-    
+
+    public override void Exit()
+    {
+        base.Exit();
+        
+        _monsterStateMachine.runSoundEffect.Stop();
+    }
+
     public override void UpdatePhysic()
     {
         base.UpdatePhysic();

@@ -14,5 +14,5 @@ public class ItemOperatorPanel : MonoBehaviour
     void Update()
     {
         
-    }
+    } 
 }

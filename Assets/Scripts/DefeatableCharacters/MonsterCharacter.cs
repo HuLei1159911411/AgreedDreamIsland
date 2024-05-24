@@ -33,7 +33,8 @@ public class MonsterCharacter : DefeatableCharacter
     {
         // 闪避状态
         if (stateMachine.CurrentState.state == E_State.Dodge ||
-            stateMachine.CurrentState.state == E_State.Death)
+            stateMachine.CurrentState.state == E_State.Death ||
+            stateMachine.CurrentState.state == E_State.Hit)
         {
             return false;
         }

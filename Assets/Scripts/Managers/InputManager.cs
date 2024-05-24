@@ -26,6 +26,7 @@ public enum E_InputBehavior
     OpenBagPanel,
     OpenTestPanel,
     LockViewToFollowMonster,
+    OpenSettingPanel,
 }
 public class InputManager : MonoBehaviour
 {
@@ -45,13 +46,9 @@ public class InputManager : MonoBehaviour
         InitDicBehavior();
     }
     
-    private InputManager()
+    private void InitDicBehavior()
     {
-        InitDicBehavior();
-    }
-    
-    void InitDicBehavior()
-    {
+        // 加入数据本地化后这里赋值改成从本地读取数据
         DicBehavior = new Dictionary<E_InputBehavior, KeyCode>()
         {
             { E_InputBehavior.MoveForward, KeyCode.W },
@@ -75,6 +72,7 @@ public class InputManager : MonoBehaviour
             { E_InputBehavior.OpenBagPanel, KeyCode.Tab },
             { E_InputBehavior.OpenTestPanel, KeyCode.Equals },
             { E_InputBehavior.LockViewToFollowMonster, KeyCode.BackQuote },
+            { E_InputBehavior.OpenSettingPanel, KeyCode.Escape},
         };
     }
 }

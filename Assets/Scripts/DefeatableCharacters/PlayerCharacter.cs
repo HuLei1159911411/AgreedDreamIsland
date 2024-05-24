@@ -153,6 +153,7 @@ public class PlayerCharacter : DefeatableCharacter
             (PlayerMovementStateMachine.Instance.CurrentState.state == E_State.Fight &&
              PlayerMovementStateMachine.Instance.FightState.nowFightState ==
              E_FightState.Dodge) ||
+            PlayerMovementStateMachine.Instance.CurrentState.state == E_State.Hit ||
             PlayerMovementStateMachine.Instance.CurrentState.state == E_State.Death)
         {
             return false;

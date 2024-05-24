@@ -19,6 +19,12 @@ public class Death : BaseState
     public override void Enter()
     {
         base.Enter();
+        
+        if (preState.state == E_State.Fight)
+        {
+            _movementStateMachine.FightState.FightWeapon.CloseCheckWeaponIsHit();
+        }
+        
         _timer = 0f;
         hasInit = false;
         CameraController.Instance.isStopPlayerRotation = true;

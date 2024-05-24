@@ -146,11 +146,21 @@ public class Weapon : Equipment, ICounterattack
     public bool isStopWeaponAll;
     // 随机数
     private float _randomValue;
+    // 挥动音效
+    public AudioSource waveSoundEffect;
     private void Awake()
     {
         AwakeInitParams();
         
         Init();
+    }
+
+    private void Start()
+    {
+        // 加载挥动音效
+        waveSoundEffect.clip =
+            ResourcesManager.Instance.LoadObject<AudioClip>("AudioClip/Wave" + weaponType + Random.Range(1, 3));
+        SoundManager.Instance.SetSoundEffect(waveSoundEffect);
     }
     
     private void AwakeInitParams()
@@ -750,6 +760,7 @@ public class Weapon : Equipment, ICounterattack
     // 开启攻击检测
     public void OpenCheckWeaponIsHit(int isAllowRotate)
     {
+        waveSoundEffect.Play();
         weaponEffect.gameObject.SetActive(true);
         isAttacking = true;
         InfoManager.Instance.isLockAttackDirection = isAllowRotate == (int)E_IsAllowRotate.Yes ? true : false;
@@ -759,6 +770,7 @@ public class Weapon : Equipment, ICounterattack
     // 关闭攻击检测
     public void CloseCheckWeaponIsHit()
     {
+        waveSoundEffect.Stop();
         weaponEffect.gameObject.SetActive(false);
         isAttacking = false;
         itemCollider.enabled = false;

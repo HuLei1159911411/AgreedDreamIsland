@@ -1,49 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &64050592370733384
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5532775353005756784}
-  - component: {fileID: 4459590642895205258}
-  m_Layer: 0
-  m_Name: ResourceManger
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5532775353005756784
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 64050592370733384}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8834037803861921005}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4459590642895205258
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 64050592370733384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c23199965254bf54680c5c0442cfafab, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &2082552436441223163
 GameObject:
   m_ObjectHideFlags: 0
@@ -96,6 +52,8 @@ MonoBehaviour:
     type: 3}
   monsterHpPrefab: {fileID: 5054955897012278199, guid: 18dfb70deefd2104bb59996ecfc80c25,
     type: 3}
+  soundEffectPrefab: {fileID: 2737196986083866769, guid: c89835591805be54f9e6119f255c174f,
+    type: 3}
 --- !u!1 &2990311204744790119
 GameObject:
   m_ObjectHideFlags: 0
@@ -125,12 +83,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8748090914676548915}
-  - {fileID: 3759282023904068677}
   - {fileID: 630661509008667324}
   - {fileID: 5206713146195068115}
   - {fileID: 6371973784243821435}
-  - {fileID: 5532775353005756784}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4246155556971738824
@@ -182,139 +137,6 @@ MonoBehaviour:
   lastTimeNearestMonsterNearestDistance: 0
   lastTimeNearestMonsterTransform: {fileID: 0}
   lastTimeNearestMonster: {fileID: 0}
---- !u!1 &4315933912317023269
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8748090914676548915}
-  - component: {fileID: 8778221839429101474}
-  m_Layer: 0
-  m_Name: InfoManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8748090914676548915
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4315933912317023269}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8834037803861921005}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8778221839429101474
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4315933912317023269}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8eb9931c1e3d634f83a6f5e07d8b9dd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  layerGround:
-    serializedVersion: 2
-    m_Bits: 8
-  layerWall:
-    serializedVersion: 2
-    m_Bits: 64
-  layersCameraCheck:
-  - serializedVersion: 2
-    m_Bits: 72
-  layerCameraCheck:
-    serializedVersion: 2
-    m_Bits: 0
-  layersGroundCheck:
-  - serializedVersion: 2
-    m_Bits: 8
-  - serializedVersion: 2
-    m_Bits: 64
-  layerGroundCheck:
-    serializedVersion: 2
-    m_Bits: 0
-  layersWallCheck:
-  - serializedVersion: 2
-    m_Bits: 72
-  layerWallCheck:
-    serializedVersion: 2
-    m_Bits: 0
-  layersGrapplingHookCheck:
-  - serializedVersion: 2
-    m_Bits: 72
-  layerGrapplingHookCheck:
-    serializedVersion: 2
-    m_Bits: 0
-  layersMonsterSightCheck:
-  - serializedVersion: 2
-    m_Bits: 8
-  - serializedVersion: 2
-    m_Bits: 72
-  layerMonsterSightCheck:
-    serializedVersion: 2
-    m_Bits: 0
-  groundDrag: 4
-  airDrag: 0
-  maxHigh: 100
-  isLockAttackDirection: 0
-  isAutoLockEnemy: 0
---- !u!1 &4659101793148921598
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3759282023904068677}
-  - component: {fileID: 5681320439046415589}
-  m_Layer: 0
-  m_Name: InputManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3759282023904068677
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4659101793148921598}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8834037803861921005}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5681320439046415589
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4659101793148921598}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7e058b7f2a9f6742bdd1a2b0c75a023, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &5295438144127122409
 GameObject:
   m_ObjectHideFlags: 0
@@ -363,3 +185,4 @@ MonoBehaviour:
   listPanels: []
   lowLayer: {fileID: 0}
   canvasRectTransform: {fileID: 0}
+  graphicRaycaster: {fileID: 0}

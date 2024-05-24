@@ -21,7 +21,6 @@ public class StateMachine : MonoBehaviour
             _currentState.UpdateLogic();
         }
     }
-
     protected virtual void FixedUpdate()
     {
         if (_currentState != null)
@@ -44,7 +43,6 @@ public class StateMachine : MonoBehaviour
 
         return true;
     }
-
     public virtual BaseState GetInitialState()
     {
         return null;

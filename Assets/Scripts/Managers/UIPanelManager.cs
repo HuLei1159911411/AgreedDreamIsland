@@ -47,7 +47,7 @@ public class UIPanelManager : MonoBehaviour
     {
         for (_count = 0; _count < listPanels.Count; _count++)
         {
-            if (listPanels[_count].isShow)
+            if (listPanels[_count].isShow && !(listPanels[_count] is SettingPanel))
             {
                 listPanels[_count].ClosePanel();
             }

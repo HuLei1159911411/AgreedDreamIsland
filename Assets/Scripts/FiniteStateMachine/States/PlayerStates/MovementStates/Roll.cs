@@ -31,16 +31,6 @@ public class Roll : BaseState
         // SetRollVelocity();
     }
 
-    public override void Exit()
-    {
-        base.Exit();
-    }
-
-    public override void UpdateLogic()
-    {
-        base.UpdateLogic();
-    }
-
     public override void UpdatePhysic()
     {
         base.UpdatePhysic();

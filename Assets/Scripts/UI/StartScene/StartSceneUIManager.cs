@@ -15,6 +15,9 @@ public enum E_Theme
 
 public class StartScene : MonoBehaviour
 {
+    private static StartScene _instance;
+    public static StartScene Instance => _instance;
+    
     public E_Theme theme;
     
     public Transform snowTransform;
@@ -24,6 +27,8 @@ public class StartScene : MonoBehaviour
     public Transform snowLoadTransform;
     public Transform lavaLoadTransform;
     public Transform woodLoadTransform;
+
+    public SettingPanel settingPanel;
     
     private Transform _nowTransform;
     private Image _backgroundImage;
@@ -35,6 +40,11 @@ public class StartScene : MonoBehaviour
     private AsyncOperation _asyncLoad;
     public void Awake()
     {
+        if (_instance == null)
+        {
+            _instance = this;
+        }
+        
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         snowTransform.gameObject.SetActive(false);
@@ -73,6 +83,8 @@ public class StartScene : MonoBehaviour
         loadPanelTransform.gameObject.SetActive(false);
 
         _startGameButton.onClick.AddListener(ChangeScene);
+        
+        _settingButton.onClick.AddListener(settingPanel.ShowPanel);
         
         _quitButton.onClick.AddListener(QuitGame);
     }

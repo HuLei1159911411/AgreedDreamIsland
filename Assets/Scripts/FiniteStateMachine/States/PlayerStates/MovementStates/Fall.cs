@@ -8,7 +8,7 @@ public class Fall : BaseState
     private PlayerMovementStateMachine _movementStateMachine;
 
     // 是否是快速降落
-    public bool _isFastFall;
+    public bool isFastFall;
 
     // 是否松开过下蹲或滑铲键
     private bool _isReleaseSquatInput;
@@ -25,15 +25,10 @@ public class Fall : BaseState
     public override void Enter()
     {
         base.Enter();
-        _isFastFall = false;
+        isFastFall = false;
         _isReleaseSquatInput = false;
 
         SetNowSpeedByState();
-    }
-    
-    public override void Exit()
-    {
-        base.Exit();
     }
 
     public override void UpdateLogic()
@@ -50,7 +45,7 @@ public class Fall : BaseState
 
     public override void UpdatePhysic()
     {
-        if (_isFastFall)
+        if (isFastFall)
         {
             _movementStateMachine.playerRigidbody.AddForce((_movementStateMachine.fallGravityScale - 1f) *
                                                            _movementStateMachine.playerRigidbody.mass * 9.18f *
@@ -73,13 +68,13 @@ public class Fall : BaseState
         // 快速下落
         if (_isReleaseSquatInput && _movementStateMachine.MoveInputInfo.SquatInput && preState.state != E_State.Grapple)
         {
-            _isFastFall = true;
+            isFastFall = true;
         }
         
         // 落地
         if (_movementStateMachine.isOnGround)
         {
-            if (_isFastFall)
+            if (isFastFall)
             {
                 _movementStateMachine.ChangeState(_movementStateMachine.IdleState);
             }

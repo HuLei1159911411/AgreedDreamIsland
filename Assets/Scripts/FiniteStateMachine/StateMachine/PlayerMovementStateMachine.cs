@@ -73,6 +73,10 @@ public class PlayerMovementStateMachine : StateMachine
     public Transform interactBox;
     // 人物角色
     public PlayerCharacter playerCharacter;
+    // 角色走路脚步声音源
+    public AudioSource walkSoundEffect;
+    // 角色奔跑脚步声音源
+    public AudioSource runSoundEffect;
     #endregion
 
     #region StateObjects
@@ -560,7 +564,7 @@ public class PlayerMovementStateMachine : StateMachine
             SetColliderByCurrentState();
 
             // 差值移动摄像机的偏移位置达到更好的视觉效果
-            if (CameraController.Instance is not null)
+            if (CameraController.Instance != null)
             {
                 CameraController.Instance.SetThirdPersonFocusWithPlayerOffsetToTarget(newState.state);
             }
@@ -630,6 +634,9 @@ public class PlayerMovementStateMachine : StateMachine
         
         // 设置碰撞盒
         InitCollider();
+        
+        // 初始化音频
+        InitSoundEffectAudioClip();
     }
     
     // Awake初始化参数
@@ -692,6 +699,18 @@ public class PlayerMovementStateMachine : StateMachine
         }
         
         CameraController.Instance.UpdateCameraPositionAndRotationImmediately();
+    }
+    
+    // 初始化音频
+    private void InitSoundEffectAudioClip()
+    {
+        walkSoundEffect.clip =
+            ResourcesManager.Instance.LoadObject<AudioClip>("AudioClip/Walk" + UIPanelManager.Instance.theme);
+        runSoundEffect.clip = 
+            ResourcesManager.Instance.LoadObject<AudioClip>("AudioClip/Run" + UIPanelManager.Instance.theme);
+        
+        SoundManager.Instance.SetSoundEffect(walkSoundEffect);
+        SoundManager.Instance.SetSoundEffect(runSoundEffect);
     }
 
 

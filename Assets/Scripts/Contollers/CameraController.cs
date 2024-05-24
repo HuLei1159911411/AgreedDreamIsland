@@ -196,6 +196,8 @@ public class CameraController : MonoBehaviour
     // 初始化参数
     private void InitParameters()
     {
+        mouseSpeed = SetManager.Instance.MouseSpeed * 50f;
+        
         playerTransform = PlayerMovementStateMachine.Instance.playerTransform;
         nowView = E_CameraView.ThirdPerson;
         targetTransform = playerTransform;

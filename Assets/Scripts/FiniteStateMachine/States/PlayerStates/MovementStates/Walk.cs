@@ -25,7 +25,8 @@ public class Walk : BaseState
     public override void Enter()
     {
         base.Enter();
-
+        _movementStateMachine.walkSoundEffect.Play();
+        
         _coolTimeTimer = 0f;
         _movementStateMachine.isFastToRun = false;
         
@@ -37,7 +38,9 @@ public class Walk : BaseState
 
     public override void Exit()
     {
-        base.Enter();
+        base.Exit();
+        
+        _movementStateMachine.walkSoundEffect.Stop();
     }
 
     public override void UpdateLogic()

@@ -140,15 +140,16 @@ public class EquipmentOperatorPanel : OperatorPanel
             {
                 EquipmentsController.Instance.ExchangeEquipment(_nowEquipment.equipmentType,
                     EquipmentsController.Instance.nowEquipmentsIndexes[(int)_nowEquipment.equipmentType], _nowEquipment);
+                _nowLongPressTime = 0f;
+                return true;
             }
             else if(EquipmentsController.Instance.nowEquipmentsIndexes[(int)_nowEquipment.equipmentType] == -1)
             {
                 EquipmentsController.Instance.ExchangeEquipment(_nowEquipment.equipmentType, 0, _nowEquipment);
                 EquipmentsController.Instance.ChangeEquipment(_nowEquipment.equipmentType,0);
+                _nowLongPressTime = 0f;
+                return true;
             }
-            
-            _nowLongPressTime = 0f;
-            return true;
         }
         
         // 时间没到松开尝试捡起

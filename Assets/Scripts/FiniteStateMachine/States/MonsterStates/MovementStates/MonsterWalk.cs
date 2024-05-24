@@ -12,12 +12,22 @@ public class MonsterWalk : MonsterState
     public override void Enter()
     {
         base.Enter();
+        
+        _monsterStateMachine.walkSoundEffect.Play();
+        
         if (_monsterStateMachine.CheckNowAngle())
         {
             _monsterStateMachine.ChangeState(_monsterStateMachine.TurnState);
             return;
         }
         _monsterStateMachine.animator.SetTrigger(_monsterStateMachine.DicAnimatorIndexes["ToWalk"]);
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+        
+        _monsterStateMachine.walkSoundEffect.Stop();
     }
 
     public override void UpdatePhysic()

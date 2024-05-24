@@ -74,8 +74,9 @@ public class GuidingPointsGroup : MonoBehaviour
         nowGuidingPoint = guidingPoints[nowGuidingIndex];
     }
 
-    private void ChangeSceneToNext()
+    public void ChangeSceneToNext()
     {
+        Time.timeScale = 0f;
         loadPanel.gameObject.SetActive(true);
         for (_count = 1; _count < 4; _count++)
         {
@@ -89,6 +90,7 @@ public class GuidingPointsGroup : MonoBehaviour
     
     private IEnumerator LoadSceneAsync()
     {
+        SetManager.Instance.Init();
         switch (SceneManager.GetActiveScene().buildIndex)
         {
             case 1 :
@@ -105,6 +107,7 @@ public class GuidingPointsGroup : MonoBehaviour
                 break;
         }
         
+        
         _asyncLoad.allowSceneActivation = false;
         
         // 等待场景加载完成
@@ -114,6 +117,7 @@ public class GuidingPointsGroup : MonoBehaviour
             if (_asyncLoad.progress >= 0.8f)
             {
                 _asyncLoad.allowSceneActivation = true;
+                Time.timeScale = 1f;
             }
             yield return null;
         }

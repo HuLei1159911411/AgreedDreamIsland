@@ -26,11 +26,6 @@ public class Sliding : BaseState
         _timer = 0f;
     }
 
-    public override void Exit()
-    {
-        base.Exit();
-    }
-
     public override void UpdateLogic()
     {
         base.UpdateLogic();

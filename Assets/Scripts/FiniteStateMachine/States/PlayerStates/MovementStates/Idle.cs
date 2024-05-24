@@ -60,7 +60,7 @@ public class Idle : BaseState
         }
         
         // 前一状态为下落并且快速下落
-        if (!(preState is null) && preState.state == E_State.Fall && (preState as Fall)._isFastFall && _coolTimeTimer < 0.5f)
+        if (!(preState is null) && preState.state == E_State.Fall && (preState as Fall).isFastFall && _coolTimeTimer < 0.5f)
         {
             return;
         }

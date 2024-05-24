@@ -111,6 +111,10 @@ public class MonsterStateMachine : StateMachine
     // 是否进行过唤醒初始化
     public bool isAwakeInit;
 
+    // 走路音效
+    public AudioSource walkSoundEffect;
+    // 奔跑音效
+    public AudioSource runSoundEffect;
     protected override void Awake()
     {
         AwakeInitParameters();
@@ -207,6 +211,13 @@ public class MonsterStateMachine : StateMachine
             fightWithPlayerDistance += fightWithPlayerDistance * (transform.localScale.x - 1f) * 0.6f;    
         }
         
+        // 初始化移动音效
+        walkSoundEffect.clip =
+            ResourcesManager.Instance.LoadObject<AudioClip>("AudioClip/Walk" + UIPanelManager.Instance.theme);
+        runSoundEffect.clip = 
+            ResourcesManager.Instance.LoadObject<AudioClip>("AudioClip/Run" + UIPanelManager.Instance.theme);
+        SoundManager.Instance.SetSoundEffect(runSoundEffect);
+        SoundManager.Instance.SetSoundEffect(walkSoundEffect);
     }
 
     private void InitParameters()
@@ -518,6 +529,7 @@ public class MonsterStateMachine : StateMachine
     // 开始攻击
     public void StartAttack()
     {
+        monsterWeapon.waveSoundEffect.Play();
         monsterWeapon.nowCollider.enabled = true;
         monsterWeapon.isHit = false;
         monsterWeapon.isAttacking = true;
@@ -525,6 +537,7 @@ public class MonsterStateMachine : StateMachine
     // 结束攻击
     public void EndAttack()
     {
+        monsterWeapon.waveSoundEffect.Stop();
         monsterWeapon.nowCollider.enabled = false;
         monsterWeapon.isAttacking = false;
     }

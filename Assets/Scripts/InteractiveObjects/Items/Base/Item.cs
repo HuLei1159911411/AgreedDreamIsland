@@ -17,6 +17,11 @@ public class Item : InteractiveObject
     // 丢物品进行射线检测的射线的击中信息
     private RaycastHit discardItemDownRaycastHit;
     
+    public Item()
+    {
+        type = E_InteractiveObjectType.Item;
+    }
+    
     public virtual bool PickUpItem()
     {
         return false;
@@ -41,10 +46,5 @@ public class Item : InteractiveObject
     public virtual bool UseItem()
     {
         return false;
-    }
-
-    public Item()
-    {
-        type = E_InteractiveObjectType.Item;
     }
 }

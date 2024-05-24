@@ -23,12 +23,6 @@ public class Squat : BaseState
         
     }
 
-    public override void Exit()
-    {
-        base.Exit();
-        
-    }
-
     public override void UpdateLogic()
     {
         base.UpdateLogic();
