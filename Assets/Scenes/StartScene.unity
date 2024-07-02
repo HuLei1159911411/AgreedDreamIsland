@@ -1566,7 +1566,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc32206f723f0dd4196600ea7cb5186f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  theme: 2
+  theme: 1
   snowTransform: {fileID: 446413012}
   lavaTransform: {fileID: 1168768317}
   woodTransform: {fileID: 1974133918}

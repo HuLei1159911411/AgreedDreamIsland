@@ -19,6 +19,10 @@ public class MonsterHit : MonsterState
     public override void Enter()
     {
         base.Enter();
+        if (!_monsterStateMachine.isSeePlayer)
+        {
+            _monsterStateMachine.isSeePlayer = true;
+        }
         _timer = 0f;
         if (preState.state == E_State.Attack)
         {

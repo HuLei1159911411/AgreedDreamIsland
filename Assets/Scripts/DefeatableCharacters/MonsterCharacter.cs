@@ -39,11 +39,7 @@ public class MonsterCharacter : DefeatableCharacter
             return false;
         }
         
-        hpUIShowTimer = 0f;
-        if (!isShowHpUI)
-        {
-            _hpUIShowCoroutine = StartCoroutine(ShowHpUI());
-        }
+        StartShowHpUI();
         
         // 防御状态则对方攻击不造成击中效果
         if (counterattack != null && stateMachine.CurrentState.state == E_State.Defense && stateMachine.DefenseState.isDefensing && !isStrongAttack)
@@ -135,6 +131,15 @@ public class MonsterCharacter : DefeatableCharacter
         }
         monsterHpController.gameObject.SetActive(false);
         isShowHpUI = false;
+    }
+
+    public void StartShowHpUI()
+    {
+        hpUIShowTimer = 0f;
+        if (!isShowHpUI)
+        {
+            _hpUIShowCoroutine = StartCoroutine(ShowHpUI());
+        }
     }
 
     public override void ChangeHp(float value)

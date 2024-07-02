@@ -45343,7 +45343,7 @@ MonoBehaviour:
   hp: 0
   nowWeapon: {fileID: 0}
   maxHp: 10
-  maxStamina: 10
+  maxStamina: 20
   stamina: 0
   staminaAddSpeed: 10
   climbAndWallRunningStaminaReduceSpeed: 3

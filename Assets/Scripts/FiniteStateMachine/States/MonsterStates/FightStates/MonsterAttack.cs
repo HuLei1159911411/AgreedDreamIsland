@@ -23,6 +23,7 @@ public class MonsterAttack : MonsterState
     public override void Enter()
     {
         base.Enter();
+        _monsterStateMachine.monsterCharacter.StartShowHpUI();
         SelectAttackAnimation();
     }
 

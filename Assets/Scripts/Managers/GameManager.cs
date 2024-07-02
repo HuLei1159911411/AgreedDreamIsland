@@ -37,10 +37,10 @@ public class GameManager : MonoBehaviour
     public float GetNearestMonster()
     {
         _nearestMonsterIndex = 0;
-        lastTimeNearestMonsterNearestDistance = listMonsters[0].playerDistance;
-        for (_count = 1; _count < listMonsters.Count; _count++)
+        lastTimeNearestMonsterNearestDistance = float.MaxValue;
+        for (_count = 0; _count < listMonsters.Count; _count++)
         {
-            if (listMonsters[_count].playerDistance < lastTimeNearestMonsterNearestDistance)
+            if (listMonsters[_count].CurrentState.state != E_State.Death && listMonsters[_count].playerDistance < lastTimeNearestMonsterNearestDistance)
             {
                 _nearestMonsterIndex = _count;
                 lastTimeNearestMonsterNearestDistance = listMonsters[_count].playerDistance;

@@ -315,6 +315,7 @@ public class CameraController : MonoBehaviour
                     LockWithHideCursor();
                 }
 
+                // 计算锁定视角下的摄像机位置和旋转信息
                 switch (nowView)
                 {
                     case E_CameraView.FirstPerson:
@@ -337,9 +338,11 @@ public class CameraController : MonoBehaviour
                                 playerTransform.up * followMonsterThirdPersonViewCameraOffset.y +
                                 playerTransform.forward * followMonsterThirdPersonViewCameraOffset.z;
                         _targetPosition = _dir;
-                        _targetRotation =
-                            Quaternion.LookRotation(_calculateTargetPosition - transform.position);
-                        playerTransform.rotation = Quaternion.LookRotation(-nowFollowMonster.monsterToPlayerDirection);
+                        // _targetRotation =
+                        //     Quaternion.LookRotation(_calculateTargetPosition - transform.position);
+                        _targetRotation = Quaternion.LookRotation(_calculateTargetPosition - _targetPosition);
+                        // playerTransform.rotation = Quaternion.LookRotation(-nowFollowMonster.monsterToPlayerDirection);
+                        _playerTargetRotation = Quaternion.LookRotation(-nowFollowMonster.monsterToPlayerDirection);
                         break;
                     case E_CameraView.ThirdPersonFurther:
                         _calculateTargetPosition = nowFollowMonster.transform.position +
@@ -351,9 +354,9 @@ public class CameraController : MonoBehaviour
                                 playerTransform.up * (followMonsterThirdPersonViewCameraOffset.y * thirdPersonFurtherRatio) +
                                 playerTransform.forward * (followMonsterThirdPersonViewCameraOffset.z * thirdPersonFurtherRatio);
                         _targetPosition = _dir;
-                        _targetRotation =
-                            Quaternion.LookRotation(_calculateTargetPosition - transform.position);
-                        playerTransform.rotation = Quaternion.LookRotation(-nowFollowMonster.monsterToPlayerDirection);
+                        _targetRotation = Quaternion.LookRotation(_calculateTargetPosition - _targetPosition);
+                        // playerTransform.rotation = Quaternion.LookRotation(-nowFollowMonster.monsterToPlayerDirection);
+                        _playerTargetRotation = Quaternion.LookRotation(-nowFollowMonster.monsterToPlayerDirection);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

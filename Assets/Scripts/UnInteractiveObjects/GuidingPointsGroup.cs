@@ -91,22 +91,28 @@ public class GuidingPointsGroup : MonoBehaviour
     private IEnumerator LoadSceneAsync()
     {
         SetManager.Instance.Init();
-        switch (SceneManager.GetActiveScene().buildIndex)
+        if (nowGuidingIndex == -1)
         {
-            case 1 :
-                _asyncLoad = SceneManager.LoadSceneAsync(0);
-                break;
-            case 2 :
-                _asyncLoad = SceneManager.LoadSceneAsync(0);
-                break;
-            case 3 :
-                _asyncLoad = SceneManager.LoadSceneAsync(4);
-                break;
-            case 4 :
-                _asyncLoad = SceneManager.LoadSceneAsync(0);
-                break;
+            switch (SceneManager.GetActiveScene().buildIndex)
+            {
+                case 1:
+                    _asyncLoad = SceneManager.LoadSceneAsync(0);
+                    break;
+                case 2:
+                    _asyncLoad = SceneManager.LoadSceneAsync(0);
+                    break;
+                case 3:
+                    _asyncLoad = SceneManager.LoadSceneAsync(4);
+                    break;
+                case 4:
+                    _asyncLoad = SceneManager.LoadSceneAsync(0);
+                    break;
+            }
         }
-        
+        else
+        {
+            _asyncLoad = SceneManager.LoadSceneAsync(0);
+        }
         
         _asyncLoad.allowSceneActivation = false;
         

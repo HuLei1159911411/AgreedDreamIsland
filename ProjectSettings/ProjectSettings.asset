@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: DefaultCompany
-  productName: AgreedDreamIsland_Wood
+  productName: "\u7EA6\u5B9A\u7684\u68A6\u5E7B\u5C9B-\u7194\u5CA9\u5927\u5730"
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -40,7 +40,7 @@ PlayerSettings:
     width: 1
     height: 1
   m_SplashScreenLogos:
-  - logo: {fileID: 21300000, guid: bbd8aed3d87b4e141b1e7560dee6dad1, type: 3}
+  - logo: {fileID: 21300000, guid: b25c3da8887269442afdfec2a4545a72, type: 3}
     duration: 2
   m_VirtualRealitySplashScreen: {fileID: 0}
   m_HolographicTrackingLossScreen: {fileID: 0}
@@ -287,7 +287,7 @@ PlayerSettings:
   - m_BuildTarget: Standalone
     m_Icons:
     - serializedVersion: 2
-      m_Icon: {fileID: 2800000, guid: bbd8aed3d87b4e141b1e7560dee6dad1, type: 3}
+      m_Icon: {fileID: 2800000, guid: b25c3da8887269442afdfec2a4545a72, type: 3}
       m_Width: 1024
       m_Height: 1024
       m_Kind: 0
